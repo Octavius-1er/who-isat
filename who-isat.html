@@ -178,8 +178,8 @@
   <div class="screen" id="screen-chat">
     <div class="chat-header">
       <button class="chat-back" onclick="goHome()">&#8592;</button>
-      <div class="chat-hd-av" id="chat-hd-av"></div>
-      <div class="chat-hd-info">
+      <div class="chat-hd-av" id="chat-hd-av" onclick="openFriendProfile()" style="cursor:pointer"></div>
+      <div class="chat-hd-info" onclick="openFriendProfile()" style="cursor:pointer">
         <div class="chat-hd-name" id="chat-hd-name"></div>
         <div class="chat-hd-sub" id="chat-hd-sub"></div>
       </div>
@@ -208,6 +208,22 @@
       <div class="profile-username" id="profile-uname"></div>
       <div class="profile-code-label" id="profile-code-label"></div>
       <div class="code-box" style="width:100%;max-width:280px">Partage ce code avec tes amis<span id="profile-code-big"></span></div>
+    </div>
+  </div>
+
+  <!-- PROFIL AMI -->
+  <div class="screen profile-screen" id="screen-friend-profile">
+    <div class="profile-header">
+      <button class="chat-back" id="friend-profile-back">&#8592;</button>
+      <span style="font-size:17px;font-weight:700">Profil</span>
+    </div>
+    <div class="profile-body">
+      <div class="profile-av-wrap" style="cursor:default">
+        <div class="pav" id="friend-pav"></div>
+      </div>
+      <div class="profile-username" id="friend-uname"></div>
+      <div class="profile-code-label" id="friend-code-label"></div>
+      <div class="code-box" style="width:100%;max-width:280px">Code<span id="friend-code-big"></span></div>
     </div>
   </div>
 
@@ -721,6 +737,32 @@ async function sendMsg(){
   }
 }
 
+function openFriendProfile(){
+  if(!currentChat) return;
+  let user = null;
+  if(currentChat.type === 'dm'){
+    user = usersCache[currentChat.id];
+  }
+  // Pour les groupes, pas de profil individuel
+  if(!user) return;
+
+  const pav = document.getElementById('friend-pav');
+  pav.innerHTML = user.avatar
+    ? `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : `<span style="font-size:36px;font-weight:700;color:white;">${initials(user.username)}</span>`;
+  pav.style.background = user.avatar ? 'transparent' : getColor(user.username);
+  pav.style.borderColor = getColor(user.username);
+
+  document.getElementById('friend-uname').textContent       = user.username;
+  document.getElementById('friend-code-label').textContent  = user.code;
+  document.getElementById('friend-code-big').textContent    = user.code;
+
+  // Bouton retour → revient au chat
+  document.getElementById('friend-profile-back').onclick = () => show('screen-chat');
+
+  show('screen-friend-profile');
+}
+
 function goHome(){
   if(chatListener){ chatListener(); chatListener = null; }
   currentChat = null;
@@ -756,6 +798,7 @@ function handleProfileAvatar(e){
 
 // ===== EXPOSER AU GLOBAL (requis avec type="module") =====
 Object.assign(window, {
+  openFriendProfile,
   switchTab, handleAuthAvatar, createAccount, loginWithCode,
   showAddFriend, addFriend, showMyCode,
   showCreateGroup, createGroup, switchHomeTab,
