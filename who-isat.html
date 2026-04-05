@@ -431,61 +431,61 @@ function cleanHomeListeners(){
 }
 
 function setupHomeListeners(){
-  // 1. Écoute mes propres changements
+  // Ecoute la liste d'amis : met a jour myUser et ajoute les nouveaux conv listeners
   homeListeners['_me'] = dbListen(`users/${meCode}`, async snap => {
     if(!snap.exists()) return;
-    myUser = snap.val();
-    if(!myUser.friends) myUser.friends = [];
+    const fresh = snap.val();
+    if(!fresh.friends) fresh.friends = [];
+    const oldFriends = toArr(myUser?.friends);
+    const newFriends = toArr(fresh.friends).filter(f => !oldFriends.includes(f));
+    myUser = fresh;
     usersCache[meCode] = myUser;
-    const unknowns = toArr(myUser.friends).filter(f => !usersCache[f]);
-    await Promise.all(unknowns.map(async f => {
+    await Promise.all(newFriends.map(async f => {
       const fs = await dbGet(`users/${f}`);
       if(fs.exists()) usersCache[f] = fs.val();
+      addConvListener(f);
     }));
-    setupConvListeners();
     if(document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
 
-  // 2. Écoute les groupes
+  // Ecoute les groupes : ajoute seulement les nouveaux
   homeListeners['_groups'] = dbListen('groups', snap => {
-    groupsCache = {};
     if(snap.exists()){
       snap.forEach(child => {
         const g = child.val();
-        if(g && g.members && toArr(g.members).includes(meCode)) groupsCache[g.id] = g;
+        if(!g || !g.members || !toArr(g.members).includes(meCode)) return;
+        const isNew = !groupsCache[g.id];
+        groupsCache[g.id] = g;
+        if(isNew) addGroupConvListener(g.id);
       });
     }
-    setupConvListeners();
     if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
 
-  setupConvListeners();
+  // Initialise les conv listeners pour tous les amis/groupes deja connus
+  toArr(myUser?.friends).forEach(fcode => addConvListener(fcode));
+  Object.keys(groupsCache).forEach(gid => addGroupConvListener(gid));
 }
 
-function setupConvListeners(){
-  Object.keys(homeListeners).filter(k => !k.startsWith('_')).forEach(k => {
-    try { homeListeners[k](); } catch(e){}
-    delete homeListeners[k];
-  });
+function addConvListener(fcode){
+  const convKey = [meCode, fcode].sort().join('_');
+  if(homeListeners[convKey]) return;
+  homeListeners[convKey] = dbListen(`conversations/${convKey}`, snap => {
+    let last = null;
+    snap.forEach(child => { last = child.val(); });
+    lastMsgsCache[convKey] = last;
+    if(currentHomeTab === 'chats' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  }, limitToLast(1));
+}
 
-  toArr(myUser?.friends).forEach(fcode => {
-    const convKey = [meCode, fcode].sort().join('_');
-    homeListeners[convKey] = dbListen(`conversations/${convKey}`, snap => {
-      let last = null;
-      snap.forEach(child => { last = child.val(); });
-      lastMsgsCache[convKey] = last;
-      if(currentHomeTab === 'chats' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
-    }, limitToLast(1));
-  });
-
-  Object.keys(groupsCache).forEach(gid => {
-    homeListeners[gid] = dbListen(`conversations/${gid}`, snap => {
-      let last = null;
-      snap.forEach(child => { last = child.val(); });
-      lastMsgsCache[gid] = last;
-      if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
-    }, limitToLast(1));
-  });
+function addGroupConvListener(gid){
+  if(homeListeners[gid]) return;
+  homeListeners[gid] = dbListen(`conversations/${gid}`, snap => {
+    let last = null;
+    snap.forEach(child => { last = child.val(); });
+    lastMsgsCache[gid] = last;
+    if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  }, limitToLast(1));
 }
 
 // ===== RENDER HOME =====
