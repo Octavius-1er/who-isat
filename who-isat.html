@@ -939,26 +939,10 @@ async function sendMsg(){
   const convKey = getConvKey();
   input.value = '';
   const timeStr = nowTime();
-  // Optimistic display
-  const container = document.getElementById('chat-messages');
-  const noMsg = container.querySelector('.no-msgs');
-  if(noMsg) noMsg.remove();
-  const tempKey = 'pending_' + Date.now();
-  const div = document.createElement('div');
-  div.className = 'msg out';
-  div.dataset.msgkey = tempKey;
-  div.innerHTML = `<div>${text}</div><div class="msg-time" data-time="${timeStr}">${timeStr}${tickSVG('pending')}</div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
   try {
-    const snap = await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: Date.now(), status: 'sent' });
-    div.dataset.msgkey = snap.key;
-    updateMsgTick(snap.key, 'sent');
-    // Add dblclick on the optimistic div too
-    div.addEventListener('dblclick', () => askDelete(snap.key, convKey, true));
+    await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: Date.now(), status: 'sent' });
   } catch(e) {
     input.value = text;
-    div.remove();
     showToast('❌ Envoi impossible : ' + e.message);
     console.error('sendMsg error', e);
   }
