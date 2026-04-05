@@ -738,22 +738,10 @@ async function sendMsg(){
   if(!text || !currentChat) return;
   const convKey = getConvKey();
   input.value = '';
-  // Affichage optimiste immediat
-  const container = document.getElementById('chat-messages');
-  const noMsg = container.querySelector('.no-msgs');
-  if(noMsg) noMsg.remove();
-  const div = document.createElement('div');
-  div.className = 'msg out';
-  div.dataset.pending = '1';
-  div.innerHTML = `<div>${text}</div><div class="msg-time">${nowTime()} ⏳</div>`;
-  container.appendChild(div);
-  container.scrollTop = container.scrollHeight;
   try {
     await dbPush(`conversations/${convKey}`, { from: meCode, text, time: nowTime(), ts: Date.now() });
-    // onValue va re-render et remplacer le message pending
   } catch(e) {
     input.value = text;
-    div.remove();
     showToast('❌ Envoi impossible : ' + e.message);
     console.error('sendMsg error', e);
   }
