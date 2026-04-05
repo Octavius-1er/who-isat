@@ -104,6 +104,7 @@
     .no-msgs { text-align: center; color: #aaa; font-size: 13px; margin: auto; }
     .msg-status { display: inline-flex; align-items: center; margin-left: 3px; vertical-align: middle; }
     .msg-status svg { width: 16px; height: 16px; }
+    .msg.deleting { opacity: 0.4; transition: opacity 0.2s; }
 
     .profile-screen { background: #fff; }
     .profile-header { background: var(--dark); color: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
@@ -188,41 +189,7 @@
         <div class="chat-hd-sub" id="chat-hd-sub"></div>
       </div>
     </div>
-    <!-- Message action bar (appears when msg selected) -->
-    <div class="msg-action-bar hidden" id="msg-action-bar">
-      <button class="mab-close" onclick="clearSelection()">✕</button>
-      <span class="mab-count" id="mab-count">1 message</span>
-      <!-- Reply -->
-      <button class="mab-btn" id="mab-reply" onclick="replyToSelected()" title="Répondre">
-        <svg viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/></svg>
-        <span>Répondre</span>
-      </button>
-      <!-- Forward -->
-      <button class="mab-btn" id="mab-forward" onclick="forwardSelected()" title="Transférer">
-        <svg viewBox="0 0 24 24"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z"/></svg>
-        <span>Transférer</span>
-      </button>
-      <!-- Edit (own only, single) -->
-      <button class="mab-btn" id="mab-edit" onclick="editSelected()" title="Modifier">
-        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-        <span>Modifier</span>
-      </button>
-      <!-- Info -->
-      <button class="mab-btn" id="mab-info" onclick="showMsgInfo()" title="Infos">
-        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-        <span>Infos</span>
-      </button>
-      <!-- Delete -->
-      <button class="mab-btn danger" id="mab-delete" onclick="deleteSelected()" title="Supprimer" style="color:#ff6b6b;">
-        <svg viewBox="0 0 24 24" style="fill:#ff6b6b"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-        <span style="color:#ff6b6b;">Supprimer</span>
-      </button>
-    </div>
     <div class="chat-messages" id="chat-messages"></div>
-    <div class="reply-preview" id="reply-preview">
-      <div class="reply-preview-text" id="reply-preview-text"></div>
-      <button class="reply-preview-close" onclick="cancelReply()">✕</button>
-    </div>
     <div class="chat-input-bar">
       <input class="chat-input" id="chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()" />
       <button class="send-btn" onclick="sendMsg()">
@@ -305,56 +272,18 @@
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
-
-  <!-- Context menu -->
-  <div class="ctx-menu" id="ctx-menu"></div>
-
   <!-- MODAL DELETE -->
   <div class="modal-overlay" id="modal-delete" style="display:none">
     <div class="modal-box">
-      <div class="modal-title">Supprimer le message</div>
-      <div class="modal-desc">Comment veux-tu supprimer ce message ?</div>
+      <div class="modal-title">Supprimer le message ?</div>
       <div class="modal-actions" style="flex-direction:column;gap:8px;">
-        <button class="btn-ok" id="del-for-all-btn" onclick="doDelete('all')" style="background:#e74c3c;">Supprimer pour tout le monde</button>
+        <button class="btn-ok" id="del-all-btn" onclick="doDelete('all')" style="background:#e74c3c;">Supprimer pour tout le monde</button>
         <button class="btn-ok" onclick="doDelete('me')">Supprimer pour moi</button>
         <button class="btn-cancel" onclick="hideModal('modal-delete')">Annuler</button>
       </div>
     </div>
   </div>
-
-  <!-- MODAL FORWARD -->
-  <div class="modal-overlay" id="modal-forward" style="display:none">
-    <div class="modal-box">
-      <div class="modal-title">Transférer vers…</div>
-      <div class="contact-list-modal" id="forward-list" style="max-height:220px;"></div>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="hideModal('modal-forward')">Annuler</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL EDIT -->
-  <div class="modal-overlay" id="modal-edit" style="display:none">
-    <div class="modal-box">
-      <div class="modal-title">Modifier le message</div>
-      <input class="modal-input" id="edit-input" placeholder="Nouveau texte…" />
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="hideModal('modal-edit')">Annuler</button>
-        <button class="btn-ok" onclick="doEdit()">Modifier</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL MSG INFO -->
-  <div class="modal-overlay" id="modal-msginfo" style="display:none">
-    <div class="modal-box" style="gap:12px;">
-      <div class="modal-title">Infos du message</div>
-      <div style="background:#f5f5f5;border-radius:8px;padding:10px 12px;font-size:13px;color:#333;max-height:80px;overflow:hidden;text-overflow:ellipsis;" id="msginfo-text"></div>
-      <div id="msginfo-body" style="display:flex;flex-direction:column;gap:0;"></div>
-      <button class="btn-green" onclick="hideModal('modal-msginfo')">Fermer</button>
-    </div>
-  </div>
+  <div class="toast" id="toast"></div>
 </div>
 
 <!-- ===== FIREBASE SDK (ES modules — pas de globals) ===== -->
@@ -786,110 +715,103 @@ function openGroup(gid){
   )).then(() => { startChatListener(); show('screen-chat'); });
 }
 
-function buildMsgDiv(key, msg, convKey){
-  const isMe   = msg.from === meCode;
-  const sender = usersCache[msg.from];
-  const div    = document.createElement('div');
-  div.className = 'msg ' + (isMe ? 'out' : 'in');
-  div.dataset.msgkey  = key;
-  div.dataset.from    = msg.from;
-  div.dataset.text    = msg.text;
-  div.dataset.convkey = convKey;
-  const showSender = !isMe && currentChat && currentChat.type === 'group';
-  const status = isMe ? (msg.status || 'sent') : '';
-  const replyHTML = msg.replyTo
-    ? `<div class="msg-reply-quote">↩ ${msg.replyTo}</div>`
-    : '';
-  const editedHTML = msg.edited ? `<span class="msg-edited">(modifié)</span>` : '';
-  div.innerHTML = (showSender && sender
-    ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>`
-    : '')
-    + replyHTML
-    + `<div>${msg.text}${editedHTML}</div>`
-    + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`;
-  // Long press
-  let pressTimer = null;
-  const onPress = (e) => {
-    e.preventDefault();
-    pressTimer = setTimeout(() => { selectMsg(div); }, 500);
-  };
-  const onRelease = () => { clearTimeout(pressTimer); };
-  div.addEventListener('mousedown',  onPress);
-  div.addEventListener('touchstart', onPress, {passive:false});
-  div.addEventListener('mouseup',    onRelease);
-  div.addEventListener('touchend',   onRelease);
-  div.addEventListener('mouseleave', onRelease);
-  return div;
+// ── TICKS ──────────────────────────────────────────────────────────────────
+function tickSVG(status){
+  if(status === 'pending') return `<span class="msg-status"><svg viewBox="0 0 16 16" fill="none"><polyline points="2,8 6,12 14,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  if(status === 'sent')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  if(status === 'read')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  return '';
+}
+function updateMsgTick(msgKey, status){
+  const el = document.querySelector(`[data-msgkey="${msgKey}"] .msg-time`);
+  if(el) el.innerHTML = (el.dataset.time || '') + tickSVG(status);
 }
 
+// ── DELETE ──────────────────────────────────────────────────────────────────
+let deletingKey = null;
+let deletingConvKey = null;
+
+function askDelete(key, convKey, isMe){
+  deletingKey     = key;
+  deletingConvKey = convKey;
+  document.getElementById('del-all-btn').style.display = isMe ? 'block' : 'none';
+  showModal('modal-delete');
+}
+
+async function doDelete(mode){
+  if(!deletingKey) return;
+  hideModal('modal-delete');
+  try {
+    if(mode === 'all'){
+      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/text`, '🚫 Ce message a été supprimé');
+      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/deleted`, true);
+    } else {
+      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/_deletedForMe/${meCode}`, true);
+      const el = document.querySelector(`[data-msgkey="${deletingKey}"]`);
+      if(el) el.remove();
+    }
+  } catch(e){ showToast('❌ Erreur : ' + e.message); }
+  deletingKey = deletingConvKey = null;
+}
+
+// ── LISTENER ────────────────────────────────────────────────────────────────
 function startChatListener(){
   if(chatListener){ chatListener(); chatListener = null; }
   if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
   const convKey = getConvKey(); if(!convKey) return;
   const container = document.getElementById('chat-messages');
   container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
-  clearSelection();
   const convRef = ref(db, `conversations/${convKey}`);
 
-  // Marquer les messages reçus comme "read"
+  // Mark received msgs as read
   dbGet(`conversations/${convKey}`).then(snap => {
     if(!snap.exists()) return;
     snap.forEach(child => {
       const msg = child.val();
-      if(msg && msg.from !== meCode && msg.status !== 'read'){
+      if(msg && msg.from !== meCode && msg.status !== 'read')
         dbSet(`conversations/${convKey}/${child.key}/status`, 'read');
-      }
     });
   });
 
-  // Nouveau message
   chatListener = onChildAdded(convRef, snap => {
     const key = snap.key;
     const msg = snap.val();
     if(!msg || msg._deletedForMe?.[meCode]) return;
-    const existing = document.querySelector(`[data-msgkey="${key}"]`);
-    if(existing){ existing.dataset.msgkey = key; return; }
+    if(document.querySelector(`[data-msgkey="${key}"]`)) return;
     const noMsg = container.querySelector('.no-msgs');
     if(noMsg) noMsg.remove();
-    const div = buildMsgDiv(key, msg, convKey);
+    const isMe   = msg.from === meCode;
+    const sender = usersCache[msg.from];
+    const div    = document.createElement('div');
+    div.className = 'msg ' + (isMe ? 'out' : 'in');
+    div.dataset.msgkey = key;
+    const showSender = !isMe && currentChat && currentChat.type === 'group';
+    const status = isMe ? (msg.status || 'sent') : '';
+    div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
+      + `<div>${msg.deleted ? '<em style="color:#aaa">🚫 Ce message a été supprimé</em>' : msg.text}</div>`
+      + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`;
+    // Double-click to delete
+    div.addEventListener('dblclick', () => askDelete(key, convKey, isMe));
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
-    if(msg.from !== meCode && msg.status !== 'read'){
+    if(!isMe && msg.status !== 'read')
       dbSet(`conversations/${convKey}/${key}/status`, 'read');
-    }
   });
 
-  // Changements (status, edit, delete)
   chatChangedListener = onChildChanged(convRef, snap => {
     const key = snap.key;
     const msg = snap.val();
     if(!msg) return;
-    // Supprimé pour moi
     if(msg._deletedForMe?.[meCode]){
       const el = document.querySelector(`[data-msgkey="${key}"]`);
-      if(el) el.remove();
-      return;
+      if(el) el.remove(); return;
     }
-    if(msg.from === meCode){
-      // Tick status
-      updateMsgTick(key, msg.status || 'sent');
-    }
-    // Mise à jour texte (edit)
+    if(msg.from === meCode) updateMsgTick(key, msg.status || 'sent');
+    // Update text if deleted for all
     const el = document.querySelector(`[data-msgkey="${key}"]`);
-    if(el && msg.text !== el.dataset.text){
-      el.dataset.text = msg.text;
-      const isMe = msg.from === meCode;
-      const status = isMe ? (msg.status || 'sent') : '';
-      const replyHTML = msg.replyTo ? `<div class="msg-reply-quote">↩ ${msg.replyTo}</div>` : '';
-      const editedHTML = msg.edited ? `<span class="msg-edited">(modifié)</span>` : '';
-      const sender = usersCache[msg.from];
-      const showSender = !isMe && currentChat && currentChat.type === 'group';
-      el.innerHTML = (showSender && sender
-        ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>`
-        : '')
-        + replyHTML
-        + `<div>${msg.text}${editedHTML}</div>`
-        + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`;
+    if(el && msg.deleted){
+      const textDiv = el.querySelector('div:not(.msg-time):not(.msg-sender)');
+      if(textDiv) textDiv.innerHTML = '<em style="color:#aaa">🚫 Ce message a été supprimé</em>';
     }
   });
 }
@@ -900,202 +822,6 @@ function showToast(msg){
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ===== TICK HELPERS =====
-function tickSVG(status){
-  // pending : 1 coche grise
-  if(status === 'pending') return `<span class="msg-status"><svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="2,8 6,12 14,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  // sent : 2 coches grises
-  if(status === 'sent')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1,8 5,12 13,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  // read : 2 coches bleues
-  if(status === 'read')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg"><polyline points="1,8 5,12 13,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  return '';
-}
-
-function updateMsgTick(msgKey, status){
-  const el = document.querySelector(`[data-msgkey="${msgKey}"] .msg-time`);
-  if(el) el.innerHTML = el.dataset.time + tickSVG(status);
-}
-
-// ── SELECTION STATE ──────────────────────────────────────────────────────────
-let selectedMsgEl  = null;   // currently selected DOM element
-let replyingTo     = null;   // { text, key }
-let editingKey     = null;   // key of msg being edited
-let deletingKey    = null;
-
-function selectMsg(el){
-  if(selectedMsgEl) selectedMsgEl.classList.remove('selected');
-  selectedMsgEl = el;
-  el.classList.add('selected');
-  const bar = document.getElementById('msg-action-bar');
-  bar.classList.remove('hidden');
-  const isMe = el.dataset.from === meCode;
-  // Edit: only own, single
-  document.getElementById('mab-edit').style.display   = isMe ? 'flex' : 'none';
-  // Delete for all: only own
-  document.getElementById('mab-delete').title = isMe ? 'Supprimer' : 'Supprimer pour moi';
-}
-
-function clearSelection(){
-  if(selectedMsgEl) selectedMsgEl.classList.remove('selected');
-  selectedMsgEl = null;
-  document.getElementById('msg-action-bar').classList.add('hidden');
-}
-
-function replyToSelected(){
-  if(!selectedMsgEl) return;
-  replyingTo = { text: selectedMsgEl.dataset.text, key: selectedMsgEl.dataset.msgkey };
-  document.getElementById('reply-preview-text').textContent = '↩ ' + replyingTo.text;
-  document.getElementById('reply-preview').classList.add('show');
-  clearSelection();
-  document.getElementById('chat-input').focus();
-}
-
-function cancelReply(){
-  replyingTo = null;
-  document.getElementById('reply-preview').classList.remove('show');
-}
-
-function forwardSelected(){
-  if(!selectedMsgEl) return;
-  const text = selectedMsgEl.dataset.text;
-  clearSelection();
-  // Build list of friends + groups
-  const list = document.getElementById('forward-list');
-  list.innerHTML = '';
-  const friends = toArr(myUser?.friends);
-  friends.forEach(fcode => {
-    const f = usersCache[fcode];
-    if(!f) return;
-    const btn = document.createElement('div');
-    btn.className = 'conv-item';
-    btn.style.padding = '8px 12px';
-    btn.innerHTML = `<div class="ci-av" style="background:${getColor(f.username)};width:36px;height:36px;font-size:13px;">${initials(f.username)}</div><div class="ci-info"><div class="ci-name">${f.username}</div></div>`;
-    btn.onclick = async () => {
-      const convKey = [meCode, fcode].sort().join('_');
-      await dbPush(`conversations/${convKey}`, { from: meCode, text, time: nowTime(), ts: Date.now(), status: 'sent', forwarded: true });
-      hideModal('modal-forward');
-      showToast('✅ Message transféré !');
-    };
-    list.appendChild(btn);
-  });
-  Object.values(groupsCache).forEach(group => {
-    const btn = document.createElement('div');
-    btn.className = 'conv-item';
-    btn.style.padding = '8px 12px';
-    btn.innerHTML = `<div class="ci-av" style="background:${getColor(group.name)};width:36px;height:36px;font-size:18px;">👥</div><div class="ci-info"><div class="ci-name">${group.name}</div></div>`;
-    btn.onclick = async () => {
-      await dbPush(`conversations/${group.id}`, { from: meCode, text, time: nowTime(), ts: Date.now(), status: 'sent', forwarded: true });
-      hideModal('modal-forward');
-      showToast('✅ Message transféré !');
-    };
-    list.appendChild(btn);
-  });
-  showModal('modal-forward');
-}
-
-function editSelected(){
-  if(!selectedMsgEl || selectedMsgEl.dataset.from !== meCode) return;
-  editingKey = selectedMsgEl.dataset.msgkey;
-  const input = document.getElementById('edit-input');
-  input.value = selectedMsgEl.dataset.text;
-  clearSelection();
-  showModal('modal-edit');
-}
-
-async function doEdit(){
-  const newText = document.getElementById('edit-input').value.trim();
-  if(!newText || !editingKey) return;
-  const convKey = getConvKey();
-  hideModal('modal-edit');
-  try {
-    await dbSet(`conversations/${convKey}/${editingKey}/text`, newText);
-    await dbSet(`conversations/${convKey}/${editingKey}/edited`, true);
-    editingKey = null;
-  } catch(e){ showToast('❌ Erreur : ' + e.message); }
-}
-
-function deleteSelected(){
-  if(!selectedMsgEl) return;
-  deletingKey = selectedMsgEl.dataset.msgkey;
-  const isMe = selectedMsgEl.dataset.from === meCode;
-  document.getElementById('del-for-all-btn').style.display = isMe ? 'block' : 'none';
-  clearSelection();
-  showModal('modal-delete');
-}
-
-async function doDelete(mode){
-  if(!deletingKey) return;
-  const convKey = getConvKey();
-  hideModal('modal-delete');
-  try {
-    if(mode === 'all'){
-      // Remplace le texte par un placeholder
-      await dbSet(`conversations/${convKey}/${deletingKey}/text`, '🚫 Ce message a été supprimé');
-      await dbSet(`conversations/${convKey}/${deletingKey}/deleted`, true);
-    } else {
-      // Suppression locale uniquement (flag en DB pour cet utilisateur)
-      await dbSet(`conversations/${convKey}/${deletingKey}/_deletedForMe/${meCode}`, true);
-      // Retire immédiatement du DOM
-      const el = document.querySelector(`[data-msgkey="${deletingKey}"]`);
-      if(el) el.remove();
-    }
-    deletingKey = null;
-  } catch(e){ showToast('❌ Erreur : ' + e.message); }
-}
-
-async function showMsgInfo(){
-  if(!selectedMsgEl) return;
-  const key = selectedMsgEl.dataset.msgkey;
-  const convKey = selectedMsgEl.dataset.convkey || getConvKey();
-  const msgText = selectedMsgEl.dataset.text;
-  clearSelection();
-  document.getElementById('msginfo-text').textContent = msgText;
-  const body = document.getElementById('msginfo-body');
-  body.innerHTML = '<div style="color:#aaa;font-size:13px;padding:8px 0;">Chargement…</div>';
-  showModal('modal-msginfo');
-  try {
-    const snap = await dbGet(`conversations/${convKey}/${key}`);
-    const msg = snap.val();
-    if(!msg){ body.innerHTML = '<div style="color:#aaa;font-size:13px;">Données introuvables</div>'; return; }
-    body.innerHTML = '';
-    // Sent time
-    const sentRow = document.createElement('div');
-    sentRow.className = 'msg-info-row';
-    sentRow.innerHTML = `<span style="font-size:18px;">📤</span><div><div style="font-weight:600;font-size:13px;">Envoyé</div><div style="font-size:12px;color:#888;">${msg.time || '—'}</div></div>`;
-    body.appendChild(sentRow);
-    // Status
-    if(currentChat && currentChat.type === 'dm'){
-      const friendCode = currentChat.id;
-      const friend = usersCache[friendCode];
-      const statusRow = document.createElement('div');
-      statusRow.className = 'msg-info-row';
-      const s = msg.status || 'sent';
-      const icon = s === 'read' ? '✓✓🔵' : s === 'sent' ? '✓✓' : '✓';
-      const label = s === 'read' ? 'Lu' : s === 'sent' ? 'Distribué' : 'En attente';
-      statusRow.innerHTML = `<div class="msg-info-av" style="background:${friend ? getColor(friend.username) : '#ccc'}">${friend ? initials(friend.username) : '?'}</div>
-        <div><div style="font-weight:600;font-size:13px;">${friend ? friend.username : friendCode}</div>
-        <div style="font-size:12px;color:#888;">${icon} ${label}</div></div>`;
-      body.appendChild(statusRow);
-    } else if(currentChat && currentChat.type === 'group'){
-      const group = groupsCache[currentChat.id];
-      const members = toArr(group?.members).filter(m => m !== meCode);
-      members.forEach(m => {
-        const u = usersCache[m];
-        const s = msg['status_' + m] || (msg.status === 'read' ? 'read' : 'sent');
-        const icon = s === 'read' ? '✓✓🔵' : '✓✓';
-        const label = s === 'read' ? 'Lu' : 'Distribué';
-        const row = document.createElement('div');
-        row.className = 'msg-info-row';
-        row.innerHTML = `<div class="msg-info-av" style="background:${u ? getColor(u.username) : '#ccc'}">${u ? initials(u.username) : '?'}</div>
-          <div><div style="font-weight:600;font-size:13px;">${u ? u.username : m}</div>
-          <div style="font-size:12px;color:#888;">${icon} ${label}</div></div>`;
-        body.appendChild(row);
-      });
-    }
-  } catch(e){ body.innerHTML = '<div style="color:#e74c3c;font-size:13px;">Erreur : ' + e.message + '</div>'; }
-}
-
-// ── SEND ──────────────────────────────────────────────────────────────────────
 async function sendMsg(){
   const input = document.getElementById('chat-input');
   const text  = input.value.trim();
@@ -1103,20 +829,23 @@ async function sendMsg(){
   const convKey = getConvKey();
   input.value = '';
   const timeStr = nowTime();
-  const payload = { from: meCode, text, time: timeStr, ts: Date.now(), status: 'sent' };
-  if(replyingTo){ payload.replyTo = replyingTo.text; cancelReply(); }
-  // Optimistic
+  // Optimistic display
   const container = document.getElementById('chat-messages');
   const noMsg = container.querySelector('.no-msgs');
   if(noMsg) noMsg.remove();
   const tempKey = 'pending_' + Date.now();
-  const div = buildMsgDiv(tempKey, {...payload, status:'pending'}, convKey);
+  const div = document.createElement('div');
+  div.className = 'msg out';
+  div.dataset.msgkey = tempKey;
+  div.innerHTML = `<div>${text}</div><div class="msg-time" data-time="${timeStr}">${timeStr}${tickSVG('pending')}</div>`;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
   try {
-    const snap = await dbPush(`conversations/${convKey}`, payload);
+    const snap = await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: Date.now(), status: 'sent' });
     div.dataset.msgkey = snap.key;
     updateMsgTick(snap.key, 'sent');
+    // Add dblclick on the optimistic div too
+    div.addEventListener('dblclick', () => askDelete(snap.key, convKey, true));
   } catch(e) {
     input.value = text;
     div.remove();
@@ -1154,8 +883,6 @@ function openFriendProfile(){
 function goHome(){
   if(chatListener){ chatListener(); chatListener = null; }
   if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
-  clearSelection();
-  cancelReply();
   currentChat = null;
   renderConvList();
   show('screen-home');
@@ -1195,8 +922,7 @@ Object.assign(window, {
   showCreateGroup, createGroup, switchHomeTab,
   showProfile, handleProfileAvatar,
   goHome, sendMsg, hideModal, showModal, show,
-  clearSelection, replyToSelected, cancelReply, forwardSelected,
-  editSelected, doEdit, deleteSelected, doDelete, showMsgInfo
+  doDelete, askDelete
 });
 
 // ===== INIT =====
