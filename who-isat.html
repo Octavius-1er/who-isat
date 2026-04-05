@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Who-isat</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #111; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+    :root { --green: #25D366; --dark: #075E54; --bg-chat: #ECE5DD; }
+
+    .phone { width: 390px; max-width: 100vw; height: 780px; max-height: 100vh; display: flex; flex-direction: column; background: #fff; border-radius: 32px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,0.5); position: relative; }
+    .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    /* LOADING */
+    .loading-screen { align-items: center; justify-content: center; background: #fff; gap: 16px; }
+    .loading-spinner { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: #888; }
+
+    .auth-screen { align-items: center; justify-content: center; padding: 2rem; gap: 1.1rem; background: #fff; }
+    .auth-logo { width: 72px; height: 72px; background: var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .auth-logo svg { width: 40px; height: 40px; fill: white; }
+    .auth-title { font-size: 24px; font-weight: 700; color: #111; }
+    .auth-subtitle { font-size: 14px; color: #888; text-align: center; }
+    .auth-tabs { display: flex; gap: 6px; background: #f3f3f3; padding: 4px; border-radius: 12px; width: 100%; max-width: 320px; }
+    .auth-tab { flex: 1; padding: 8px; text-align: center; font-size: 14px; cursor: pointer; border-radius: 9px; color: #888; border: none; background: none; font-family: inherit; transition: all 0.15s; }
+    .auth-tab.active { background: #fff; color: #111; font-weight: 600; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .auth-form { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px; }
+    .auth-form input { width: 100%; padding: 12px 14px; font-size: 15px; border-radius: 12px; border: 1.5px solid #e0e0e0; background: #fafafa; color: #111; font-family: inherit; outline: none; transition: border 0.15s; }
+    .auth-form input:focus { border-color: var(--green); }
+    .avatar-picker { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .avatar-preview { width: 72px; height: 72px; border-radius: 50%; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; font-size: 28px; cursor: pointer; background: #f3f3f3; overflow: hidden; }
+    .avatar-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-preview-label { font-size: 12px; color: #888; }
+    .btn-green { width: 100%; padding: 13px; background: var(--green); color: white; font-size: 15px; font-weight: 600; border: none; border-radius: 12px; cursor: pointer; font-family: inherit; }
+    .btn-green:hover { opacity: 0.88; }
+    .code-box { background: #f3f3f3; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #888; text-align: center; width: 100%; }
+    .code-box span { font-size: 22px; font-weight: 700; color: var(--dark); letter-spacing: 4px; display: block; margin-top: 4px; font-family: monospace; }
+    .err { font-size: 13px; color: #e74c3c; text-align: center; min-height: 18px; }
+
+    .home-tabs { display: flex; background: var(--dark); flex-shrink: 0; }
+    .home-tab { flex: 1; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.55); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; font-family: inherit; transition: all 0.15s; }
+    .home-tab.active { color: white; border-bottom-color: white; }
+
+    .wa-header { background: var(--dark); color: white; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .wa-header-left { display: flex; align-items: center; gap: 10px; }
+    .hdr-av { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: white; }
+    .hdr-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .wa-header-title { font-size: 20px; font-weight: 700; }
+    .wa-header-sub { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+    .wa-header-actions { display: flex; gap: 14px; }
+    .wa-header-btn { background: none; border: none; cursor: pointer; color: white; font-size: 20px; line-height: 1; }
+
+    .conv-list { flex: 1; overflow-y: auto; background: #fff; }
+    .conv-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+    .conv-item:hover { background: #f9f9f9; }
+    .ci-av { width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; color: white; }
+    .ci-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .ci-info { flex: 1; min-width: 0; }
+    .ci-name { font-size: 16px; font-weight: 600; color: #111; }
+    .ci-preview { font-size: 13px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .ci-time { font-size: 11px; color: #aaa; flex-shrink: 0; }
+    .empty-list { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 2rem; color: #888; font-size: 14px; text-align: center; }
+
+    .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 20; }
+    .modal-box { background: #fff; border-radius: 20px; padding: 1.5rem; width: 310px; display: flex; flex-direction: column; gap: 12px; max-height: 88%; overflow-y: auto; }
+    .modal-title { font-size: 17px; font-weight: 700; color: #111; }
+    .modal-desc { font-size: 13px; color: #888; }
+    .modal-input { width: 100%; padding: 11px 14px; font-size: 15px; border-radius: 12px; border: 1.5px solid #e0e0e0; background: #fafafa; color: #111; font-family: inherit; outline: none; }
+    .modal-input:focus { border-color: var(--green); }
+    .modal-input.code-style { font-family: monospace; letter-spacing: 3px; text-transform: uppercase; }
+    .modal-actions { display: flex; gap: 8px; }
+    .btn-cancel { flex: 1; padding: 11px; background: #f3f3f3; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; color: #555; font-family: inherit; }
+    .btn-cancel:hover { background: #e8e8e8; }
+    .btn-ok { flex: 1; padding: 11px; background: var(--green); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
+    .btn-ok:hover { opacity: 0.88; }
+    .contact-list-modal { display: flex; flex-direction: column; gap: 4px; max-height: 190px; overflow-y: auto; }
+    .contact-check { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; transition: background 0.1s; }
+    .contact-check:hover { background: #f3f3f3; }
+    .contact-check input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--green); flex-shrink: 0; cursor: pointer; }
+    .cc-av { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; }
+    .cc-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .contact-check-name { font-size: 14px; color: #111; }
+
+    .chat-header { background: var(--dark); color: white; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .chat-back { background: none; border: none; color: white; cursor: pointer; font-size: 22px; line-height: 1; padding: 2px; }
+    .chat-hd-av { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; }
+    .chat-hd-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .chat-hd-info { flex: 1; min-width: 0; }
+    .chat-hd-name { font-size: 16px; font-weight: 600; }
+    .chat-hd-sub { font-size: 11px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; background: var(--bg-chat); }
+    .msg { max-width: 78%; padding: 7px 10px 4px; border-radius: 8px; font-size: 14px; line-height: 1.45; }
+    .msg.out { align-self: flex-end; background: #DCF8C6; color: #111; border-radius: 8px 0 8px 8px; }
+    .msg.in { align-self: flex-start; background: #fff; color: #111; border-radius: 0 8px 8px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+    .msg-sender { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+    .msg-time { font-size: 10px; color: #999; margin-top: 3px; text-align: right; }
+    .chat-input-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f0f0; flex-shrink: 0; }
+    .chat-input { flex: 1; padding: 10px 14px; border-radius: 22px; border: none; background: #fff; font-size: 14px; color: #111; outline: none; font-family: inherit; }
+    .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-btn svg { width: 20px; height: 20px; fill: white; }
+    .no-msgs { text-align: center; color: #aaa; font-size: 13px; margin: auto; }
+
+    .profile-screen { background: #fff; }
+    .profile-header { background: var(--dark); color: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .profile-body { flex: 1; overflow-y: auto; padding: 1.5rem; display: flex; flex-direction: column; gap: 16px; align-items: center; }
+    .profile-av-wrap { position: relative; width: 100px; height: 100px; cursor: pointer; }
+    .profile-av-wrap .pav { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 700; color: #888; background: #eee; overflow: hidden; }
+    .profile-av-wrap .pav img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .profile-edit-badge { position: absolute; bottom: 2px; right: 2px; background: var(--green); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; border: 2px solid white; }
+    .profile-username { font-size: 20px; font-weight: 700; color: #111; }
+    .profile-code-label { font-size: 13px; color: #aaa; font-family: monospace; letter-spacing: 2px; }
+  </style>
+</head>
+<body>
+<div class="phone" id="app">
+
+  <!-- LOADING -->
+  <div class="screen loading-screen active" id="screen-loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Connexion…</div>
+  </div>
+
+  <!-- AUTH -->
+  <div class="screen auth-screen" id="screen-auth">
+    <div class="auth-logo">
+      <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    </div>
+    <div class="auth-title">Who-isat</div>
+    <div class="auth-subtitle">Crée de fausses conversations<br>à partager avec tes amis</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-create" onclick="switchTab('create')">Créer un compte</button>
+      <button class="auth-tab" id="tab-login" onclick="switchTab('login')">Se connecter</button>
+    </div>
+    <div class="auth-form" id="form-create">
+      <div class="avatar-picker">
+        <div class="avatar-preview" id="auth-av-preview" onclick="document.getElementById('auth-file').click()">📷</div>
+        <div class="avatar-preview-label">Photo de profil (optionnel)</div>
+        <input type="file" id="auth-file" accept="image/*" onchange="handleAuthAvatar(event)" style="display:none" />
+      </div>
+      <input type="text" id="username-create" placeholder="Choisis un pseudo" maxlength="20" />
+      <button class="btn-green" onclick="createAccount()">Créer mon compte</button>
+      <div class="err" id="err-create"></div>
+    </div>
+    <div class="auth-form" id="form-login" style="display:none">
+      <input type="text" id="login-code" placeholder="Ton code (ex: AB12CD34)" maxlength="8" style="font-family:monospace;letter-spacing:3px;text-transform:uppercase" />
+      <button class="btn-green" onclick="loginWithCode()">Me connecter</button>
+      <div class="err" id="err-login"></div>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen" id="screen-home">
+    <div class="wa-header">
+      <div class="wa-header-left">
+        <div class="hdr-av" id="hdr-av" onclick="showProfile()" style="cursor:pointer;"></div>
+        <div>
+          <div class="wa-header-title">Who-isat</div>
+          <div class="wa-header-sub" id="home-sub"></div>
+        </div>
+      </div>
+      <div class="wa-header-actions">
+        <button class="wa-header-btn" title="Nouveau groupe" onclick="showCreateGroup()">👥</button>
+        <button class="wa-header-btn" title="Ajouter un ami" onclick="showAddFriend()">＋</button>
+        <button class="wa-header-btn" title="Mon code" onclick="showMyCode()">&#9632;</button>
+      </div>
+    </div>
+    <div class="home-tabs">
+      <button class="home-tab active" id="htab-chats" onclick="switchHomeTab('chats')">Discussions</button>
+      <button class="home-tab" id="htab-groups" onclick="switchHomeTab('groups')">Groupes</button>
+    </div>
+    <div class="conv-list" id="conv-list"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="screen" id="screen-chat">
+    <div class="chat-header">
+      <button class="chat-back" onclick="goHome()">&#8592;</button>
+      <div class="chat-hd-av" id="chat-hd-av"></div>
+      <div class="chat-hd-info">
+        <div class="chat-hd-name" id="chat-hd-name"></div>
+        <div class="chat-hd-sub" id="chat-hd-sub"></div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input class="chat-input" id="chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()" />
+      <button class="send-btn" onclick="sendMsg()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="screen profile-screen" id="screen-profile">
+    <div class="profile-header">
+      <button class="chat-back" onclick="show('screen-home')">&#8592;</button>
+      <span style="font-size:17px;font-weight:700">Mon profil</span>
+    </div>
+    <div class="profile-body">
+      <div class="profile-av-wrap" onclick="document.getElementById('profile-file').click()">
+        <div class="pav" id="profile-pav"></div>
+        <div class="profile-edit-badge">✏️</div>
+      </div>
+      <input type="file" id="profile-file" accept="image/*" onchange="handleProfileAvatar(event)" style="display:none" />
+      <div class="profile-username" id="profile-uname"></div>
+      <div class="profile-code-label" id="profile-code-label"></div>
+      <div class="code-box" style="width:100%;max-width:280px">Partage ce code avec tes amis<span id="profile-code-big"></span></div>
+    </div>
+  </div>
+
+  <!-- MODAL ADD FRIEND -->
+  <div class="modal-overlay" id="modal-add" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">Ajouter un ami</div>
+      <div class="modal-desc">Entre le code de ton ami (8 caractères)</div>
+      <input class="modal-input code-style" id="friend-code-input" placeholder="AB12CD34" maxlength="8" />
+      <div class="err" id="err-add"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideModal('modal-add')">Annuler</button>
+        <button class="btn-ok" onclick="addFriend()">Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MY CODE -->
+  <div class="modal-overlay" id="modal-mycode" style="display:none">
+    <div class="modal-box" style="text-align:center;gap:14px">
+      <div class="modal-title">Mon code d'invitation</div>
+      <div class="modal-desc">Partage ce code avec tes amis !</div>
+      <div class="code-box" style="width:100%">Ton code<span id="mycode-display"></span></div>
+      <div style="font-size:14px;color:#555">Pseudo : <strong id="mycode-uname"></strong></div>
+      <button class="btn-green" onclick="hideModal('modal-mycode')">Fermer</button>
+    </div>
+  </div>
+
+  <!-- MODAL CREATE GROUP -->
+  <div class="modal-overlay" id="modal-group" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">Nouveau groupe</div>
+      <input class="modal-input" id="group-name-input" placeholder="Nom du groupe" maxlength="30" />
+      <div class="modal-desc">Ajoute des membres parmi tes contacts :</div>
+      <div class="contact-list-modal" id="group-contacts-list"></div>
+      <div class="err" id="err-group"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideModal('modal-group')">Annuler</button>
+        <button class="btn-ok" onclick="createGroup()">Créer</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FIREBASE SDK (ES modules — pas de globals) ===== -->
+<script type="module">
+import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+import { getDatabase, ref, set, get, push, onValue, query, limitToLast }
+  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+// =============================================================
+//  ⚙️  CONFIG FIREBASE — remplace ces valeurs par les tiennes
+//  (Firebase Console → Ton projet → Paramètres → Config web)
+// =============================================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyDk_yfLPRhu5aAyJgfgwstwcGWijcIkBEI",
+  authDomain:        "who-isat.firebaseapp.com",
+  databaseURL:       "https://who-isat-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "who-isat",
+  storageBucket:     "who-isat.firebasestorage.app",
+  messagingSenderId: "727526744921",
+  appId:             "1:727526744921:web:28b01e6050032a03752248"
+};
+// =============================================================
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// Wrappers pratiques autour de l'API modulaire
+const dbRef    = path             => ref(db, path);
+const dbGet    = path             => get(dbRef(path));
+const dbSet    = (path, val)      => set(dbRef(path), val);
+const dbPush   = (path, val)      => push(dbRef(path), val);
+const dbListen = (path, cb, ...c) => onValue(c.length ? query(dbRef(path), ...c) : dbRef(path), cb);
+
+// ===== UTILS =====
+const COLORS = ['#2196F3','#E91E63','#9C27B0','#FF5722','#009688','#FF9800','#3F51B5','#795548'];
+function getColor(s){let h=0;for(let c of s||'')h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
+function initials(n){return(n||'?').slice(0,2).toUpperCase();}
+function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+function toArr(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean);return Object.values(val).filter(Boolean);}
+
+// ===== STATE =====
+let meCode = localStorage.getItem('whoisat_me') || null;
+let myUser  = null;
+let usersCache  = {};
+let groupsCache = {};
+let lastMsgsCache = {};
+let currentHomeTab = 'chats';
+let currentChat    = null;
+let chatListener   = null;
+let homeListeners  = {};
+let authAvatarData = null;
+
+// ===== DISPLAY HELPERS =====
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function hideModal(id){document.getElementById(id).style.display='none';}
+function showModal(id){document.getElementById(id).style.display='flex';}
+
+function avatarHTML(user, size){
+  size = size || 48;
+  if(user && user.avatar) return `<img src="${user.avatar}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;display:block;">`;
+  const bg = getColor(user ? user.username : '?');
+  const fs = Math.round(size * 0.35);
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;color:white;flex-shrink:0;">${initials(user ? user.username : '?')}</div>`;
+}
+
+// ===== AUTH TAB =====
+function switchTab(t){
+  document.getElementById('tab-create').classList.toggle('active', t==='create');
+  document.getElementById('tab-login').classList.toggle('active',  t==='login');
+  document.getElementById('form-create').style.display = t==='create' ? 'flex' : 'none';
+  document.getElementById('form-login').style.display  = t==='login'  ? 'flex' : 'none';
+}
+
+function handleAuthAvatar(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    authAvatarData = ev.target.result;
+    document.getElementById('auth-av-preview').innerHTML = `<img src="${authAvatarData}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;">`;
+  };
+  r.readAsDataURL(file);
+}
+
+// ===== CREATE ACCOUNT =====
+async function createAccount(){
+  const name = document.getElementById('username-create').value.trim();
+  const err  = document.getElementById('err-create');
+  if(!name || name.length < 2){ err.textContent = 'Pseudo trop court (min 2 car.)'; return; }
+  err.style.color = '#888'; err.textContent = 'Création du compte…';
+  try {
+    const code = genCode();
+    const user = { code, username: name, friends: [], avatar: authAvatarData || null };
+    await dbSet(`users/${code}`, user);
+    meCode = code;
+    localStorage.setItem('whoisat_me', code);
+    myUser = user;
+    usersCache[code] = user;
+    err.textContent = '';
+    enterHome();
+  } catch(e) {
+    err.style.color = '#e74c3c';
+    err.textContent = 'Erreur Firebase : vérifie la config.';
+    console.error(e);
+  }
+}
+
+// ===== LOGIN =====
+async function loginWithCode(){
+  const code = document.getElementById('login-code').value.trim().toUpperCase();
+  const err  = document.getElementById('err-login');
+  if(!code || code.length !== 8){ err.textContent = 'Code invalide'; return; }
+  err.style.color = '#888'; err.textContent = 'Connexion…';
+  try {
+    const snap = await dbGet(`users/${code}`);
+    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun compte avec ce code !'; return; }
+    meCode = code;
+    localStorage.setItem('whoisat_me', code);
+    myUser = snap.val();
+    if(!myUser.friends) myUser.friends = [];
+    usersCache[code] = myUser;
+    err.textContent = '';
+    enterHome();
+  } catch(e) {
+    err.style.color = '#e74c3c';
+    err.textContent = 'Erreur Firebase : vérifie la config.';
+    console.error(e);
+  }
+}
+
+// ===== ENTER HOME =====
+async function enterHome(){
+  show('screen-loading');
+  cleanHomeListeners();
+  try {
+    const snap = await dbGet(`users/${meCode}`);
+    if(!snap.exists()){
+      meCode = null; localStorage.removeItem('whoisat_me'); show('screen-auth'); return;
+    }
+    myUser = snap.val();
+    if(!myUser.friends) myUser.friends = [];
+    usersCache[meCode] = myUser;
+
+    const friends = toArr(myUser.friends);
+    await Promise.all(friends.map(async fcode => {
+      if(!usersCache[fcode]){
+        const fs = await dbGet(`users/${fcode}`);
+        if(fs.exists()) usersCache[fcode] = fs.val();
+      }
+    }));
+
+    const gsnap = await dbGet('groups');
+    groupsCache = {};
+    if(gsnap.exists()){
+      gsnap.forEach(child => {
+        const g = child.val();
+        if(g && g.members && toArr(g.members).includes(meCode)) groupsCache[g.id] = g;
+      });
+    }
+
+    document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
+    renderHeaderAvatar();
+    setupHomeListeners();
+    show('screen-home');
+  } catch(e) {
+    console.error('enterHome error', e);
+    show('screen-auth');
+  }
+}
+
+// ===== HOME LISTENERS =====
+function cleanHomeListeners(){
+  Object.values(homeListeners).forEach(off => { try { off(); } catch(e){} });
+  homeListeners = {};
+}
+
+function setupHomeListeners(){
+  // 1. Écoute mes propres changements
+  homeListeners['_me'] = dbListen(`users/${meCode}`, async snap => {
+    if(!snap.exists()) return;
+    myUser = snap.val();
+    if(!myUser.friends) myUser.friends = [];
+    usersCache[meCode] = myUser;
+    const unknowns = toArr(myUser.friends).filter(f => !usersCache[f]);
+    await Promise.all(unknowns.map(async f => {
+      const fs = await dbGet(`users/${f}`);
+      if(fs.exists()) usersCache[f] = fs.val();
+    }));
+    setupConvListeners();
+    if(document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  });
+
+  // 2. Écoute les groupes
+  homeListeners['_groups'] = dbListen('groups', snap => {
+    groupsCache = {};
+    if(snap.exists()){
+      snap.forEach(child => {
+        const g = child.val();
+        if(g && g.members && toArr(g.members).includes(meCode)) groupsCache[g.id] = g;
+      });
+    }
+    setupConvListeners();
+    if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  });
+
+  setupConvListeners();
+}
+
+function setupConvListeners(){
+  Object.keys(homeListeners).filter(k => !k.startsWith('_')).forEach(k => {
+    try { homeListeners[k](); } catch(e){}
+    delete homeListeners[k];
+  });
+
+  toArr(myUser?.friends).forEach(fcode => {
+    const convKey = [meCode, fcode].sort().join('_');
+    homeListeners[convKey] = dbListen(`conversations/${convKey}`, snap => {
+      let last = null;
+      snap.forEach(child => { last = child.val(); });
+      lastMsgsCache[convKey] = last;
+      if(currentHomeTab === 'chats' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+    }, limitToLast(1));
+  });
+
+  Object.keys(groupsCache).forEach(gid => {
+    homeListeners[gid] = dbListen(`conversations/${gid}`, snap => {
+      let last = null;
+      snap.forEach(child => { last = child.val(); });
+      lastMsgsCache[gid] = last;
+      if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+    }, limitToLast(1));
+  });
+}
+
+// ===== RENDER HOME =====
+function renderHeaderAvatar(){
+  const el = document.getElementById('hdr-av');
+  el.innerHTML = avatarHTML(myUser, 36);
+  el.style.background = myUser.avatar ? 'transparent' : getColor(myUser.username);
+}
+
+function switchHomeTab(tab){
+  currentHomeTab = tab;
+  document.getElementById('htab-chats').classList.toggle('active',  tab === 'chats');
+  document.getElementById('htab-groups').classList.toggle('active', tab === 'groups');
+  renderConvList();
+}
+
+function renderConvList(){
+  const list = document.getElementById('conv-list');
+  list.innerHTML = '';
+  if(currentHomeTab === 'chats'){
+    const friends = toArr(myUser?.friends);
+    if(friends.length === 0){
+      list.innerHTML = '<div class="empty-list"><div style="font-size:48px">💬</div><div>Aucune conversation.<br>Ajoute un ami avec son code !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showAddFriend()">+ Ajouter un ami</button></div>';
+      return;
+    }
+    friends.forEach(fcode => {
+      const friend = usersCache[fcode]; if(!friend) return;
+      const convKey = [meCode, fcode].sort().join('_');
+      const last = lastMsgsCache[convKey];
+      const div = document.createElement('div');
+      div.className = 'conv-item';
+      div.onclick = () => openDM(fcode);
+      div.innerHTML = `<div class="ci-av" style="background:${friend.avatar ? 'transparent' : getColor(friend.username)}">${avatarHTML(friend, 48)}</div>
+        <div class="ci-info"><div class="ci-name">${friend.username}</div>
+        <div class="ci-preview">${last ? (last.from === meCode ? 'Toi : ' : '') + last.text : 'Dis bonjour !'}</div></div>
+        ${last ? `<div class="ci-time">${last.time}</div>` : ''}`;
+      list.appendChild(div);
+    });
+  } else {
+    const myGroups = Object.values(groupsCache);
+    if(myGroups.length === 0){
+      list.innerHTML = `<div class="empty-list"><div style="font-size:48px">👥</div><div>Aucun groupe.<br>Crée-en un !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showCreateGroup()">+ Créer un groupe</button></div>`;
+      return;
+    }
+    myGroups.forEach(group => {
+      const last = lastMsgsCache[group.id];
+      const lastSender = last ? usersCache[last.from] : null;
+      const div = document.createElement('div');
+      div.className = 'conv-item';
+      div.onclick = () => openGroup(group.id);
+      div.innerHTML = `<div class="ci-av" style="background:${getColor(group.name)};font-size:22px;">👥</div>
+        <div class="ci-info"><div class="ci-name">${group.name}</div>
+        <div class="ci-preview">${last ? (last.from === meCode ? 'Toi' : lastSender ? lastSender.username : '?') + ' : ' + last.text : 'Aucun message'}</div></div>
+        ${last ? `<div class="ci-time">${last.time}</div>` : ''}`;
+      list.appendChild(div);
+    });
+  }
+}
+
+// ===== ADD FRIEND =====
+function showAddFriend(){
+  document.getElementById('friend-code-input').value = '';
+  document.getElementById('err-add').textContent = '';
+  showModal('modal-add');
+}
+
+async function addFriend(){
+  const code = document.getElementById('friend-code-input').value.trim().toUpperCase();
+  const err  = document.getElementById('err-add');
+  if(!code || code.length !== 8){ err.textContent = 'Code invalide'; return; }
+  if(code === meCode){ err.textContent = "C'est ton propre code !"; return; }
+  const friends = toArr(myUser.friends);
+  if(friends.includes(code)){ err.textContent = 'Déjà dans tes contacts !'; return; }
+  err.style.color = '#888'; err.textContent = 'Recherche…';
+  try {
+    const snap = await dbGet(`users/${code}`);
+    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun utilisateur avec ce code'; return; }
+    const friend = snap.val();
+    usersCache[code] = friend;
+    const myFriends = [...friends, code];
+    await dbSet(`users/${meCode}/friends`, myFriends);
+    const theirFriends = toArr(friend.friends);
+    if(!theirFriends.includes(meCode)) theirFriends.push(meCode);
+    await dbSet(`users/${code}/friends`, theirFriends);
+    err.textContent = '';
+    hideModal('modal-add');
+  } catch(e) {
+    err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e);
+  }
+}
+
+function showMyCode(){
+  document.getElementById('mycode-display').textContent = myUser.code;
+  document.getElementById('mycode-uname').textContent   = myUser.username;
+  showModal('modal-mycode');
+}
+
+// ===== GROUPS =====
+function showCreateGroup(){
+  document.getElementById('group-name-input').value = '';
+  document.getElementById('err-group').textContent  = '';
+  const container = document.getElementById('group-contacts-list');
+  container.innerHTML = '';
+  const friends = toArr(myUser?.friends);
+  if(friends.length === 0){
+    container.innerHTML = '<div style="font-size:13px;color:#aaa;text-align:center;padding:10px;">Ajoute d\'abord des amis !</div>';
+  } else {
+    friends.forEach(fcode => {
+      const friend = usersCache[fcode]; if(!friend) return;
+      const label = document.createElement('label');
+      label.className = 'contact-check';
+      label.innerHTML = `<input type="checkbox" value="${fcode}">
+        <div class="cc-av" style="background:${friend.avatar ? 'transparent' : getColor(friend.username)}">${avatarHTML(friend, 34)}</div>
+        <div class="contact-check-name">${friend.username}</div>`;
+      container.appendChild(label);
+    });
+  }
+  showModal('modal-group');
+}
+
+async function createGroup(){
+  const name = document.getElementById('group-name-input').value.trim();
+  const err  = document.getElementById('err-group');
+  if(!name){ err.textContent = 'Donne un nom au groupe !'; return; }
+  const checked = [...document.querySelectorAll('#group-contacts-list input[type=checkbox]:checked')].map(i => i.value);
+  if(checked.length === 0){ err.textContent = 'Sélectionne au moins un contact !'; return; }
+  err.style.color = '#888'; err.textContent = 'Création…';
+  const gid   = 'grp_' + genCode();
+  const group = { id: gid, name, members: [meCode, ...checked], createdBy: meCode };
+  try {
+    await dbSet(`groups/${gid}`, group);
+    err.textContent = '';
+    hideModal('modal-group');
+    switchHomeTab('groups');
+  } catch(e) {
+    err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e);
+  }
+}
+
+// ===== CHAT =====
+function getConvKey(){
+  if(!currentChat) return null;
+  if(currentChat.type === 'group') return currentChat.id;
+  return [meCode, currentChat.id].sort().join('_');
+}
+
+function openDM(fcode){
+  currentChat = { type: 'dm', id: fcode };
+  const friend = usersCache[fcode];
+  const hav = document.getElementById('chat-hd-av');
+  hav.innerHTML = avatarHTML(friend, 38);
+  hav.style.background = friend.avatar ? 'transparent' : getColor(friend.username);
+  document.getElementById('chat-hd-name').textContent = friend.username;
+  document.getElementById('chat-hd-sub').textContent  = 'en ligne';
+  startChatListener();
+  show('screen-chat');
+}
+
+function openGroup(gid){
+  currentChat = { type: 'group', id: gid };
+  const group = groupsCache[gid];
+  const hav   = document.getElementById('chat-hd-av');
+  hav.innerHTML = `<div style="width:38px;height:38px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`;
+  hav.style.background = 'transparent';
+  document.getElementById('chat-hd-name').textContent = group.name;
+  const names = toArr(group.members).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ');
+  document.getElementById('chat-hd-sub').textContent = names;
+  Promise.all(toArr(group.members).filter(m => !usersCache[m]).map(m =>
+    dbGet(`users/${m}`).then(s => { if(s.exists()) usersCache[m] = s.val(); })
+  )).then(() => { startChatListener(); show('screen-chat'); });
+}
+
+function startChatListener(){
+  if(chatListener){ chatListener(); chatListener = null; }
+  const convKey = getConvKey(); if(!convKey) return;
+  chatListener = dbListen(`conversations/${convKey}`, snap => {
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = '';
+    if(!snap.exists() || !snap.val()){
+      container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
+      return;
+    }
+    const msgs = [];
+    snap.forEach(child => msgs.push(child.val()));
+    msgs.forEach(msg => {
+      const isMe   = msg.from === meCode;
+      const sender = usersCache[msg.from];
+      const div    = document.createElement('div');
+      div.className = 'msg ' + (isMe ? 'out' : 'in');
+      const showSender = !isMe && currentChat.type === 'group';
+      div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
+        + `<div>${msg.text}</div><div class="msg-time">${msg.time}</div>`;
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
+  });
+}
+
+async function sendMsg(){
+  const input = document.getElementById('chat-input');
+  const text  = input.value.trim();
+  if(!text || !currentChat) return;
+  const convKey = getConvKey();
+  input.value = '';
+  try {
+    await dbPush(`conversations/${convKey}`, { from: meCode, text, time: nowTime(), ts: Date.now() });
+  } catch(e) {
+    input.value = text;
+    console.error('sendMsg error', e);
+  }
+}
+
+function goHome(){
+  if(chatListener){ chatListener(); chatListener = null; }
+  currentChat = null;
+  renderConvList();
+  show('screen-home');
+}
+
+// ===== PROFILE =====
+function showProfile(){
+  const pav = document.getElementById('profile-pav');
+  pav.innerHTML = myUser.avatar
+    ? `<img src="${myUser.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : `<span style="font-size:36px;font-weight:700;color:#888;">${initials(myUser.username)}</span>`;
+  pav.style.background = myUser.avatar ? 'transparent' : '#eee';
+  document.getElementById('profile-uname').textContent      = myUser.username;
+  document.getElementById('profile-code-label').textContent  = myUser.code;
+  document.getElementById('profile-code-big').textContent    = myUser.code;
+  show('screen-profile');
+}
+
+function handleProfileAvatar(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = async ev => {
+    myUser.avatar = ev.target.result;
+    usersCache[meCode] = myUser;
+    try { await dbSet(`users/${meCode}/avatar`, myUser.avatar); } catch(err){ console.error(err); }
+    showProfile();
+    renderHeaderAvatar();
+  };
+  r.readAsDataURL(file);
+}
+
+// ===== EXPOSER AU GLOBAL (requis avec type="module") =====
+Object.assign(window, {
+  switchTab, handleAuthAvatar, createAccount, loginWithCode,
+  showAddFriend, addFriend, showMyCode,
+  showCreateGroup, createGroup, switchHomeTab,
+  showProfile, handleProfileAvatar,
+  goHome, sendMsg, hideModal, showModal, show
+});
+
+// ===== INIT =====
+if(meCode){
+  enterHome();
+} else {
+  show('screen-auth');
+}
+</script>
+</body>
