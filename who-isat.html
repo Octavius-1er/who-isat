@@ -275,7 +275,7 @@
 <!-- ===== FIREBASE SDK (ES modules — pas de globals) ===== -->
 <script type="module">
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, push, onValue, query, limitToLast }
+import { getDatabase, ref, set, get, push, onValue, onChildAdded, query, limitToLast }
   from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 // =============================================================
@@ -703,25 +703,22 @@ function openGroup(gid){
 function startChatListener(){
   if(chatListener){ chatListener(); chatListener = null; }
   const convKey = getConvKey(); if(!convKey) return;
-  chatListener = dbListen(`conversations/${convKey}`, snap => {
-    const container = document.getElementById('chat-messages');
-    container.innerHTML = '';
-    if(!snap.exists() || !snap.val()){
-      container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
-      return;
-    }
-    const msgs = [];
-    snap.forEach(child => msgs.push(child.val()));
-    msgs.forEach(msg => {
-      const isMe   = msg.from === meCode;
-      const sender = usersCache[msg.from];
-      const div    = document.createElement('div');
-      div.className = 'msg ' + (isMe ? 'out' : 'in');
-      const showSender = !isMe && currentChat.type === 'group';
-      div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
-        + `<div>${msg.text}</div><div class="msg-time">${msg.time}</div>`;
-      container.appendChild(div);
-    });
+  const container = document.getElementById('chat-messages');
+  container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
+  const convRef = ref(db, `conversations/${convKey}`);
+  chatListener = onChildAdded(convRef, snap => {
+    const msg = snap.val();
+    if(!msg) return;
+    const noMsg = container.querySelector('.no-msgs');
+    if(noMsg) noMsg.remove();
+    const isMe   = msg.from === meCode;
+    const sender = usersCache[msg.from];
+    const div    = document.createElement('div');
+    div.className = 'msg ' + (isMe ? 'out' : 'in');
+    const showSender = !isMe && currentChat && currentChat.type === 'group';
+    div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
+      + `<div>${msg.text}</div><div class="msg-time">${msg.time}</div>`;
+    container.appendChild(div);
     container.scrollTop = container.scrollHeight;
   });
 }
