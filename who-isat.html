@@ -154,17 +154,40 @@
     .btn-ban:hover { opacity: 0.85; }
     .btn-dismiss { padding: 7px 14px; background: #f3f3f3; color: #555; border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-family: inherit; }
     .btn-dismiss:hover { background: #e8e8e8; }
+    .btn-ip-ban { padding: 7px 14px; background: #6c3483; color: white; border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .btn-ip-ban:hover { opacity: 0.85; }
+    .btn-temp-ban { padding: 7px 14px; background: #e67e22; color: white; border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
+    .btn-temp-ban:hover { opacity: 0.85; }
     .user-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
     .user-item:last-child { border-bottom: none; }
     .user-item-info { flex: 1; }
     .user-item-name { font-size: 14px; font-weight: 600; color: #111; }
     .user-item-meta { font-size: 11px; color: #aaa; font-family: monospace; }
     .banned-badge { background: #ffeaea; color: #c0392b; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
+    .temp-banned-badge { background: #fff3e0; color: #e67e22; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
+    .ip-banned-badge { background: #f3e5f5; color: #6c3483; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
     .admin-badge { background: #fff3e0; color: #e67e22; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 6px; }
     .admin-crown { font-size: 14px; margin-left: 4px; }
     .btn-unban { padding: 5px 11px; background: #27ae60; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: inherit; }
     .btn-make-admin { padding: 5px 11px; background: #e67e22; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-family: inherit; }
     .empty-admin { text-align: center; color: #aaa; font-size: 13px; padding: 1.5rem 0; }
+    .ban-modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 30; }
+    .ban-modal-box { background: #fff; border-radius: 20px; padding: 1.5rem; width: 300px; display: flex; flex-direction: column; gap: 12px; }
+    .ban-options { display: flex; flex-direction: column; gap: 8px; }
+    .ban-option-btn { padding: 11px 14px; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; text-align: left; display: flex; align-items: center; gap: 8px; }
+    .ban-option-btn:hover { opacity: 0.88; }
+    .duration-select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid #e0e0e0; font-size: 14px; font-family: inherit; background: #fafafa; cursor: pointer; }
+    .report-msgs-expand { background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; overflow: hidden; }
+    .report-msgs-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; cursor: pointer; user-select: none; }
+    .report-msgs-header:hover { background: #f0f0f0; }
+    .report-msgs-header span { font-size: 12px; font-weight: 700; color: #555; }
+    .report-msgs-header .toggle-icon { font-size: 11px; color: #aaa; transition: transform 0.2s; }
+    .report-msgs-body { display: none; padding: 8px 12px; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #eee; }
+    .report-msg-bubble { padding: 5px 9px; border-radius: 8px; font-size: 12px; line-height: 1.4; max-width: 90%; }
+    .report-msg-bubble.out { align-self: flex-end; background: #DCF8C6; color: #111; }
+    .report-msg-bubble.in { align-self: flex-start; background: #fff; color: #111; border: 1px solid #e8e8e8; }
+    .report-msg-sender { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
+    .report-msg-time { font-size: 10px; color: #aaa; margin-top: 2px; text-align: right; }
   </style>
 </head>
 <body>
@@ -389,6 +412,32 @@
       </div>
     </div>
   </div>
+  <!-- MODAL BAN OPTIONS -->
+  <div class="ban-modal-overlay" id="modal-ban-options" style="display:none">
+    <div class="ban-modal-box">
+      <div class="modal-title">🚫 Sanctionner <span id="ban-target-name"></span></div>
+      <div class="ban-options" id="ban-options-list">
+        <button class="ban-option-btn" style="background:#fff3e0;color:#e67e22;" onclick="showTempBanForm()">⏱️ Ban temporaire</button>
+        <button class="ban-option-btn" style="background:#ffeaea;color:#c0392b;" onclick="confirmBan('permanent')">🚫 Ban permanent</button>
+        <button class="ban-option-btn" style="background:#f3e5f5;color:#6c3483;" onclick="confirmBan('ip')">🌐 IP Ban</button>
+      </div>
+      <div id="temp-ban-form" style="display:none;flex-direction:column;gap:8px;">
+        <div style="font-size:13px;color:#555;">Durée du ban :</div>
+        <select class="duration-select" id="ban-duration">
+          <option value="3600000">1 heure</option>
+          <option value="21600000">6 heures</option>
+          <option value="86400000">1 jour</option>
+          <option value="259200000">3 jours</option>
+          <option value="604800000">1 semaine</option>
+          <option value="2592000000">1 mois</option>
+        </select>
+        <button class="ban-option-btn" style="background:#e67e22;color:white;" onclick="confirmBan('temp')">⏱️ Appliquer le ban temporaire</button>
+        <button class="btn-cancel" onclick="hideTempBanForm()">← Retour</button>
+      </div>
+      <button class="btn-cancel" onclick="hideModal('modal-ban-options')" style="margin-top:4px;">Annuler</button>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -551,7 +600,32 @@ async function loginWithCode(){
     if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun compte avec ce code !'; return; }
     const userData = snap.val();
     // Vérification du ban
-    if(userData.banned){ err.style.color='#e74c3c'; err.textContent = '🚫 Ce compte a été banni.'; return; }
+    if(userData.banned){
+      // Vérifie si le ban temporaire a expiré
+      if(userData.banType === 'temp' && userData.bannedUntil && Date.now() > userData.bannedUntil){
+        await dbSet(`users/${code}/banned`, false);
+        await dbSet(`users/${code}/banType`, null);
+        await dbSet(`users/${code}/bannedUntil`, null);
+        // Continue la connexion normalement
+      } else {
+        const banMsg = userData.banType === 'temp' && userData.bannedUntil
+          ? `🚫 Compte banni jusqu'au ${new Date(userData.bannedUntil).toLocaleDateString('fr-FR')}`
+          : userData.banType === 'ip' ? '🌐 Accès bloqué (IP ban)'
+          : '🚫 Ce compte a été banni.';
+        err.style.color='#e74c3c'; err.textContent = banMsg; return;
+      }
+    }
+    // Stocke l'IP (best effort via API publique)
+    fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{
+      if(d && d.ip) dbSet(`users/${code}/lastIp`, d.ip).catch(()=>{});
+    }).catch(()=>{});
+    // Vérifie l'IP ban
+    fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(async d=>{
+      if(!d || !d.ip) return;
+      const ipKey = d.ip.replace(/\./g,'_');
+      const ipSnap = await dbGet(`bannedIps/${ipKey}`);
+      if(ipSnap.exists()){ err.style.color='#e74c3c'; err.textContent = '🌐 Accès bloqué (IP ban)'; meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); }
+    }).catch(()=>{});
     // Vérification du mot de passe
     if(userData.pwdHash){
       const inputHash = await hashPassword(pwd);
@@ -1306,18 +1380,29 @@ async function renderAdminReports(content){
     }));
 
     content.innerHTML = '';
-    pending.forEach(r => {
+    pending.forEach((r, idx) => {
       const reporterUser  = usersCache[r.reportedBy];
       const reportedUser  = r.reportedUser !== 'group' ? usersCache[r.reportedUser] : null;
       const reporterName  = reporterUser  ? reporterUser.username  : r.reportedBy;
       const reportedName  = reportedUser  ? reportedUser.username  : (r.reportedUser === 'group' ? 'Groupe' : r.reportedUser);
       const reasonLabels  = {harcelement:'Harcèlement',contenu_choquant:'Contenu choquant',spam:'Spam',usurpation:'Usurpation',autre:'Autre'};
-      const msgsHTML = r.messages && r.messages.length
-        ? r.messages.map(m => {
-            const s = usersCache[m.from]; const sn = s ? s.username : m.from;
-            return `<div class="report-msg-line"><span class="rm-sender">${sn}</span> [${m.time||''}] : ${m.text}</div>`;
-          }).join('')
-        : '<div class="report-msg-line" style="color:#aaa">Aucun message capturé</div>';
+
+      let msgsHTML = '';
+      if(r.messages && r.messages.length){
+        msgsHTML = r.messages.map(m => {
+          const s   = usersCache[m.from];
+          const sn  = s ? s.username : m.from;
+          const isReported = m.from === r.reportedUser;
+          const color = getColor(sn);
+          return `<div class="report-msg-bubble ${isReported ? 'out' : 'in'}">
+            <div class="report-msg-sender" style="color:${color}">${sn}</div>
+            <div>${m.text || ''}</div>
+            <div class="report-msg-time">${m.time || ''}</div>
+          </div>`;
+        }).join('');
+      } else {
+        msgsHTML = '<div style="color:#aaa;font-size:12px;text-align:center;padding:8px;">Aucun message capturé</div>';
+      }
 
       const div = document.createElement('div');
       div.className = 'admin-section';
@@ -1329,10 +1414,15 @@ async function renderAdminReports(content){
           </div>
           <div class="report-users">🚨 <strong>${reporterName}</strong> signale <strong>${reportedName}</strong></div>
           ${r.detail ? `<div class="report-reason">"${r.detail}"</div>` : ''}
-          <div class="admin-section-title" style="margin-top:6px;margin-bottom:4px;">Derniers messages</div>
-          <div class="report-msgs">${msgsHTML}</div>
-          <div class="report-actions" style="margin-top:8px;">
-            ${r.reportedUser !== 'group' ? `<button class="btn-ban" onclick="adminBanUser('${r.reportedUser}','${r.key}')">🚫 Bannir ${reportedName}</button>` : ''}
+          <div class="report-msgs-expand" style="margin-top:8px;">
+            <div class="report-msgs-header" onclick="toggleReportMsgs('${idx}')">
+              <span>💬 Messages (${r.messages ? r.messages.length : 0})</span>
+              <span class="toggle-icon" id="report-msgs-icon-${idx}">▼</span>
+            </div>
+            <div class="report-msgs-body" id="report-msgs-body-${idx}" style="display:none;">${msgsHTML}</div>
+          </div>
+          <div class="report-actions" style="margin-top:8px;flex-wrap:wrap;gap:6px;">
+            ${r.reportedUser !== 'group' ? `<button class="btn-ban" onclick="adminBanUser('${r.reportedUser}','${r.key}')">🚫 Sanctionner ${reportedName}</button>` : ''}
             <button class="btn-dismiss" onclick="adminDismissReport('${r.key}')">✅ Ignorer</button>
           </div>
         </div>`;
@@ -1363,21 +1453,26 @@ async function renderAdminUsers(content){
       const div = document.createElement('div');
       div.className = 'user-item';
       const isSelf = u.code === meCode;
+      const isBanned = u.banned === true;
+      const banLabel = isBanned
+        ? (u.banType === 'ip' ? '<span class="ip-banned-badge">IP BAN 🌐</span>'
+          : u.banType === 'temp' ? `<span class="temp-banned-badge">BAN TEMP ⏱️${u.bannedUntil ? ' jusqu\'au ' + new Date(u.bannedUntil).toLocaleDateString('fr-FR') : ''}</span>`
+          : '<span class="banned-badge">BANNI 🚫</span>')
+        : '';
       div.innerHTML = `<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u, 36)}</div>
         <div class="user-item-info">
-          <div class="user-item-name">${u.username||'?'}
-            ${u.banned ? '<span class="banned-badge">BANNI</span>' : ''}
-            ${u.isAdmin ? '<span class="admin-badge">ADMIN 👑</span>' : ''}
+          <div class="user-item-name">${u.username||'?'}${banLabel}
+            ${u.isAdmin || u['isAdmin '] ? '<span class="admin-badge">ADMIN 👑</span>' : ''}
             ${isSelf ? '<span style="font-size:10px;color:#aaa;margin-left:4px;">(toi)</span>' : ''}
           </div>
-          <div class="user-item-meta">${u.code}</div>
+          <div class="user-item-meta">${u.code}${u.lastIp ? ' · ' + u.lastIp : ''}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-          ${!isSelf ? (u.banned
+          ${!isSelf ? (isBanned
             ? `<button class="btn-unban" onclick="adminUnbanUser('${u.code}')">Débannir</button>`
-            : `<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">Bannir</button>`)
+            : `<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">🚫 Sanctionner</button>`)
             : ''}
-          ${!isSelf && !u.isAdmin ? `<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>` : ''}
+          ${!isSelf && !u.isAdmin && !u['isAdmin '] ? `<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>` : ''}
         </div>`;
       section.appendChild(div);
     });
@@ -1389,28 +1484,79 @@ async function renderAdminUsers(content){
 }
 
 async function adminBanUser(userCode, reportKey){
-  if(!myUser.isAdmin) return;
-  if(!userCode || userCode === meCode){ showToast('⛔ Impossible de vous bannir vous-même'); return; }
-  if(!confirm('Bannir cet utilisateur ?')) return;
+  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
+  if(!userCode || userCode === meCode){ showToast('⛔ Impossible de te bannir toi-même'); return; }
+  const u = usersCache[userCode];
+  document.getElementById('ban-target-name').textContent = u ? u.username : userCode;
+  window._banTargetCode  = userCode;
+  window._banReportKey   = reportKey;
+  document.getElementById('ban-options-list').style.display = 'flex';
+  document.getElementById('temp-ban-form').style.display    = 'none';
+  showModal('modal-ban-options');
+}
+
+function showTempBanForm(){
+  document.getElementById('ban-options-list').style.display = 'none';
+  document.getElementById('temp-ban-form').style.display    = 'flex';
+}
+function hideTempBanForm(){
+  document.getElementById('ban-options-list').style.display = 'flex';
+  document.getElementById('temp-ban-form').style.display    = 'none';
+}
+
+async function confirmBan(type){
+  hideModal('modal-ban-options');
+  const userCode  = window._banTargetCode;
+  const reportKey = window._banReportKey;
+  if(!userCode) return;
+
+  // Récupère l'IP du user si dispo (stockée au login)
   try {
-    await dbSet(`users/${userCode}/banned`, true);
+    if(type === 'permanent'){
+      await dbSet(`users/${userCode}/banned`, true);
+      await dbSet(`users/${userCode}/banType`, 'permanent');
+      showToast('🚫 Ban permanent appliqué !');
+
+    } else if(type === 'temp'){
+      const duration  = parseInt(document.getElementById('ban-duration').value);
+      const until     = Date.now() + duration;
+      await dbSet(`users/${userCode}/banned`, true);
+      await dbSet(`users/${userCode}/banType`, 'temp');
+      await dbSet(`users/${userCode}/bannedUntil`, until);
+      const labels = {'3600000':'1h','21600000':'6h','86400000':'1 jour','259200000':'3 jours','604800000':'1 semaine','2592000000':'1 mois'};
+      showToast(`⏱️ Ban temporaire ${labels[duration]||''} appliqué !`);
+
+    } else if(type === 'ip'){
+      // Récupère l'IP stockée du user
+      const usnap = await dbGet(`users/${userCode}/lastIp`);
+      const ip    = usnap.exists() ? usnap.val() : null;
+      await dbSet(`users/${userCode}/banned`, true);
+      await dbSet(`users/${userCode}/banType`, 'ip');
+      if(ip){
+        await dbSet(`bannedIps/${ip.replace(/\./g,'_')}`, { ip, bannedAt: Date.now(), reason: userCode });
+        showToast('🌐 IP Ban appliqué !');
+      } else {
+        showToast('🌐 IP Ban appliqué (IP non disponible, ban compte uniquement)');
+      }
+    }
     if(reportKey) await dbSet(`reports/${reportKey}/status`, 'resolved');
-    showToast('🚫 Utilisateur banni !');
     renderAdminContent();
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function adminUnbanUser(userCode){
-  if(!myUser.isAdmin) return;
+  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
   try {
     await dbSet(`users/${userCode}/banned`, false);
+    await dbSet(`users/${userCode}/banType`, null);
+    await dbSet(`users/${userCode}/bannedUntil`, null);
     showToast('✅ Utilisateur débanni');
     renderAdminContent();
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function adminDismissReport(reportKey){
-  if(!myUser.isAdmin) return;
+  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
   try {
     await dbSet(`reports/${reportKey}/status`, 'dismissed');
     showToast('✅ Signalement ignoré');
@@ -1419,13 +1565,22 @@ async function adminDismissReport(reportKey){
 }
 
 async function adminMakeAdmin(userCode){
-  if(!myUser.isAdmin) return;
+  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
   if(!confirm('Donner les droits admin à cet utilisateur ?')) return;
   try {
     await dbSet(`users/${userCode}/isAdmin`, true);
     showToast('👑 Admin accordé !');
     renderAdminContent();
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
+}
+
+function toggleReportMsgs(id){
+  const body = document.getElementById('report-msgs-body-' + id);
+  const icon = document.getElementById('report-msgs-icon-' + id);
+  if(!body) return;
+  const open = body.style.display !== 'none' && body.style.display !== '';
+  body.style.display = open ? 'none' : 'flex';
+  if(icon) icon.textContent = open ? '▼' : '▲';
 }
 
 // ===== EXPOSER AU GLOBAL (requis avec type="module") =====
@@ -1439,8 +1594,9 @@ Object.assign(window, {
   goHome, sendMsg, hideModal, showModal, show,
   doDelete, askDelete, toggleReaction, closeEmojiPicker,
   showReportModal, showReportFromProfile, submitReport,
-  showAdminPanel, switchAdminTab,
-  adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin
+  showAdminPanel, switchAdminTab, toggleReportMsgs,
+  adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin,
+  showTempBanForm, hideTempBanForm, confirmBan
 });
 
 // ===== INIT =====
