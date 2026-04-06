@@ -485,7 +485,20 @@ function handleAuthAvatar(e){
 }
 
 // ===== CREATE ACCOUNT =====
-const FORBIDDEN_WORDS = ['admin','moderateur','modo','support','officiel','whoisat','staff','bot','system'];
+const FORBIDDEN_WORDS = [
+  // Mots réservés système
+  'admin','moderateur','modo','support','officiel','whoisat','staff','bot','system',
+  // Parties génitales / sexuel
+  'zizi','zgeg','bite','bitte','queue','teub','teubi','penis','vagin','chatte','pussy','cock','dick','zob','kekette','quéquette','quequette','nichon','sein','fesse','cul','anus','caca','pipi','popo','couille','couilles','burne','burnes','zgueg','zguègue',
+  // Insultes / injures
+  'connard','connasse','salope','pute','putain','merde','enculé','encule','fdp','fils de pute','batard','bâtard','nique','niquer','niqué','ntm','ta mere','tamere','tocard','abruti','idiot','imbecile','débile','debile','cretin','crétin','con','conne','pd','tapette','grosse','gros','gras',
+  // Racisme / discrimination
+  'negro','negre','nègre','neger','nigg','nigga','bougnoule','raton','youpin','feuj','rebeu','bicot','bamboula','chinetoque','bridé','suicide','viol',
+  // Anglais vulgaire
+  'fuck','shit','ass','bitch','slut','whore','cunt','bastard','nigger','faggot','retard',
+  // Autres
+  'anonymous','anon','hacker','hack','root','null','undefined','god','satan','diable','terrorist','isis'
+];
 const USERNAME_REGEX = /^[a-zA-Z0-9_\-\.]{2,20}$/;
 
 function validateUsername(name){
