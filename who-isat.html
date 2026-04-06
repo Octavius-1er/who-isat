@@ -604,7 +604,8 @@ async function enterHome(){
     document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
     renderHeaderAvatar();
     // Affiche le bouton admin si applicable
-    document.getElementById('btn-admin-panel').style.display = myUser.isAdmin ? 'inline-flex' : 'none';
+    console.log('isAdmin:', myUser.isAdmin, typeof myUser.isAdmin);
+    document.getElementById('btn-admin-panel').style.display = myUser.isAdmin === true ? 'inline-flex' : 'none';
     setupHomeListeners();
     show('screen-home');
   } catch(e) {
@@ -629,6 +630,7 @@ function setupHomeListeners(){
     const newFriends = toArr(fresh.friends).filter(f => !oldFriends.includes(f));
     myUser = fresh;
     usersCache[meCode] = myUser;
+    document.getElementById('btn-admin-panel').style.display = myUser.isAdmin ? 'inline-flex' : 'none';
     await Promise.all(newFriends.map(async f => {
       const fs = await dbGet(`users/${f}`);
       if(fs.exists()) usersCache[f] = fs.val();
