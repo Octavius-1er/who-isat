@@ -188,6 +188,30 @@
     .report-msg-bubble.in { align-self: flex-start; background: #fff; color: #111; border: 1px solid #e8e8e8; }
     .report-msg-sender { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
     .report-msg-time { font-size: 10px; color: #aaa; margin-top: 2px; text-align: right; }
+
+    /* ===== GROUP EDIT SCREEN ===== */
+    .group-edit-screen { background: #f7f7f7; }
+    .group-edit-header { background: var(--dark); color: white; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .group-edit-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 14px; }
+    .group-edit-section { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); display: flex; flex-direction: column; gap: 10px; }
+    .group-edit-section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+    .group-av-wrap { position: relative; width: 80px; height: 80px; margin: 0 auto; cursor: pointer; }
+    .group-av-circle { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--green); display: flex; align-items: center; justify-content: center; font-size: 32px; overflow: hidden; }
+    .group-av-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .group-av-edit-badge { position: absolute; bottom: 2px; right: 2px; background: var(--green); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 2px solid white; }
+    .member-item { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+    .member-item:last-child { border-bottom: none; }
+    .member-info { flex: 1; }
+    .member-name { font-size: 14px; font-weight: 600; color: #111; }
+    .member-role { font-size: 11px; color: #aaa; }
+    .btn-remove-member { padding: 5px 10px; background: #ffeaea; color: #e74c3c; border: none; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; }
+    .btn-remove-member:hover { background: #ffd5d5; }
+    .add-member-row { display: flex; gap: 8px; align-items: center; }
+    .add-member-row select { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e0e0e0; font-size: 14px; font-family: inherit; background: #fafafa; }
+    .add-member-row select:focus { border-color: var(--green); outline: none; }
+    .btn-add-member { padding: 9px 14px; background: var(--green); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; white-space: nowrap; }
+    .btn-leave-group { width: 100%; padding: 12px; background: #ffeaea; color: #e74c3c; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
+    .btn-leave-group:hover { background: #ffd5d5; }
   </style>
 </head>
 <body>
@@ -258,8 +282,8 @@
   <div class="screen" id="screen-chat">
     <div class="chat-header">
       <button class="chat-back" onclick="goHome()">&#8592;</button>
-      <div class="chat-hd-av" id="chat-hd-av" onclick="openFriendProfile()" style="cursor:pointer"></div>
-      <div class="chat-hd-info" onclick="openFriendProfile()" style="cursor:pointer">
+      <div class="chat-hd-av" id="chat-hd-av" onclick="openChatProfile()" style="cursor:pointer"></div>
+      <div class="chat-hd-info" onclick="openChatProfile()" style="cursor:pointer">
         <div class="chat-hd-name" id="chat-hd-name"></div>
         <div class="chat-hd-sub" id="chat-hd-sub"></div>
       </div>
@@ -307,6 +331,46 @@
       <div class="profile-code-label" id="friend-code-label"></div>
       <div class="code-box" style="width:100%;max-width:280px">Code<span id="friend-code-big"></span></div>
       <button class="btn-green" id="btn-report-friend" style="max-width:280px;margin-top:4px;background:#e74c3c;" onclick="showReportFromProfile()">🚨 Signaler cet utilisateur</button>
+    </div>
+  </div>
+
+  <!-- GROUP EDIT SCREEN -->
+  <div class="screen group-edit-screen" id="screen-group-edit">
+    <div class="group-edit-header">
+      <button class="chat-back" id="group-edit-back" style="color:white;">&#8592;</button>
+      <span style="font-size:17px;font-weight:700">Modifier le groupe</span>
+    </div>
+    <div class="group-edit-body">
+      <!-- Photo & Nom -->
+      <div class="group-edit-section" style="align-items:center;">
+        <div class="group-av-wrap" onclick="document.getElementById('group-avatar-file').click()">
+          <div class="group-av-circle" id="gedit-av">👥</div>
+          <div class="group-av-edit-badge">✏️</div>
+        </div>
+        <input type="file" id="group-avatar-file" accept="image/*" onchange="handleGroupAvatar(event)" style="display:none" />
+        <input class="modal-input" id="gedit-name" placeholder="Nom du groupe" maxlength="30" style="width:100%;max-width:280px;" />
+        <button class="btn-green" style="max-width:280px;width:100%;" onclick="saveGroupName()">💾 Enregistrer le nom</button>
+      </div>
+      <!-- Membres -->
+      <div class="group-edit-section">
+        <div class="group-edit-section-title">Membres</div>
+        <div id="gedit-members-list"></div>
+      </div>
+      <!-- Ajouter membre -->
+      <div class="group-edit-section">
+        <div class="group-edit-section-title">Ajouter un membre</div>
+        <div class="add-member-row">
+          <select id="gedit-add-select">
+            <option value="">-- Choisir un contact --</option>
+          </select>
+          <button class="btn-add-member" onclick="addMemberToGroup()">＋ Ajouter</button>
+        </div>
+        <div class="err" id="err-gedit"></div>
+      </div>
+      <!-- Quitter -->
+      <div class="group-edit-section">
+        <button class="btn-leave-group" onclick="leaveGroup()">🚪 Quitter le groupe</button>
+      </div>
     </div>
   </div>
 
@@ -825,7 +889,10 @@ function renderConvList(){
       const div = document.createElement('div');
       div.className = 'conv-item';
       div.onclick = () => openGroup(group.id);
-      div.innerHTML = `<div class="ci-av" style="background:${getColor(group.name)};font-size:22px;">👥</div>
+      const groupAvHTML = group.avatar
+        ? `<img src="${group.avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;display:block;">`
+        : `<div style="width:48px;height:48px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>`;
+      div.innerHTML = `<div class="ci-av" style="background:transparent;padding:0;">${groupAvHTML}</div>
         <div class="ci-info"><div class="ci-name">${group.name}</div>
         <div class="ci-preview">${last ? (last.from === meCode ? 'Toi' : lastSender ? lastSender.username : '?') + ' : ' + last.text : 'Aucun message'}</div></div>
         ${last ? `<div class="ci-time">${last.time}</div>` : ''}`;
@@ -929,6 +996,7 @@ function openDM(fcode){
   hav.style.background = friend.avatar ? 'transparent' : getColor(friend.username);
   document.getElementById('chat-hd-name').textContent = friend.username;
   document.getElementById('chat-hd-sub').textContent  = 'en ligne';
+  document.getElementById('btn-report-chat').style.display = 'inline-flex';
   startChatListener();
   show('screen-chat');
 }
@@ -937,14 +1005,30 @@ function openGroup(gid){
   currentChat = { type: 'group', id: gid };
   const group = groupsCache[gid];
   const hav   = document.getElementById('chat-hd-av');
-  hav.innerHTML = `<div style="width:38px;height:38px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`;
-  hav.style.background = 'transparent';
+  // Avatar du groupe
+  if(group.avatar){
+    hav.innerHTML = `<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
+    hav.style.background = 'transparent';
+  } else {
+    hav.innerHTML = `<div style="width:38px;height:38px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`;
+    hav.style.background = 'transparent';
+  }
   document.getElementById('chat-hd-name').textContent = group.name;
   const names = toArr(group.members).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ');
   document.getElementById('chat-hd-sub').textContent = names;
+  document.getElementById('btn-report-chat').style.display = 'none';
   Promise.all(toArr(group.members).filter(m => !usersCache[m]).map(m =>
     dbGet(`users/${m}`).then(s => { if(s.exists()) usersCache[m] = s.val(); })
   )).then(() => { startChatListener(); show('screen-chat'); });
+}
+
+function openChatProfile(){
+  if(!currentChat) return;
+  if(currentChat.type === 'group'){
+    openGroupEdit(currentChat.id);
+  } else {
+    openFriendProfile();
+  }
 }
 
 // ── REACTIONS ───────────────────────────────────────────────────────────────
@@ -1258,6 +1342,167 @@ async function doChangePassword(){
     err.style.color='#e74c3c'; err.textContent = 'Erreur Firebase.';
     console.error(e);
   }
+}
+
+// ===== GROUP EDIT =====
+let editingGroupId = null;
+
+function openGroupEdit(gid){
+  editingGroupId = gid;
+  const group = groupsCache[gid];
+  if(!group) return;
+
+  // Avatar
+  const avEl = document.getElementById('gedit-av');
+  if(group.avatar){
+    avEl.innerHTML = `<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    avEl.innerHTML = `<span style="font-size:32px;">👥</span>`;
+  }
+
+  // Nom
+  document.getElementById('gedit-name').value = group.name;
+  document.getElementById('err-gedit').textContent = '';
+
+  // Retour
+  document.getElementById('group-edit-back').onclick = () => show('screen-chat');
+
+  renderGroupMembers();
+  renderAddMemberSelect();
+  show('screen-group-edit');
+}
+
+function renderGroupMembers(){
+  const group   = groupsCache[editingGroupId];
+  const list    = document.getElementById('gedit-members-list');
+  const members = toArr(group.members);
+  const isCreator = group.createdBy === meCode;
+  list.innerHTML = '';
+  members.forEach(mcode => {
+    const u = usersCache[mcode];
+    if(!u) return;
+    const isMe = mcode === meCode;
+    const isCreatorMember = mcode === group.createdBy;
+    const div = document.createElement('div');
+    div.className = 'member-item';
+    div.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u, 36)}</div>
+      <div class="member-info">
+        <div class="member-name">${u.username}${isMe ? ' <span style="font-size:11px;color:#aaa">(toi)</span>' : ''}</div>
+        <div class="member-role">${isCreatorMember ? '👑 Créateur' : 'Membre'}</div>
+      </div>
+      ${(isCreator && !isMe) ? `<button class="btn-remove-member" onclick="removeMemberFromGroup('${mcode}')">Retirer</button>` : ''}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function renderAddMemberSelect(){
+  const group   = groupsCache[editingGroupId];
+  const members = toArr(group.members);
+  const friends = toArr(myUser.friends).filter(f => !members.includes(f));
+  const sel = document.getElementById('gedit-add-select');
+  sel.innerHTML = '<option value="">-- Choisir un contact --</option>';
+  friends.forEach(fcode => {
+    const u = usersCache[fcode];
+    if(!u) return;
+    const opt = document.createElement('option');
+    opt.value = fcode;
+    opt.textContent = u.username;
+    sel.appendChild(opt);
+  });
+}
+
+function handleGroupAvatar(e){
+  const file = e.target.files[0]; if(!file) return;
+  const r = new FileReader();
+  r.onload = async ev => {
+    const avatarData = ev.target.result;
+    const avEl = document.getElementById('gedit-av');
+    avEl.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    try {
+      await dbSet(`groups/${editingGroupId}/avatar`, avatarData);
+      groupsCache[editingGroupId].avatar = avatarData;
+      // Met à jour l'avatar dans le header du chat si on est dessus
+      if(currentChat && currentChat.type === 'group' && currentChat.id === editingGroupId){
+        const hav = document.getElementById('chat-hd-av');
+        hav.innerHTML = `<img src="${avatarData}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
+      }
+      showToast('✅ Photo de groupe mise à jour !');
+    } catch(err){ showToast('❌ Erreur'); console.error(err); }
+  };
+  r.readAsDataURL(file);
+}
+
+async function saveGroupName(){
+  const name = document.getElementById('gedit-name').value.trim();
+  const err  = document.getElementById('err-gedit');
+  if(!name){ err.style.color='#e74c3c'; err.textContent = 'Le nom ne peut pas être vide !'; return; }
+  if(name.length > 30){ err.style.color='#e74c3c'; err.textContent = 'Nom trop long (max 30 car.)'; return; }
+  try {
+    await dbSet(`groups/${editingGroupId}/name`, name);
+    groupsCache[editingGroupId].name = name;
+    if(currentChat && currentChat.type === 'group' && currentChat.id === editingGroupId){
+      document.getElementById('chat-hd-name').textContent = name;
+    }
+    err.style.color = '#27ae60'; err.textContent = '✅ Nom mis à jour !';
+    setTimeout(() => err.textContent = '', 2000);
+  } catch(e){ err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e); }
+}
+
+async function addMemberToGroup(){
+  const sel  = document.getElementById('gedit-add-select');
+  const code = sel.value;
+  const err  = document.getElementById('err-gedit');
+  if(!code){ err.style.color='#e74c3c'; err.textContent = 'Sélectionne un contact !'; return; }
+  const group   = groupsCache[editingGroupId];
+  const members = toArr(group.members);
+  if(members.includes(code)){ err.style.color='#e74c3c'; err.textContent = 'Déjà membre !'; return; }
+  try {
+    const newMembers = [...members, code];
+    await dbSet(`groups/${editingGroupId}/members`, newMembers);
+    groupsCache[editingGroupId].members = newMembers;
+    err.style.color = '#27ae60'; err.textContent = `✅ ${usersCache[code]?.username || code} ajouté !`;
+    setTimeout(() => err.textContent = '', 2000);
+    renderGroupMembers();
+    renderAddMemberSelect();
+  } catch(e){ err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e); }
+}
+
+async function removeMemberFromGroup(mcode){
+  const group = groupsCache[editingGroupId];
+  if(group.createdBy !== meCode){ showToast('⛔ Seul le créateur peut retirer des membres'); return; }
+  const u = usersCache[mcode];
+  if(!confirm(`Retirer ${u ? u.username : mcode} du groupe ?`)) return;
+  try {
+    const newMembers = toArr(group.members).filter(m => m !== mcode);
+    await dbSet(`groups/${editingGroupId}/members`, newMembers);
+    groupsCache[editingGroupId].members = newMembers;
+    showToast(`✅ ${u ? u.username : mcode} retiré`);
+    renderGroupMembers();
+    renderAddMemberSelect();
+  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+}
+
+async function leaveGroup(){
+  const group = groupsCache[editingGroupId];
+  if(!confirm('Quitter ce groupe ?')) return;
+  try {
+    const newMembers = toArr(group.members).filter(m => m !== meCode);
+    if(newMembers.length === 0){
+      await dbSet(`groups/${editingGroupId}`, null);
+    } else {
+      await dbSet(`groups/${editingGroupId}/members`, newMembers);
+      // Si créateur, passe le rôle au prochain membre
+      if(group.createdBy === meCode && newMembers.length > 0){
+        await dbSet(`groups/${editingGroupId}/createdBy`, newMembers[0]);
+      }
+    }
+    delete groupsCache[editingGroupId];
+    editingGroupId = null;
+    showToast('👋 Groupe quitté');
+    goHome();
+  } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 // ===== MODERATION / SIGNALEMENT =====
@@ -1585,7 +1830,7 @@ function toggleReportMsgs(id){
 
 // ===== EXPOSER AU GLOBAL (requis avec type="module") =====
 Object.assign(window, {
-  openFriendProfile, showToast,
+  openFriendProfile, openChatProfile, showToast,
   switchTab, handleAuthAvatar, createAccount, loginWithCode,
   showAddFriend, addFriend, showMyCode,
   showCreateGroup, createGroup, switchHomeTab,
@@ -1596,7 +1841,9 @@ Object.assign(window, {
   showReportModal, showReportFromProfile, submitReport,
   showAdminPanel, switchAdminTab, toggleReportMsgs,
   adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin,
-  showTempBanForm, hideTempBanForm, confirmBan
+  showTempBanForm, hideTempBanForm, confirmBan,
+  openGroupEdit, handleGroupAvatar, saveGroupName,
+  addMemberToGroup, removeMemberFromGroup, leaveGroup
 });
 
 // ===== INIT =====
