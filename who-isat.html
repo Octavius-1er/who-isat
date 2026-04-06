@@ -1292,7 +1292,10 @@ async function renderAdminReports(content){
     const snap = await dbGet('reports');
     if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement !</div>'; return; }
     const reports = [];
-    snap.forEach(child => reports.push({key: child.key, ...child.val()}));
+    const raw = snap.val();
+    Object.entries(raw).forEach(([key, data]) => {
+      if(data) reports.push({key, ...data});
+    });
     const pending = reports.filter(r => r.status === 'pending').reverse();
     if(pending.length === 0){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement en attente !</div>'; return; }
 
@@ -1346,7 +1349,10 @@ async function renderAdminUsers(content){
     const snap = await dbGet('users');
     if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun utilisateur</div>'; return; }
     const users = [];
-    snap.forEach(child => users.push({code: child.key, ...child.val()}));
+    const raw = snap.val();
+    Object.entries(raw).forEach(([code, data]) => {
+      if(data) users.push({code, ...data});
+    });
     users.sort((a,b) => (a.username||'').localeCompare(b.username||''));
 
     content.innerHTML = '';
