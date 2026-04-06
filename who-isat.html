@@ -159,11 +159,14 @@
         <input type="file" id="auth-file" accept="image/*" onchange="handleAuthAvatar(event)" style="display:none" />
       </div>
       <input type="text" id="username-create" placeholder="Choisis un pseudo" maxlength="20" />
+      <input type="password" id="password-create" placeholder="Choisis un mot de passe" maxlength="50" />
+      <input type="password" id="password-create-confirm" placeholder="Confirme le mot de passe" maxlength="50" />
       <button class="btn-green" onclick="createAccount()">Créer mon compte</button>
       <div class="err" id="err-create"></div>
     </div>
     <div class="auth-form" id="form-login" style="display:none">
       <input type="text" id="login-code" placeholder="Ton code (ex: AB12CD34)" maxlength="8" style="font-family:monospace;letter-spacing:3px;text-transform:uppercase" />
+      <input type="password" id="login-password" placeholder="Mot de passe" maxlength="50" />
       <button class="btn-green" onclick="loginWithCode()">Me connecter</button>
       <div class="err" id="err-login"></div>
     </div>
@@ -226,6 +229,7 @@
       <div class="profile-username" id="profile-uname"></div>
       <div class="profile-code-label" id="profile-code-label"></div>
       <div class="code-box" style="width:100%;max-width:280px">Partage ce code avec tes amis<span id="profile-code-big"></span></div>
+      <button class="btn-green" style="max-width:280px;margin-top:4px;" onclick="showChangePassword()">🔒 Changer mon mot de passe</button>
     </div>
   </div>
 
@@ -296,6 +300,20 @@
       </div>
     </div>
   </div>
+  <!-- MODAL CHANGE PASSWORD -->
+  <div class="modal-overlay" id="modal-changepwd" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">Changer le mot de passe</div>
+      <input class="modal-input" type="password" id="pwd-current" placeholder="Mot de passe actuel" maxlength="50" />
+      <input class="modal-input" type="password" id="pwd-new" placeholder="Nouveau mot de passe" maxlength="50" />
+      <input class="modal-input" type="password" id="pwd-new2" placeholder="Confirmer le nouveau" maxlength="50" />
+      <div class="err" id="err-changepwd"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideModal('modal-changepwd')">Annuler</button>
+        <button class="btn-ok" onclick="doChangePassword()">Enregistrer</button>
+      </div>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 
@@ -337,6 +355,12 @@ function initials(n){return(n||'?').slice(0,2).toUpperCase();}
 function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 function toArr(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean);return Object.values(val).filter(Boolean);}
+
+async function hashPassword(pwd){
+  const enc = new TextEncoder().encode(pwd);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 // ===== STATE =====
 let meCode = localStorage.getItem('whoisat_me') || null;
@@ -388,12 +412,17 @@ function handleAuthAvatar(e){
 // ===== CREATE ACCOUNT =====
 async function createAccount(){
   const name = document.getElementById('username-create').value.trim();
+  const pwd  = document.getElementById('password-create').value;
+  const pwd2 = document.getElementById('password-create-confirm').value;
   const err  = document.getElementById('err-create');
-  if(!name || name.length < 2){ err.textContent = 'Pseudo trop court (min 2 car.)'; return; }
+  if(!name || name.length < 2){ err.style.color='#e74c3c'; err.textContent = 'Pseudo trop court (min 2 car.)'; return; }
+  if(!pwd || pwd.length < 4){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe trop court (min 4 car.)'; return; }
+  if(pwd !== pwd2){ err.style.color='#e74c3c'; err.textContent = 'Les mots de passe ne correspondent pas.'; return; }
   err.style.color = '#888'; err.textContent = 'Création du compte…';
   try {
     const code = genCode();
-    const user = { code, username: name, friends: [], avatar: authAvatarData || null };
+    const pwdHash = await hashPassword(pwd);
+    const user = { code, username: name, friends: [], avatar: authAvatarData || null, pwdHash };
     await dbSet(`users/${code}`, user);
     meCode = code;
     localStorage.setItem('whoisat_me', code);
@@ -411,15 +440,23 @@ async function createAccount(){
 // ===== LOGIN =====
 async function loginWithCode(){
   const code = document.getElementById('login-code').value.trim().toUpperCase();
+  const pwd  = document.getElementById('login-password').value;
   const err  = document.getElementById('err-login');
-  if(!code || code.length !== 8){ err.textContent = 'Code invalide'; return; }
+  if(!code || code.length !== 8){ err.style.color='#e74c3c'; err.textContent = 'Code invalide'; return; }
+  if(!pwd){ err.style.color='#e74c3c'; err.textContent = 'Entre ton mot de passe'; return; }
   err.style.color = '#888'; err.textContent = 'Connexion…';
   try {
     const snap = await dbGet(`users/${code}`);
     if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun compte avec ce code !'; return; }
+    const userData = snap.val();
+    // Vérification du mot de passe
+    if(userData.pwdHash){
+      const inputHash = await hashPassword(pwd);
+      if(inputHash !== userData.pwdHash){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe incorrect !'; return; }
+    }
     meCode = code;
     localStorage.setItem('whoisat_me', code);
-    myUser = snap.val();
+    myUser = userData;
     if(!myUser.friends) myUser.friends = [];
     usersCache[code] = myUser;
     err.textContent = '';
@@ -1008,6 +1045,39 @@ function handleProfileAvatar(e){
   r.readAsDataURL(file);
 }
 
+// ===== CHANGE PASSWORD =====
+function showChangePassword(){
+  document.getElementById('pwd-current').value = '';
+  document.getElementById('pwd-new').value = '';
+  document.getElementById('pwd-new2').value = '';
+  document.getElementById('err-changepwd').textContent = '';
+  showModal('modal-changepwd');
+}
+
+async function doChangePassword(){
+  const cur  = document.getElementById('pwd-current').value;
+  const nw   = document.getElementById('pwd-new').value;
+  const nw2  = document.getElementById('pwd-new2').value;
+  const err  = document.getElementById('err-changepwd');
+  if(!cur){ err.style.color='#e74c3c'; err.textContent = 'Entre ton mot de passe actuel'; return; }
+  if(!nw || nw.length < 4){ err.style.color='#e74c3c'; err.textContent = 'Nouveau mot de passe trop court (min 4 car.)'; return; }
+  if(nw !== nw2){ err.style.color='#e74c3c'; err.textContent = 'Les nouveaux mots de passe ne correspondent pas'; return; }
+  err.style.color='#888'; err.textContent = 'Vérification…';
+  const curHash = await hashPassword(cur);
+  if(myUser.pwdHash && curHash !== myUser.pwdHash){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe actuel incorrect !'; return; }
+  const newHash = await hashPassword(nw);
+  try {
+    await dbSet(`users/${meCode}/pwdHash`, newHash);
+    myUser.pwdHash = newHash;
+    usersCache[meCode] = myUser;
+    hideModal('modal-changepwd');
+    showToast('✅ Mot de passe modifié !');
+  } catch(e){
+    err.style.color='#e74c3c'; err.textContent = 'Erreur Firebase.';
+    console.error(e);
+  }
+}
+
 // ===== EXPOSER AU GLOBAL (requis avec type="module") =====
 Object.assign(window, {
   openFriendProfile, showToast,
@@ -1015,6 +1085,7 @@ Object.assign(window, {
   showAddFriend, addFriend, showMyCode,
   showCreateGroup, createGroup, switchHomeTab,
   showProfile, handleProfileAvatar,
+  showChangePassword, doChangePassword,
   goHome, sendMsg, hideModal, showModal, show,
   doDelete, askDelete, toggleReaction, closeEmojiPicker
 });
