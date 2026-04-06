@@ -604,8 +604,8 @@ async function enterHome(){
     document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
     renderHeaderAvatar();
     // Affiche le bouton admin si applicable
-    const isAdmin = snap.val()?.isAdmin === true;
-    console.log('snap isAdmin:', isAdmin, snap.val());
+    const snapVal = snap.val();
+    const isAdmin = snapVal?.isAdmin === true || snapVal?.['isAdmin '] === true;
     document.getElementById('btn-admin-panel').style.display = isAdmin ? 'inline-flex' : 'none';
     setupHomeListeners();
     show('screen-home');
@@ -631,7 +631,7 @@ function setupHomeListeners(){
     const newFriends = toArr(fresh.friends).filter(f => !oldFriends.includes(f));
     myUser = fresh;
     usersCache[meCode] = myUser;
-    document.getElementById('btn-admin-panel').style.display = myUser.isAdmin ? 'inline-flex' : 'none';
+    document.getElementById('btn-admin-panel').style.display = (myUser.isAdmin === true || myUser['isAdmin '] === true) ? 'inline-flex' : 'none';
     await Promise.all(newFriends.map(async f => {
       const fs = await dbGet(`users/${f}`);
       if(fs.exists()) usersCache[f] = fs.val();
@@ -1262,7 +1262,7 @@ async function submitReport(){
 let currentAdminTab = 'reports';
 
 function showAdminPanel(){
-  if(!myUser.isAdmin){ showToast('⛔ Accès refusé'); return; }
+  if(!myUser.isAdmin && !myUser['isAdmin ']){ showToast('⛔ Accès refusé'); return; }
   currentAdminTab = 'reports';
   document.getElementById('atab-reports').classList.add('active');
   document.getElementById('atab-users').classList.remove('active');
