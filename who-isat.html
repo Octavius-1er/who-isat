@@ -604,8 +604,9 @@ async function enterHome(){
     document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
     renderHeaderAvatar();
     // Affiche le bouton admin si applicable
-    console.log('isAdmin:', myUser.isAdmin, typeof myUser.isAdmin);
-    document.getElementById('btn-admin-panel').style.display = myUser.isAdmin === true ? 'inline-flex' : 'none';
+    const isAdmin = snap.val()?.isAdmin === true;
+    console.log('snap isAdmin:', isAdmin, snap.val());
+    document.getElementById('btn-admin-panel').style.display = isAdmin ? 'inline-flex' : 'none';
     setupHomeListeners();
     show('screen-home');
   } catch(e) {
