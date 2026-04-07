@@ -432,6 +432,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" id="atab-reports" onclick="switchAdminTab('reports')">🚨 Signalements</button>
         <button class="admin-tab" id="atab-users" onclick="switchAdminTab('users')">👥 Utilisateurs</button>
+        <button class="admin-tab" id="atab-groups" onclick="switchAdminTab('groups')">💬 Groupes</button>
       </div>
       <div id="admin-content"></div>
     </div>
@@ -1176,10 +1177,13 @@ function updateMsgTick(msgKey, status){
 let deletingKey = null;
 let deletingConvKey = null;
 
+function isAdminUser(){ return myUser && (myUser.isAdmin === true || myUser['isAdmin '] === true); }
+
 function askDelete(key, convKey, isMe){
   deletingKey     = key;
   deletingConvKey = convKey;
-  document.getElementById('del-all-btn').style.display = isMe ? 'block' : 'none';
+  // L'admin peut toujours supprimer pour tout le monde
+  document.getElementById('del-all-btn').style.display = (isMe || isAdminUser()) ? 'block' : 'none';
   showModal('modal-delete');
 }
 
@@ -1256,8 +1260,8 @@ function startChatListener(){
       + `<div class="msg-content">${contentHTML}</div>`
       + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`
       + renderReactions(msg.reactions, key, convKey);
-    // Double-click → delete
-    div.addEventListener('dblclick', () => askDelete(key, convKey, isMe));
+    // Double-click → delete (admin peut toujours supprimer)
+    div.addEventListener('dblclick', () => askDelete(key, convKey, isMe || isAdminUser()));
     // Long press → emoji picker
     let pressTimer = null;
     const startPress = (e) => { pressTimer = setTimeout(() => showEmojiPicker(div, key, convKey), 500); };
@@ -1529,6 +1533,24 @@ function openGroupEdit(gid){
   // Retour
   document.getElementById('group-edit-back').onclick = () => show('screen-chat');
 
+  // Bouton quitter : si admin et pas membre → affiche "Rejoindre"
+  const members = toArr(group.members);
+  const isMember = members.includes(meCode);
+  const leaveBtn = document.querySelector('.btn-leave-group');
+  if(leaveBtn){
+    if(!isMember && isAdminUser()){
+      leaveBtn.textContent = '🛡️ Rejoindre ce groupe (admin)';
+      leaveBtn.style.background = '#e8f5e9';
+      leaveBtn.style.color = '#27ae60';
+      leaveBtn.onclick = () => adminJoinGroup(gid);
+    } else {
+      leaveBtn.textContent = '🚪 Quitter le groupe';
+      leaveBtn.style.background = '';
+      leaveBtn.style.color = '';
+      leaveBtn.onclick = leaveGroup;
+    }
+  }
+
   renderGroupMembers();
   renderAddMemberSelect();
   show('screen-group-edit');
@@ -1538,7 +1560,7 @@ function renderGroupMembers(){
   const group   = groupsCache[editingGroupId];
   const list    = document.getElementById('gedit-members-list');
   const members = toArr(group.members);
-  const isCreator = group.createdBy === meCode;
+  const canManage = group.createdBy === meCode || isAdminUser();
   list.innerHTML = '';
   members.forEach(mcode => {
     const u = usersCache[mcode];
@@ -1550,10 +1572,10 @@ function renderGroupMembers(){
     div.innerHTML = `
       <div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u, 36)}</div>
       <div class="member-info">
-        <div class="member-name">${u.username}${isMe ? ' <span style="font-size:11px;color:#aaa">(toi)</span>' : ''}</div>
-        <div class="member-role">${isCreatorMember ? '👑 Créateur' : 'Membre'}</div>
+        <div class="member-name">${u.username}${isMe ? ' <span style="font-size:11px;color:#aaa">(toi)</span>' : ''}${isAdminUser() && isCreatorMember ? ' <span style="font-size:10px;color:#e67e22;">👑</span>' : ''}</div>
+        <div class="member-role">${isCreatorMember ? '👑 Créateur' : 'Membre'}${isAdminUser() && !isCreatorMember && isMe ? ' · 🛡️ Admin' : ''}</div>
       </div>
-      ${(isCreator && !isMe) ? `<button class="btn-remove-member" onclick="removeMemberFromGroup('${mcode}')">Retirer</button>` : ''}
+      ${(canManage && !isMe) ? `<button class="btn-remove-member" onclick="removeMemberFromGroup('${mcode}')">Retirer</button>` : ''}
     `;
     list.appendChild(div);
   });
@@ -1562,17 +1584,48 @@ function renderGroupMembers(){
 function renderAddMemberSelect(){
   const group   = groupsCache[editingGroupId];
   const members = toArr(group.members);
-  const friends = toArr(myUser.friends).filter(f => !members.includes(f));
   const sel = document.getElementById('gedit-add-select');
   sel.innerHTML = '<option value="">-- Choisir un contact --</option>';
-  friends.forEach(fcode => {
-    const u = usersCache[fcode];
-    if(!u) return;
-    const opt = document.createElement('option');
-    opt.value = fcode;
-    opt.textContent = u.username;
-    sel.appendChild(opt);
-  });
+
+  if(isAdminUser()){
+    // L'admin voit tous les utilisateurs connus
+    Object.entries(usersCache).forEach(([code, u]) => {
+      if(!u || members.includes(code)) return;
+      const opt = document.createElement('option');
+      opt.value = code;
+      opt.textContent = u.username + ' (' + code + ')';
+      sel.appendChild(opt);
+    });
+  } else {
+    const friends = toArr(myUser.friends).filter(f => !members.includes(f));
+    friends.forEach(fcode => {
+      const u = usersCache[fcode];
+      if(!u) return;
+      const opt = document.createElement('option');
+      opt.value = fcode;
+      opt.textContent = u.username;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+async function adminJoinGroup(gid){
+  if(!isAdminUser()) return;
+  try {
+    const snap = await dbGet(`groups/${gid}`);
+    if(!snap.exists()) return;
+    const group = snap.val();
+    const members = toArr(group.members);
+    if(!members.includes(meCode)){
+      members.push(meCode);
+      await dbSet(`groups/${gid}/members`, members);
+      group.members = members;
+    }
+    groupsCache[gid] = group;
+    showToast('🛡️ Tu as rejoint le groupe !');
+    // Recharge l'écran
+    openGroupEdit(gid);
+  } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 function handleGroupAvatar(e){
@@ -1633,7 +1686,7 @@ async function addMemberToGroup(){
 
 async function removeMemberFromGroup(mcode){
   const group = groupsCache[editingGroupId];
-  if(group.createdBy !== meCode){ showToast('⛔ Seul le créateur peut retirer des membres'); return; }
+  if(group.createdBy !== meCode && !isAdminUser()){ showToast('⛔ Seul le créateur peut retirer des membres'); return; }
   const u = usersCache[mcode];
   if(!confirm(`Retirer ${u ? u.username : mcode} du groupe ?`)) return;
   try {
@@ -1755,6 +1808,7 @@ function switchAdminTab(tab){
   currentAdminTab = tab;
   document.getElementById('atab-reports').classList.toggle('active', tab === 'reports');
   document.getElementById('atab-users').classList.toggle('active',   tab === 'users');
+  document.getElementById('atab-groups').classList.toggle('active',  tab === 'groups');
   renderAdminContent();
 }
 
@@ -1763,9 +1817,89 @@ async function renderAdminContent(){
   content.innerHTML = '<div class="empty-admin">Chargement…</div>';
   if(currentAdminTab === 'reports'){
     await renderAdminReports(content);
-  } else {
+  } else if(currentAdminTab === 'users'){
     await renderAdminUsers(content);
+  } else {
+    await renderAdminGroups(content);
   }
+}
+
+async function renderAdminGroups(content){
+  try {
+    const snap = await dbGet('groups');
+    if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun groupe</div>'; return; }
+    const groups = [];
+    const raw = snap.val();
+    Object.entries(raw).forEach(([gid, data]) => { if(data) groups.push({...data, id: gid}); });
+    groups.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+
+    // Charge les users manquants
+    const allCodes = [...new Set(groups.flatMap(g => toArr(g.members)))];
+    await Promise.all(allCodes.filter(c => !usersCache[c]).map(async c => {
+      const s = await dbGet(`users/${c}`); if(s.exists()) usersCache[c] = s.val();
+    }));
+
+    content.innerHTML = '';
+    const section = document.createElement('div');
+    section.className = 'admin-section';
+    section.innerHTML = `<div class="admin-section-title">Tous les groupes (${groups.length})</div>`;
+
+    groups.forEach(group => {
+      // Charge dans groupsCache pour pouvoir ouvrir l'éditeur
+      if(!groupsCache[group.id]) groupsCache[group.id] = group;
+      const members = toArr(group.members);
+      const isMember = members.includes(meCode);
+      const creator = usersCache[group.createdBy];
+      const memberNames = members.slice(0,3).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ')
+        + (members.length > 3 ? ` +${members.length-3}` : '');
+
+      const div = document.createElement('div');
+      div.className = 'user-item';
+      div.innerHTML = `
+        <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:${getColor(group.name)};font-size:20px;">
+          ${group.avatar ? `<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : '👥'}
+        </div>
+        <div class="user-item-info">
+          <div class="user-item-name">${group.name} ${isMember ? '<span style="font-size:10px;color:#27ae60;">✓ membre</span>' : ''}</div>
+          <div class="user-item-meta">${members.length} membre(s) · ${memberNames}</div>
+          <div class="user-item-meta">Créé par ${creator ? creator.username : group.createdBy}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <button class="btn-make-admin" style="background:#075E54;" onclick="adminOpenGroup('${group.id}')">⚙️ Gérer</button>
+        </div>`;
+      section.appendChild(div);
+    });
+    content.appendChild(section);
+  } catch(e){
+    content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>';
+    console.error(e);
+  }
+}
+
+async function adminOpenGroup(gid){
+  if(!isAdminUser()) return;
+  // Charge le groupe depuis Firebase si pas en cache
+  if(!groupsCache[gid]){
+    const snap = await dbGet(`groups/${gid}`);
+    if(!snap.exists()){ showToast('❌ Groupe introuvable'); return; }
+    groupsCache[gid] = snap.val();
+  }
+  // Charge les membres
+  const members = toArr(groupsCache[gid].members);
+  await Promise.all(members.filter(m => !usersCache[m]).map(async m => {
+    const s = await dbGet(`users/${m}`); if(s.exists()) usersCache[m] = s.val();
+  }));
+
+  // Si pas membre, on peut quand même ouvrir le chat admin
+  const isMember = members.includes(meCode);
+  if(!isMember){
+    // Retour vers admin panel depuis l'éditeur
+    document.getElementById('group-edit-back').onclick = () => { show('screen-admin'); };
+  } else {
+    currentChat = { type: 'group', id: gid };
+    document.getElementById('group-edit-back').onclick = () => show('screen-chat');
+  }
+  openGroupEdit(gid);
 }
 
 async function renderAdminReports(content){
@@ -2003,6 +2137,7 @@ Object.assign(window, {
   showReportModal, showReportFromProfile, submitReport,
   showAdminPanel, switchAdminTab, toggleReportMsgs,
   adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin,
+  adminJoinGroup, adminOpenGroup,
   showTempBanForm, hideTempBanForm, confirmBan,
   openGroupEdit, handleGroupAvatar, saveGroupName,
   addMemberToGroup, removeMemberFromGroup, leaveGroup,
