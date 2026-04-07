@@ -4,6 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Who-isat</title>
+
+  <!-- ===== PWA / ICÔNES ===== -->
+  <!-- Couleur thème (barre navigateur Android/Chrome) -->
+  <meta name="theme-color" content="#075E54" />
+  <meta name="application-name" content="Who-isat" />
+  <meta name="description" content="Crée de fausses conversations à partager avec tes amis" />
+
+  <!-- Apple (iOS — "Ajouter à l'écran d'accueil") -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Who-isat" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23075E54'/%3E%3Ccircle cx='96' cy='96' r='62' fill='%2325D366'/%3E%3Cpath d='M117.5 83c-.8-3.8-4.5-6.5-8.5-6.5H83c-4 0-7.7 2.7-8.5 6.5l-4.5 22c-.5 2.2.2 4.5 1.8 6.2 1.6 1.7 3.8 2.8 6.2 2.8h4l-2 8 12-8h24.5c2.4 0 4.6-1.1 6.2-2.8 1.6-1.7 2.3-4 1.8-6.2L117.5 83z' fill='white'/%3E%3C/svg%3E" />
+
+  <!-- Microsoft (Windows / Edge — tuile épinglée) -->
+  <meta name="msapplication-TileColor" content="#075E54" />
+  <meta name="msapplication-TileImage" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 144'%3E%3Crect width='144' height='144' fill='%23075E54'/%3E%3Ccircle cx='72' cy='72' r='48' fill='%2325D366'/%3E%3Cpath d='M88 64c-.6-3-3.5-5-6.5-5H62c-3 0-5.9 2-6.5 5l-3.5 17c-.4 1.7.1 3.4 1.4 4.7 1.2 1.3 2.9 2.1 4.6 2.1h3l-1.5 6 9-6H87c1.7 0 3.4-.8 4.6-2.1 1.3-1.3 1.8-3 1.4-4.7L88 64z' fill='white'/%3E%3C/svg%3E" />
+  <meta name="msapplication-config" content="none" />
+
+  <!-- Google / Android Chrome (manifest PWA) -->
+  <link rel="manifest" id="pwa-manifest" />
+
+  <!-- Favicon générique (tous navigateurs) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%2325D366'/%3E%3Cpath d='M40 27c-.4-2-2.3-3.5-4.5-3.5H28c-2.2 0-4.1 1.5-4.5 3.5l-2 10c-.3 1.2.1 2.4 1 3.3.9.9 2.1 1.4 3.3 1.4h2l-1 4 6-4h8c1.2 0 2.4-.5 3.3-1.4.9-.9 1.3-2.1 1-3.3L40 27z' fill='white'/%3E%3C/svg%3E" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #111; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
@@ -212,6 +235,23 @@
     .btn-add-member { padding: 9px 14px; background: var(--green); color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; white-space: nowrap; }
     .btn-leave-group { width: 100%; padding: 12px; background: #ffeaea; color: #e74c3c; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
     .btn-leave-group:hover { background: #ffd5d5; }
+
+    /* ===== FILE MESSAGES ===== */
+    .chat-input-bar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #f0f0f0; flex-shrink: 0; }
+    .attach-btn { width: 36px; height: 36px; border-radius: 50%; background: #e0e0e0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: background 0.15s; }
+    .attach-btn:hover { background: #d0d0d0; }
+    .msg-image { max-width: 100%; border-radius: 6px; display: block; cursor: pointer; margin-bottom: 3px; }
+    .msg-pdf { display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.05); border-radius: 8px; padding: 8px 10px; cursor: pointer; text-decoration: none; margin-bottom: 3px; }
+    .msg-pdf:hover { background: rgba(0,0,0,0.09); }
+    .msg-pdf-icon { font-size: 24px; flex-shrink: 0; }
+    .msg-pdf-info { flex: 1; min-width: 0; }
+    .msg-pdf-name { font-size: 13px; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .msg-pdf-size { font-size: 11px; color: #888; }
+    .img-preview-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 60; }
+    .img-preview-overlay img { max-width: 100%; max-height: 85%; object-fit: contain; border-radius: 8px; }
+    .img-preview-close { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 22px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+    .attach-preview { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #e8f5e9; border-top: 1px solid #c8e6c9; flex-shrink: 0; font-size: 13px; color: #2e7d32; }
+    .attach-preview-cancel { background: none; border: none; font-size: 18px; cursor: pointer; color: #e74c3c; margin-left: auto; padding: 0 2px; }
   </style>
 </head>
 <body>
@@ -290,7 +330,15 @@
       <button class="wa-header-btn" id="btn-report-chat" title="Signaler" onclick="showReportModal()" style="font-size:16px;">🚨</button>
     </div>
     <div class="chat-messages" id="chat-messages"></div>
+    <div id="attach-preview-bar" style="display:none;" class="attach-preview">
+      <span id="attach-preview-label">📎 fichier sélectionné</span>
+      <button class="attach-preview-cancel" onclick="cancelAttach()">✕</button>
+    </div>
     <div class="chat-input-bar">
+      <button class="attach-btn" onclick="document.getElementById('attach-img-input').click()" title="Image">🖼️</button>
+      <button class="attach-btn" onclick="document.getElementById('attach-pdf-input').click()" title="PDF">📄</button>
+      <input type="file" id="attach-img-input" accept="image/*" onchange="handleAttach(event,'image')" style="display:none" />
+      <input type="file" id="attach-pdf-input" accept=".pdf" onchange="handleAttach(event,'pdf')" style="display:none" />
       <input class="chat-input" id="chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()" />
       <button class="send-btn" onclick="sendMsg()">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
@@ -1184,8 +1232,28 @@ function startChatListener(){
     div.dataset.msgkey = key;
     const showSender = !isMe && currentChat && currentChat.type === 'group';
     const status = isMe ? (msg.status || 'sent') : '';
+
+    let contentHTML = '';
+    if(msg.deleted){
+      contentHTML = '<em style="color:#aaa">🚫 Ce message a été supprimé</em>';
+    } else if(msg.type === 'image' && msg.fileData){
+      contentHTML = `<img class="msg-image" src="${msg.fileData}" onclick="openImagePreview('${key}')" data-src="${msg.fileData}" />`;
+    } else if(msg.type === 'pdf' && msg.fileData){
+      const sizeStr = msg.fileSize ? formatBytes(msg.fileSize) : 'PDF';
+      contentHTML = `<a class="msg-pdf" href="${msg.fileData}" download="${msg.fileName||'document.pdf'}" onclick="event.stopPropagation()">
+        <span class="msg-pdf-icon">📄</span>
+        <div class="msg-pdf-info">
+          <div class="msg-pdf-name">${msg.fileName||'document.pdf'}</div>
+          <div class="msg-pdf-size">${sizeStr}</div>
+        </div>
+        <span style="font-size:18px;color:#075E54;">⬇️</span>
+      </a>`;
+    } else {
+      contentHTML = msg.text || '';
+    }
+
     div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
-      + `<div>${msg.deleted ? '<em style="color:#aaa">🚫 Ce message a été supprimé</em>' : msg.text}</div>`
+      + `<div class="msg-content">${contentHTML}</div>`
       + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`
       + renderReactions(msg.reactions, key, convKey);
     // Double-click → delete
@@ -1235,21 +1303,115 @@ function showToast(msg){
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
+// ===== FILE ATTACH =====
+let pendingAttach = null; // { type, fileData, fileName, fileSize }
+
+function formatBytes(bytes){
+  if(!bytes) return '';
+  if(bytes < 1024) return bytes + ' o';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' Ko';
+  return (bytes/(1024*1024)).toFixed(1) + ' Mo';
+}
+
+function handleAttach(e, type){
+  const file = e.target.files[0]; if(!file) return;
+  // Limite : 4 Mo (Firebase Realtime DB limite les noeuds à ~10Mo, on est prudent)
+  if(file.size > 4 * 1024 * 1024){ showToast('❌ Fichier trop lourd (max 4 Mo)'); e.target.value=''; return; }
+  const r = new FileReader();
+  r.onload = ev => {
+    pendingAttach = { type, fileData: ev.target.result, fileName: file.name, fileSize: file.size };
+    const bar   = document.getElementById('attach-preview-bar');
+    const label = document.getElementById('attach-preview-label');
+    const icon  = type === 'image' ? '🖼️' : '📄';
+    label.textContent = `${icon} ${file.name} (${formatBytes(file.size)})`;
+    bar.style.display = 'flex';
+  };
+  r.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function cancelAttach(){
+  pendingAttach = null;
+  document.getElementById('attach-preview-bar').style.display = 'none';
+}
+
 async function sendMsg(){
-  const input = document.getElementById('chat-input');
-  const text  = input.value.trim();
-  if(!text || !currentChat) return;
+  const input   = document.getElementById('chat-input');
+  const text    = input.value.trim();
+  if(!currentChat) return;
+  if(!text && !pendingAttach) return;
   const convKey = getConvKey();
-  input.value = '';
   const timeStr = nowTime();
+  const ts      = Date.now();
+
   try {
-    await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: Date.now(), status: 'sent' });
+    if(pendingAttach){
+      const { type, fileData, fileName, fileSize } = pendingAttach;
+      cancelAttach();
+      await dbPush(`conversations/${convKey}`, {
+        from: meCode, type, fileData, fileName, fileSize,
+        text: type === 'image' ? '📷 Image' : `📄 ${fileName}`,
+        time: timeStr, ts, status: 'sent'
+      });
+      // Si aussi du texte, envoie séparément
+      if(text){
+        input.value = '';
+        await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: ts+1, status: 'sent' });
+      }
+    } else {
+      input.value = '';
+      await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts, status: 'sent' });
+    }
   } catch(e) {
     input.value = text;
     showToast('❌ Envoi impossible : ' + e.message);
     console.error('sendMsg error', e);
   }
 }
+
+// ===== IMAGE PREVIEW =====
+function openImagePreview(key){
+  const msgEl = document.querySelector(`[data-msgkey="${key}"] img.msg-image`);
+  if(!msgEl) return;
+  const src = msgEl.getAttribute('data-src') || msgEl.src;
+  const phone = document.querySelector('.phone');
+  const overlay = document.createElement('div');
+  overlay.className = 'img-preview-overlay';
+  overlay.id = 'img-preview-overlay';
+  overlay.innerHTML = `
+    <button class="img-preview-close" onclick="document.getElementById('img-preview-overlay').remove()">✕</button>
+    <img src="${src}" />
+  `;
+  overlay.addEventListener('click', e => { if(e.target === overlay) overlay.remove(); });
+  phone.appendChild(overlay);
+}
+
+// ===== AUTO CLEANUP (messages + fichiers > 1 semaine) =====
+const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+
+async function runCleanup(){
+  const cutoff = Date.now() - ONE_WEEK_MS;
+  try {
+    // Nettoie toutes les conversations
+    const convSnap = await dbGet('conversations');
+    if(!convSnap.exists()) return;
+    const convData = convSnap.val();
+    for(const convKey of Object.keys(convData)){
+      const msgs = convData[convKey];
+      if(!msgs) continue;
+      for(const [msgKey, msg] of Object.entries(msgs)){
+        if(!msg || !msg.ts) continue;
+        if(msg.ts < cutoff){
+          // Si c'est une image ou PDF, supprime complètement pour libérer le stockage
+          await dbSet(`conversations/${convKey}/${msgKey}`, null);
+        }
+      }
+    }
+  } catch(e){ console.warn('Cleanup error:', e); }
+}
+
+// Lance le cleanup au démarrage (une fois par session)
+setTimeout(runCleanup, 5000);
 
 function openFriendProfile(){
   if(!currentChat) return;
@@ -1843,7 +2005,8 @@ Object.assign(window, {
   adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin,
   showTempBanForm, hideTempBanForm, confirmBan,
   openGroupEdit, handleGroupAvatar, saveGroupName,
-  addMemberToGroup, removeMemberFromGroup, leaveGroup
+  addMemberToGroup, removeMemberFromGroup, leaveGroup,
+  handleAttach, cancelAttach, openImagePreview
 });
 
 // ===== INIT =====
@@ -1852,5 +2015,30 @@ if(meCode){
 } else {
   show('screen-auth');
 }
+</script>
+
+<script>
+// ===== PWA MANIFEST INJECTION =====
+(function(){
+  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#075E54"/><circle cx="256" cy="256" r="168" fill="#25D366"/><path d="M316 218c-2-10-11-17-21-17H217c-10 0-19 7-21 17l-11 55c-1.5 6 .5 12 5 16.5 4.5 4.5 10.5 7 16.5 7h10l-6 22 28-22h78c6 0 12-2.5 16.5-7 4.5-4.5 6.5-10.5 5-16.5L316 218z" fill="white"/></svg>`;
+  const iconBlob = new Blob([iconSvg], {type:'image/svg+xml'});
+  const iconUrl  = URL.createObjectURL(iconBlob);
+  const manifest = {
+    name: 'Who-isat',
+    short_name: 'Who-isat',
+    description: 'Crée de fausses conversations à partager avec tes amis',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#075E54',
+    theme_color: '#075E54',
+    orientation: 'portrait',
+    icons: [
+      { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+      { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+    ]
+  };
+  const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(mBlob);
+})();
 </script>
 </body>
