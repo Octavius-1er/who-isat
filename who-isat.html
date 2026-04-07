@@ -6,26 +6,21 @@
   <title>Who-isat</title>
 
   <!-- ===== PWA / ICÔNES ===== -->
-  <!-- Couleur thème (barre navigateur Android/Chrome) -->
   <meta name="theme-color" content="#075E54" />
   <meta name="application-name" content="Who-isat" />
   <meta name="description" content="Crée de fausses conversations à partager avec tes amis" />
 
-  <!-- Apple (iOS — "Ajouter à l'écran d'accueil") -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Who-isat" />
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23075E54'/%3E%3Ccircle cx='96' cy='96' r='62' fill='%2325D366'/%3E%3Cpath d='M117.5 83c-.8-3.8-4.5-6.5-8.5-6.5H83c-4 0-7.7 2.7-8.5 6.5l-4.5 22c-.5 2.2.2 4.5 1.8 6.2 1.6 1.7 3.8 2.8 6.2 2.8h4l-2 8 12-8h24.5c2.4 0 4.6-1.1 6.2-2.8 1.6-1.7 2.3-4 1.8-6.2L117.5 83z' fill='white'/%3E%3C/svg%3E" />
 
-  <!-- Microsoft (Windows / Edge — tuile épinglée) -->
   <meta name="msapplication-TileColor" content="#075E54" />
   <meta name="msapplication-TileImage" content="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 144 144'%3E%3Crect width='144' height='144' fill='%23075E54'/%3E%3Ccircle cx='72' cy='72' r='48' fill='%2325D366'/%3E%3Cpath d='M88 64c-.6-3-3.5-5-6.5-5H62c-3 0-5.9 2-6.5 5l-3.5 17c-.4 1.7.1 3.4 1.4 4.7 1.2 1.3 2.9 2.1 4.6 2.1h3l-1.5 6 9-6H87c1.7 0 3.4-.8 4.6-2.1 1.3-1.3 1.8-3 1.4-4.7L88 64z' fill='white'/%3E%3C/svg%3E" />
   <meta name="msapplication-config" content="none" />
 
-  <!-- Google / Android Chrome (manifest PWA) -->
   <link rel="manifest" id="pwa-manifest" />
 
-  <!-- Favicon générique (tous navigateurs) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%2325D366'/%3E%3Cpath d='M40 27c-.4-2-2.3-3.5-4.5-3.5H28c-2.2 0-4.1 1.5-4.5 3.5l-2 10c-.3 1.2.1 2.4 1 3.3.9.9 2.1 1.4 3.3 1.4h2l-1 4 6-4h8c1.2 0 2.4-.5 3.3-1.4.9-.9 1.3-2.1 1-3.3L40 27z' fill='white'/%3E%3C/svg%3E" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,7 +115,7 @@
     .msg.in { align-self: flex-start; background: #fff; color: #111; border-radius: 0 8px 8px 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
     .msg-sender { font-size: 11px; font-weight: 700; margin-bottom: 2px; }
     .msg-time { font-size: 10px; color: #999; margin-top: 3px; text-align: right; }
-    .chat-input-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f0f0; flex-shrink: 0; }
+    .chat-input-bar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #f0f0f0; flex-shrink: 0; }
     .chat-input { flex: 1; padding: 10px 14px; border-radius: 22px; border: none; background: #fff; font-size: 14px; color: #111; outline: none; font-family: inherit; }
     .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .send-btn svg { width: 20px; height: 20px; fill: white; }
@@ -236,8 +231,11 @@
     .btn-leave-group { width: 100%; padding: 12px; background: #ffeaea; color: #e74c3c; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
     .btn-leave-group:hover { background: #ffd5d5; }
 
+    /* ===== INVITE LINK ===== */
+    .invite-link-box { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 10px 14px; font-size: 12px; color: #166534; font-family: monospace; word-break: break-all; line-height: 1.5; user-select: all; cursor: text; }
+    .invite-link-box:empty { display: none; }
+
     /* ===== FILE MESSAGES ===== */
-    .chat-input-bar { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #f0f0f0; flex-shrink: 0; }
     .attach-btn { width: 36px; height: 36px; border-radius: 50%; background: #e0e0e0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: background 0.15s; }
     .attach-btn:hover { background: #d0d0d0; }
     .msg-image { max-width: 100%; border-radius: 6px; display: block; cursor: pointer; margin-bottom: 3px; }
@@ -415,6 +413,19 @@
         </div>
         <div class="err" id="err-gedit"></div>
       </div>
+      <!-- LIEN D'INVITATION — visible uniquement pour le créateur et les admins système -->
+      <div class="group-edit-section" id="gedit-invite-section" style="display:none;">
+        <div class="group-edit-section-title">🔗 Lien d'invitation</div>
+        <div style="font-size:13px;color:#555;line-height:1.5;">
+          Partage ce lien pour inviter des personnes directement dans le groupe.<br>
+          <span style="font-size:11px;color:#aaa;">⚠️ N'importe qui avec ce lien pourra rejoindre.</span>
+        </div>
+        <div class="invite-link-box" id="gedit-invite-link"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-green" style="flex:1;" onclick="copyGroupInviteLink()">📋 Copier le lien</button>
+          <button style="flex:1;padding:12px;background:#ffeaea;color:#e74c3c;border:none;border-radius:12px;cursor:pointer;font-size:14px;font-weight:600;font-family:inherit;" onclick="revokeGroupInviteLink()">🗑️ Révoquer</button>
+        </div>
+      </div>
       <!-- Quitter -->
       <div class="group-edit-section">
         <button class="btn-leave-group" onclick="leaveGroup()">🚪 Quitter le groupe</button>
@@ -489,6 +500,7 @@
       </div>
     </div>
   </div>
+
   <!-- MODAL CHANGE PASSWORD -->
   <div class="modal-overlay" id="modal-changepwd" style="display:none">
     <div class="modal-box">
@@ -525,6 +537,7 @@
       </div>
     </div>
   </div>
+
   <!-- MODAL BAN OPTIONS -->
   <div class="ban-modal-overlay" id="modal-ban-options" style="display:none">
     <div class="ban-modal-box">
@@ -554,16 +567,12 @@
   <div class="toast" id="toast"></div>
 </div>
 
-<!-- ===== FIREBASE SDK (ES modules — pas de globals) ===== -->
+<!-- ===== FIREBASE SDK ===== -->
 <script type="module">
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, push, onValue, onChildAdded, onChildChanged, query, limitToLast }
   from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-// =============================================================
-//  ⚙️  CONFIG FIREBASE — remplace ces valeurs par les tiennes
-//  (Firebase Console → Ton projet → Paramètres → Config web)
-// =============================================================
 const firebaseConfig = {
   apiKey:            "AIzaSyDk_yfLPRhu5aAyJgfgwstwcGWijcIkBEI",
   authDomain:        "who-isat.firebaseapp.com",
@@ -573,12 +582,10 @@ const firebaseConfig = {
   messagingSenderId: "727526744921",
   appId:             "1:727526744921:web:28b01e6050032a03752248"
 };
-// =============================================================
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-// Wrappers pratiques autour de l'API modulaire
 const dbRef    = path             => ref(db, path);
 const dbGet    = path             => get(dbRef(path));
 const dbSet    = (path, val)      => set(dbRef(path), val);
@@ -590,6 +597,7 @@ const COLORS = ['#2196F3','#E91E63','#9C27B0','#FF5722','#009688','#FF9800','#3F
 function getColor(s){let h=0;for(let c of s||'')h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
 function initials(n){return(n||'?').slice(0,2).toUpperCase();}
 function genCode(){const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<8;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
+function genInviteToken(){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz23456789';let s='';for(let i=0;i<16;i++)s+=c[Math.floor(Math.random()*c.length)];return s;}
 function nowTime(){return new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
 function toArr(val){if(!val)return[];if(Array.isArray(val))return val.filter(Boolean);return Object.values(val).filter(Boolean);}
 
@@ -648,17 +656,11 @@ function handleAuthAvatar(e){
 
 // ===== CREATE ACCOUNT =====
 const FORBIDDEN_WORDS = [
-  // Mots réservés système
   'admin','moderateur','modo','support','officiel','whoisat','staff','bot','system',
-  // Parties génitales / sexuel
   'zizi','zgeg','bite','bitte','queue','teub','teubi','penis','vagin','chatte','pussy','cock','dick','zob','kekette','quéquette','quequette','nichon','sein','fesse','cul','anus','caca','pipi','popo','couille','couilles','burne','burnes','zgueg','zguègue',
-  // Insultes / injures
   'connard','connasse','salope','pute','putain','merde','enculé','encule','fdp','fils de pute','batard','bâtard','nique','niquer','niqué','ntm','ta mere','tamere','tocard','abruti','idiot','imbecile','débile','debile','cretin','crétin','con','conne','pd','tapette','grosse','gros','gras',
-  // Racisme / discrimination
   'negro','negre','nègre','neger','nigg','nigga','bougnoule','raton','youpin','feuj','rebeu','bicot','bamboula','chinetoque','bridé','suicide','viol',
-  // Anglais vulgaire
   'fuck','shit','ass','bitch','slut','whore','cunt','bastard','nigger','faggot','retard',
-  // Autres
   'anonymous','anon','hacker','hack','root','null','undefined','god','satan','diable','terrorist','isis'
 ];
 const USERNAME_REGEX = /^[a-zA-Z0-9_\-\.]{2,20}$/;
@@ -692,7 +694,9 @@ async function createAccount(){
     myUser = user;
     usersCache[code] = user;
     err.textContent = '';
-    enterHome();
+    await enterHome();
+    const pending = localStorage.getItem('whoisat_pendingJoin');
+    if(pending){ localStorage.removeItem('whoisat_pendingJoin'); await joinGroupFromLink(pending); }
   } catch(e) {
     err.style.color = '#e74c3c';
     err.textContent = 'Erreur Firebase : vérifie la config.';
@@ -712,14 +716,11 @@ async function loginWithCode(){
     const snap = await dbGet(`users/${code}`);
     if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun compte avec ce code !'; return; }
     const userData = snap.val();
-    // Vérification du ban
     if(userData.banned){
-      // Vérifie si le ban temporaire a expiré
       if(userData.banType === 'temp' && userData.bannedUntil && Date.now() > userData.bannedUntil){
         await dbSet(`users/${code}/banned`, false);
         await dbSet(`users/${code}/banType`, null);
         await dbSet(`users/${code}/bannedUntil`, null);
-        // Continue la connexion normalement
       } else {
         const banMsg = userData.banType === 'temp' && userData.bannedUntil
           ? `🚫 Compte banni jusqu'au ${new Date(userData.bannedUntil).toLocaleDateString('fr-FR')}`
@@ -728,18 +729,15 @@ async function loginWithCode(){
         err.style.color='#e74c3c'; err.textContent = banMsg; return;
       }
     }
-    // Stocke l'IP (best effort via API publique)
     fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{
       if(d && d.ip) dbSet(`users/${code}/lastIp`, d.ip).catch(()=>{});
     }).catch(()=>{});
-    // Vérifie l'IP ban
     fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(async d=>{
       if(!d || !d.ip) return;
       const ipKey = d.ip.replace(/\./g,'_');
       const ipSnap = await dbGet(`bannedIps/${ipKey}`);
       if(ipSnap.exists()){ err.style.color='#e74c3c'; err.textContent = '🌐 Accès bloqué (IP ban)'; meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); }
     }).catch(()=>{});
-    // Vérification du mot de passe
     if(userData.pwdHash){
       const inputHash = await hashPassword(pwd);
       if(inputHash !== userData.pwdHash){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe incorrect !'; return; }
@@ -750,7 +748,9 @@ async function loginWithCode(){
     if(!myUser.friends) myUser.friends = [];
     usersCache[code] = myUser;
     err.textContent = '';
-    enterHome();
+    await enterHome();
+    const pending = localStorage.getItem('whoisat_pendingJoin');
+    if(pending){ localStorage.removeItem('whoisat_pendingJoin'); await joinGroupFromLink(pending); }
   } catch(e) {
     err.style.color = '#e74c3c';
     err.textContent = 'Erreur Firebase : vérifie la config.';
@@ -790,7 +790,6 @@ async function enterHome(){
 
     document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
     renderHeaderAvatar();
-    // Affiche le bouton admin si applicable
     const snapVal = snap.val();
     const isAdmin = snapVal?.isAdmin === true || snapVal?.['isAdmin '] === true;
     document.getElementById('btn-admin-panel').style.display = isAdmin ? 'inline-flex' : 'none';
@@ -809,7 +808,6 @@ function cleanHomeListeners(){
 }
 
 function setupHomeListeners(){
-  // Ecoute la liste d'amis : met a jour myUser et ajoute les nouveaux conv listeners
   homeListeners['_me'] = dbListen(`users/${meCode}`, async snap => {
     if(!snap.exists()) return;
     const fresh = snap.val();
@@ -827,7 +825,6 @@ function setupHomeListeners(){
     if(document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
 
-  // Ecoute les groupes : ajoute seulement les nouveaux
   homeListeners['_groups'] = dbListen('groups', snap => {
     if(snap.exists()){
       snap.forEach(child => {
@@ -841,7 +838,6 @@ function setupHomeListeners(){
     if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
 
-  // Initialise les conv listeners pour tous les amis/groupes deja connus
   toArr(myUser?.friends).forEach(fcode => addConvListener(fcode));
   Object.keys(groupsCache).forEach(gid => addGroupConvListener(gid));
 }
@@ -900,12 +896,10 @@ function renderConvList(){
       list.innerHTML = '<div class="empty-list"><div style="font-size:48px">💬</div><div>Aucune conversation.<br>Ajoute un ami avec son code !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showAddFriend()">+ Ajouter un ami</button></div>';
       return;
     }
-    // Fetch manquants puis re-render si besoin
     loadMissingUsers(friends).then(hadMissing => { if(hadMissing) renderConvList(); });
     friends.forEach(fcode => {
       const friend = usersCache[fcode];
       if(!friend){
-        // Affiche un placeholder le temps du fetch
         const div = document.createElement('div');
         div.className = 'conv-item';
         div.style.opacity = '0.4';
@@ -1054,7 +1048,6 @@ function openGroup(gid){
   currentChat = { type: 'group', id: gid };
   const group = groupsCache[gid];
   const hav   = document.getElementById('chat-hd-av');
-  // Avatar du groupe
   if(group.avatar){
     hav.innerHTML = `<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
     hav.style.background = 'transparent';
@@ -1095,7 +1088,6 @@ function showEmojiPicker(msgEl, key, convKey){
     span.onclick = (e) => { e.stopPropagation(); toggleReaction(key, convKey, emoji); closeEmojiPicker(); };
     picker.appendChild(span);
   });
-  // Position above the message
   const phone = document.querySelector('.phone');
   const rect  = msgEl.getBoundingClientRect();
   const pRect = phone.getBoundingClientRect();
@@ -1119,7 +1111,6 @@ async function toggleReaction(key, convKey, emoji){
   const snap = await dbGet(path);
   const users = snap.exists() ? (snap.val() || {}) : {};
   if(users[meCode]){
-    // Remove my reaction
     const updated = {...users};
     delete updated[meCode];
     await dbSet(path, Object.keys(updated).length ? updated : null);
@@ -1146,21 +1137,6 @@ function renderReactions(reactions, key, convKey){
     + '</div>';
 }
 
-function updateReactionsEl(msgEl, reactions, key, convKey){
-  let rDiv = msgEl.querySelector('.msg-reactions');
-  if(!rDiv){
-    rDiv = document.createElement('div');
-    rDiv.className = 'msg-reactions';
-    msgEl.appendChild(rDiv);
-  }
-  rDiv.outerHTML = renderReactions(reactions, key, convKey) || '';
-  // re-query after outerHTML swap
-  const nd = msgEl.querySelector('.msg-reactions');
-  if(!nd && renderReactions(reactions, key, convKey)){
-    msgEl.insertAdjacentHTML('beforeend', renderReactions(reactions, key, convKey));
-  }
-}
-
 // ── TICKS ──────────────────────────────────────────────────────────────────
 function tickSVG(status){
   if(status === 'pending') return `<span class="msg-status"><svg viewBox="0 0 16 16" fill="none"><polyline points="2,8 6,12 14,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
@@ -1182,7 +1158,6 @@ function isAdminUser(){ return myUser && (myUser.isAdmin === true || myUser['isA
 function askDelete(key, convKey, isMe){
   deletingKey     = key;
   deletingConvKey = convKey;
-  // L'admin peut toujours supprimer pour tout le monde
   document.getElementById('del-all-btn').style.display = (isMe || isAdminUser()) ? 'block' : 'none';
   showModal('modal-delete');
 }
@@ -1212,7 +1187,6 @@ function startChatListener(){
   container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
   const convRef = ref(db, `conversations/${convKey}`);
 
-  // Mark received msgs as read
   dbGet(`conversations/${convKey}`).then(snap => {
     if(!snap.exists()) return;
     snap.forEach(child => {
@@ -1260,9 +1234,7 @@ function startChatListener(){
       + `<div class="msg-content">${contentHTML}</div>`
       + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`
       + renderReactions(msg.reactions, key, convKey);
-    // Double-click → delete (admin peut toujours supprimer)
     div.addEventListener('dblclick', () => askDelete(key, convKey, isMe || isAdminUser()));
-    // Long press → emoji picker
     let pressTimer = null;
     const startPress = (e) => { pressTimer = setTimeout(() => showEmojiPicker(div, key, convKey), 500); };
     const endPress   = ()    => clearTimeout(pressTimer);
@@ -1288,12 +1260,10 @@ function startChatListener(){
     if(msg.from === meCode) updateMsgTick(key, msg.status || 'sent');
     const el = document.querySelector(`[data-msgkey="${key}"]`);
     if(!el) return;
-    // Update text if deleted for all
     if(msg.deleted){
       const textDiv = el.querySelector('div:not(.msg-time):not(.msg-sender):not(.msg-reactions)');
       if(textDiv) textDiv.innerHTML = '<em style="color:#aaa">🚫 Ce message a été supprimé</em>';
     }
-    // Update reactions
     const newReactHTML = renderReactions(msg.reactions, key, convKey);
     let rDiv = el.querySelector('.msg-reactions');
     if(rDiv) rDiv.remove();
@@ -1308,7 +1278,7 @@ function showToast(msg){
 }
 
 // ===== FILE ATTACH =====
-let pendingAttach = null; // { type, fileData, fileName, fileSize }
+let pendingAttach = null;
 
 function formatBytes(bytes){
   if(!bytes) return '';
@@ -1319,7 +1289,6 @@ function formatBytes(bytes){
 
 function handleAttach(e, type){
   const file = e.target.files[0]; if(!file) return;
-  // Limite : 4 Mo (Firebase Realtime DB limite les noeuds à ~10Mo, on est prudent)
   if(file.size > 4 * 1024 * 1024){ showToast('❌ Fichier trop lourd (max 4 Mo)'); e.target.value=''; return; }
   const r = new FileReader();
   r.onload = ev => {
@@ -1357,7 +1326,6 @@ async function sendMsg(){
         text: type === 'image' ? '📷 Image' : `📄 ${fileName}`,
         time: timeStr, ts, status: 'sent'
       });
-      // Si aussi du texte, envoie séparément
       if(text){
         input.value = '';
         await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: ts+1, status: 'sent' });
@@ -1390,13 +1358,12 @@ function openImagePreview(key){
   phone.appendChild(overlay);
 }
 
-// ===== AUTO CLEANUP (messages + fichiers > 1 semaine) =====
+// ===== AUTO CLEANUP =====
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 async function runCleanup(){
   const cutoff = Date.now() - ONE_WEEK_MS;
   try {
-    // Nettoie toutes les conversations
     const convSnap = await dbGet('conversations');
     if(!convSnap.exists()) return;
     const convData = convSnap.val();
@@ -1405,25 +1372,18 @@ async function runCleanup(){
       if(!msgs) continue;
       for(const [msgKey, msg] of Object.entries(msgs)){
         if(!msg || !msg.ts) continue;
-        if(msg.ts < cutoff){
-          // Si c'est une image ou PDF, supprime complètement pour libérer le stockage
-          await dbSet(`conversations/${convKey}/${msgKey}`, null);
-        }
+        if(msg.ts < cutoff) await dbSet(`conversations/${convKey}/${msgKey}`, null);
       }
     }
   } catch(e){ console.warn('Cleanup error:', e); }
 }
 
-// Lance le cleanup au démarrage (une fois par session)
 setTimeout(runCleanup, 5000);
 
 function openFriendProfile(){
   if(!currentChat) return;
   let user = null;
-  if(currentChat.type === 'dm'){
-    user = usersCache[currentChat.id];
-  }
-  // Pour les groupes, pas de profil individuel
+  if(currentChat.type === 'dm') user = usersCache[currentChat.id];
   if(!user) return;
 
   const pav = document.getElementById('friend-pav');
@@ -1436,10 +1396,7 @@ function openFriendProfile(){
   document.getElementById('friend-uname').textContent       = user.username;
   document.getElementById('friend-code-label').textContent  = user.code;
   document.getElementById('friend-code-big').textContent    = user.code;
-
-  // Bouton retour → revient au chat
   document.getElementById('friend-profile-back').onclick = () => show('screen-chat');
-
   show('screen-friend-profile');
 }
 
@@ -1518,7 +1475,6 @@ function openGroupEdit(gid){
   const group = groupsCache[gid];
   if(!group) return;
 
-  // Avatar
   const avEl = document.getElementById('gedit-av');
   if(group.avatar){
     avEl.innerHTML = `<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
@@ -1526,18 +1482,14 @@ function openGroupEdit(gid){
     avEl.innerHTML = `<span style="font-size:32px;">👥</span>`;
   }
 
-  // Nom
   document.getElementById('gedit-name').value = group.name;
   document.getElementById('err-gedit').textContent = '';
-
-  // Retour
   document.getElementById('group-edit-back').onclick = () => show('screen-chat');
 
-  // Bouton quitter : si admin et pas membre → affiche "Rejoindre"
   const members = toArr(group.members);
-  const isMember = members.includes(meCode);
   const leaveBtn = document.querySelector('.btn-leave-group');
   if(leaveBtn){
+    const isMember = members.includes(meCode);
     if(!isMember && isAdminUser()){
       leaveBtn.textContent = '🛡️ Rejoindre ce groupe (admin)';
       leaveBtn.style.background = '#e8f5e9';
@@ -1551,9 +1503,111 @@ function openGroupEdit(gid){
     }
   }
 
+  // ── Affichage conditionnel du lien d'invitation ──
+  // Visible uniquement pour le créateur du groupe OU les admins système
+  const isCreator = group.createdBy === meCode;
+  const canInvite = isCreator || isAdminUser();
+  const inviteSection = document.getElementById('gedit-invite-section');
+  inviteSection.style.display = canInvite ? 'flex' : 'none';
+  if(canInvite) refreshInviteLinkDisplay(group);
+
   renderGroupMembers();
   renderAddMemberSelect();
   show('screen-group-edit');
+}
+
+// Affiche le lien existant ou un placeholder
+function refreshInviteLinkDisplay(group){
+  const linkEl = document.getElementById('gedit-invite-link');
+  if(group.inviteToken){
+    const base  = window.location.href.split('?')[0];
+    linkEl.textContent = `${base}?joinGroup=${group.id}&token=${group.inviteToken}`;
+  } else {
+    linkEl.textContent = '';
+    linkEl.setAttribute('data-placeholder', 'Aucun lien actif — clique sur "Copier le lien" pour en générer un.');
+    linkEl.style.color = '#aaa';
+    linkEl.style.fontStyle = 'italic';
+    linkEl.style.fontSize = '12px';
+    linkEl.textContent = 'Aucun lien actif — clique sur "Copier le lien" pour en générer un.';
+  }
+}
+
+async function copyGroupInviteLink(){
+  if(!editingGroupId) return;
+  const group = groupsCache[editingGroupId];
+  const isCreator = group.createdBy === meCode;
+  if(!isCreator && !isAdminUser()){ showToast('⛔ Seul le créateur peut générer un lien'); return; }
+
+  // Génère un token si pas encore fait
+  let token = group.inviteToken;
+  if(!token){
+    token = genInviteToken();
+    await dbSet(`groups/${editingGroupId}/inviteToken`, token);
+    groupsCache[editingGroupId].inviteToken = token;
+  }
+
+  const base = window.location.href.split('?')[0];
+  const link = `${base}?joinGroup=${editingGroupId}&token=${token}`;
+
+  // Met à jour l'affichage
+  const linkEl = document.getElementById('gedit-invite-link');
+  linkEl.textContent = link;
+  linkEl.style.color  = '';
+  linkEl.style.fontStyle = '';
+  linkEl.style.fontSize  = '';
+
+  navigator.clipboard.writeText(link)
+    .then(() => showToast('🔗 Lien copié dans le presse-papier !'))
+    .catch(() => { prompt('Copie ce lien :', link); });
+}
+
+async function revokeGroupInviteLink(){
+  if(!editingGroupId) return;
+  const group = groupsCache[editingGroupId];
+  const isCreator = group.createdBy === meCode;
+  if(!isCreator && !isAdminUser()){ showToast('⛔ Seul le créateur peut révoquer le lien'); return; }
+  if(!group.inviteToken){ showToast('Aucun lien actif à révoquer'); return; }
+  if(!confirm('Révoquer le lien d\'invitation ? Les anciens liens ne fonctionneront plus.')) return;
+  try {
+    await dbSet(`groups/${editingGroupId}/inviteToken`, null);
+    groupsCache[editingGroupId].inviteToken = null;
+    delete groupsCache[editingGroupId].inviteToken;
+    refreshInviteLinkDisplay(groupsCache[editingGroupId]);
+    showToast('🗑️ Lien révoqué');
+  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+}
+
+// ===== JOIN GROUP VIA INVITE LINK =====
+async function joinGroupFromLink(gid, token){
+  try {
+    const snap = await dbGet(`groups/${gid}`);
+    if(!snap.exists()){ showToast('❌ Groupe introuvable ou supprimé'); return; }
+    const group = snap.val();
+
+    // Vérifie le token si le groupe en a un
+    if(group.inviteToken && group.inviteToken !== token){
+      showToast('❌ Lien d\'invitation invalide ou révoqué'); return;
+    }
+    // Si pas de token dans le groupe → lien non généré, accès refusé
+    if(!group.inviteToken){
+      showToast('❌ Lien d\'invitation invalide'); return;
+    }
+
+    const members = toArr(group.members);
+    if(members.includes(meCode)){
+      groupsCache[gid] = group;
+      switchHomeTab('groups');
+      showToast('✅ Tu es déjà dans ce groupe !');
+      return;
+    }
+    members.push(meCode);
+    await dbSet(`groups/${gid}/members`, members);
+    group.members = members;
+    groupsCache[gid] = group;
+    addGroupConvListener(gid);
+    switchHomeTab('groups');
+    showToast(`✅ Tu as rejoint "${group.name}" !`);
+  } catch(e){ showToast('❌ Erreur en rejoignant le groupe'); console.error(e); }
 }
 
 function renderGroupMembers(){
@@ -1586,9 +1640,7 @@ function renderAddMemberSelect(){
   const members = toArr(group.members);
   const sel = document.getElementById('gedit-add-select');
   sel.innerHTML = '<option value="">-- Choisir un contact --</option>';
-
   if(isAdminUser()){
-    // L'admin voit tous les utilisateurs connus
     Object.entries(usersCache).forEach(([code, u]) => {
       if(!u || members.includes(code)) return;
       const opt = document.createElement('option');
@@ -1623,7 +1675,6 @@ async function adminJoinGroup(gid){
     }
     groupsCache[gid] = group;
     showToast('🛡️ Tu as rejoint le groupe !');
-    // Recharge l'écran
     openGroupEdit(gid);
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
@@ -1638,7 +1689,6 @@ function handleGroupAvatar(e){
     try {
       await dbSet(`groups/${editingGroupId}/avatar`, avatarData);
       groupsCache[editingGroupId].avatar = avatarData;
-      // Met à jour l'avatar dans le header du chat si on est dessus
       if(currentChat && currentChat.type === 'group' && currentChat.id === editingGroupId){
         const hav = document.getElementById('chat-hd-av');
         hav.innerHTML = `<img src="${avatarData}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
@@ -1708,7 +1758,6 @@ async function leaveGroup(){
       await dbSet(`groups/${editingGroupId}`, null);
     } else {
       await dbSet(`groups/${editingGroupId}/members`, newMembers);
-      // Si créateur, passe le rôle au prochain membre
       if(group.createdBy === meCode && newMembers.length > 0){
         await dbSet(`groups/${editingGroupId}/createdBy`, newMembers[0]);
       }
@@ -1742,7 +1791,6 @@ function showReportModal(){
 }
 
 function showReportFromProfile(){
-  const friend = usersCache[reportTargetCode || ''] || null;
   const friendCode = document.getElementById('friend-code-big').textContent;
   reportTargetCode = friendCode;
   reportConvKey    = [meCode, friendCode].sort().join('_');
@@ -1760,7 +1808,6 @@ async function submitReport(){
   const err    = document.getElementById('err-report');
   if(!reason){ err.style.color='#e74c3c'; err.textContent = 'Choisis une raison !'; return; }
   err.style.color='#888'; err.textContent = 'Envoi…';
-  // Récupère les derniers messages de la conv
   let messages = [];
   try {
     const msnap = await dbGet(`conversations/${reportConvKey}`);
@@ -1769,19 +1816,13 @@ async function submitReport(){
         const m = child.val();
         if(m && !m.deleted && !m._deletedForMe) messages.push({from: m.from, text: m.text, time: m.time});
       });
-      messages = messages.slice(-10); // 10 derniers msgs
+      messages = messages.slice(-10);
     }
   } catch(e){}
-
   const report = {
-    reportedBy: meCode,
-    reportedUser: reportTargetCode || 'group',
-    convKey: reportConvKey,
-    reason,
-    detail: detail || '',
-    timestamp: Date.now(),
-    messages,
-    status: 'pending'
+    reportedBy: meCode, reportedUser: reportTargetCode || 'group',
+    convKey: reportConvKey, reason, detail: detail || '',
+    timestamp: Date.now(), messages, status: 'pending'
   };
   try {
     await dbPush('reports', report);
@@ -1815,13 +1856,9 @@ function switchAdminTab(tab){
 async function renderAdminContent(){
   const content = document.getElementById('admin-content');
   content.innerHTML = '<div class="empty-admin">Chargement…</div>';
-  if(currentAdminTab === 'reports'){
-    await renderAdminReports(content);
-  } else if(currentAdminTab === 'users'){
-    await renderAdminUsers(content);
-  } else {
-    await renderAdminGroups(content);
-  }
+  if(currentAdminTab === 'reports') await renderAdminReports(content);
+  else if(currentAdminTab === 'users') await renderAdminUsers(content);
+  else await renderAdminGroups(content);
 }
 
 async function renderAdminGroups(content){
@@ -1829,30 +1866,23 @@ async function renderAdminGroups(content){
     const snap = await dbGet('groups');
     if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun groupe</div>'; return; }
     const groups = [];
-    const raw = snap.val();
-    Object.entries(raw).forEach(([gid, data]) => { if(data) groups.push({...data, id: gid}); });
+    Object.entries(snap.val()).forEach(([gid, data]) => { if(data) groups.push({...data, id: gid}); });
     groups.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-
-    // Charge les users manquants
     const allCodes = [...new Set(groups.flatMap(g => toArr(g.members)))];
     await Promise.all(allCodes.filter(c => !usersCache[c]).map(async c => {
       const s = await dbGet(`users/${c}`); if(s.exists()) usersCache[c] = s.val();
     }));
-
     content.innerHTML = '';
     const section = document.createElement('div');
     section.className = 'admin-section';
     section.innerHTML = `<div class="admin-section-title">Tous les groupes (${groups.length})</div>`;
-
     groups.forEach(group => {
-      // Charge dans groupsCache pour pouvoir ouvrir l'éditeur
       if(!groupsCache[group.id]) groupsCache[group.id] = group;
-      const members = toArr(group.members);
+      const members  = toArr(group.members);
       const isMember = members.includes(meCode);
-      const creator = usersCache[group.createdBy];
+      const creator  = usersCache[group.createdBy];
       const memberNames = members.slice(0,3).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ')
         + (members.length > 3 ? ` +${members.length-3}` : '');
-
       const div = document.createElement('div');
       div.className = 'user-item';
       div.innerHTML = `
@@ -1870,32 +1900,23 @@ async function renderAdminGroups(content){
       section.appendChild(div);
     });
     content.appendChild(section);
-  } catch(e){
-    content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>';
-    console.error(e);
-  }
+  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
 async function adminOpenGroup(gid){
   if(!isAdminUser()) return;
-  // Charge le groupe depuis Firebase si pas en cache
   if(!groupsCache[gid]){
     const snap = await dbGet(`groups/${gid}`);
     if(!snap.exists()){ showToast('❌ Groupe introuvable'); return; }
     groupsCache[gid] = snap.val();
   }
-  // Charge les membres
   const members = toArr(groupsCache[gid].members);
   await Promise.all(members.filter(m => !usersCache[m]).map(async m => {
     const s = await dbGet(`users/${m}`); if(s.exists()) usersCache[m] = s.val();
   }));
-
-  // Si pas membre, on peut quand même ouvrir le chat admin
   const isMember = members.includes(meCode);
-  if(!isMember){
-    // Retour vers admin panel depuis l'éditeur
-    document.getElementById('group-edit-back').onclick = () => { show('screen-admin'); };
-  } else {
+  if(!isMember) document.getElementById('group-edit-back').onclick = () => { show('screen-admin'); };
+  else {
     currentChat = { type: 'group', id: gid };
     document.getElementById('group-edit-back').onclick = () => show('screen-chat');
   }
@@ -1907,36 +1928,28 @@ async function renderAdminReports(content){
     const snap = await dbGet('reports');
     if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement !</div>'; return; }
     const reports = [];
-    const raw = snap.val();
-    Object.entries(raw).forEach(([key, data]) => {
-      if(data) reports.push({key, ...data});
-    });
+    Object.entries(snap.val()).forEach(([key, data]) => { if(data) reports.push({key, ...data}); });
     const pending = reports.filter(r => r.status === 'pending').reverse();
     if(pending.length === 0){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement en attente !</div>'; return; }
-
-    // Charge les users manquants
     const codes = [...new Set(pending.flatMap(r => [r.reportedBy, r.reportedUser]).filter(c => c && c !== 'group'))];
     await Promise.all(codes.filter(c => !usersCache[c]).map(async c => {
       const s = await dbGet(`users/${c}`); if(s.exists()) usersCache[c] = s.val();
     }));
-
     content.innerHTML = '';
     pending.forEach((r, idx) => {
       const reporterUser  = usersCache[r.reportedBy];
       const reportedUser  = r.reportedUser !== 'group' ? usersCache[r.reportedUser] : null;
-      const reporterName  = reporterUser  ? reporterUser.username  : r.reportedBy;
-      const reportedName  = reportedUser  ? reportedUser.username  : (r.reportedUser === 'group' ? 'Groupe' : r.reportedUser);
+      const reporterName  = reporterUser ? reporterUser.username : r.reportedBy;
+      const reportedName  = reportedUser ? reportedUser.username : (r.reportedUser === 'group' ? 'Groupe' : r.reportedUser);
       const reasonLabels  = {harcelement:'Harcèlement',contenu_choquant:'Contenu choquant',spam:'Spam',usurpation:'Usurpation',autre:'Autre'};
-
       let msgsHTML = '';
       if(r.messages && r.messages.length){
         msgsHTML = r.messages.map(m => {
-          const s   = usersCache[m.from];
-          const sn  = s ? s.username : m.from;
+          const s  = usersCache[m.from];
+          const sn = s ? s.username : m.from;
           const isReported = m.from === r.reportedUser;
-          const color = getColor(sn);
           return `<div class="report-msg-bubble ${isReported ? 'out' : 'in'}">
-            <div class="report-msg-sender" style="color:${color}">${sn}</div>
+            <div class="report-msg-sender" style="color:${getColor(sn)}">${sn}</div>
             <div>${m.text || ''}</div>
             <div class="report-msg-time">${m.time || ''}</div>
           </div>`;
@@ -1944,7 +1957,6 @@ async function renderAdminReports(content){
       } else {
         msgsHTML = '<div style="color:#aaa;font-size:12px;text-align:center;padding:8px;">Aucun message capturé</div>';
       }
-
       const div = document.createElement('div');
       div.className = 'admin-section';
       div.innerHTML = `
@@ -1969,10 +1981,7 @@ async function renderAdminReports(content){
         </div>`;
       content.appendChild(div);
     });
-  } catch(e) {
-    content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>';
-    console.error(e);
-  }
+  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
 async function renderAdminUsers(content){
@@ -1980,12 +1989,8 @@ async function renderAdminUsers(content){
     const snap = await dbGet('users');
     if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun utilisateur</div>'; return; }
     const users = [];
-    const raw = snap.val();
-    Object.entries(raw).forEach(([code, data]) => {
-      if(data) users.push({code, ...data});
-    });
+    Object.entries(snap.val()).forEach(([code, data]) => { if(data) users.push({code, ...data}); });
     users.sort((a,b) => (a.username||'').localeCompare(b.username||''));
-
     content.innerHTML = '';
     const section = document.createElement('div');
     section.className = 'admin-section';
@@ -1993,7 +1998,7 @@ async function renderAdminUsers(content){
     users.forEach(u => {
       const div = document.createElement('div');
       div.className = 'user-item';
-      const isSelf = u.code === meCode;
+      const isSelf   = u.code === meCode;
       const isBanned = u.banned === true;
       const banLabel = isBanned
         ? (u.banType === 'ip' ? '<span class="ip-banned-badge">IP BAN 🌐</span>'
@@ -2018,10 +2023,7 @@ async function renderAdminUsers(content){
       section.appendChild(div);
     });
     content.appendChild(section);
-  } catch(e) {
-    content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>';
-    console.error(e);
-  }
+  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
 async function adminBanUser(userCode, reportKey){
@@ -2050,25 +2052,20 @@ async function confirmBan(type){
   const userCode  = window._banTargetCode;
   const reportKey = window._banReportKey;
   if(!userCode) return;
-
-  // Récupère l'IP du user si dispo (stockée au login)
   try {
     if(type === 'permanent'){
       await dbSet(`users/${userCode}/banned`, true);
       await dbSet(`users/${userCode}/banType`, 'permanent');
       showToast('🚫 Ban permanent appliqué !');
-
     } else if(type === 'temp'){
-      const duration  = parseInt(document.getElementById('ban-duration').value);
-      const until     = Date.now() + duration;
+      const duration = parseInt(document.getElementById('ban-duration').value);
+      const until    = Date.now() + duration;
       await dbSet(`users/${userCode}/banned`, true);
       await dbSet(`users/${userCode}/banType`, 'temp');
       await dbSet(`users/${userCode}/bannedUntil`, until);
       const labels = {'3600000':'1h','21600000':'6h','86400000':'1 jour','259200000':'3 jours','604800000':'1 semaine','2592000000':'1 mois'};
       showToast(`⏱️ Ban temporaire ${labels[duration]||''} appliqué !`);
-
     } else if(type === 'ip'){
-      // Récupère l'IP stockée du user
       const usnap = await dbGet(`users/${userCode}/lastIp`);
       const ip    = usnap.exists() ? usnap.val() : null;
       await dbSet(`users/${userCode}/banned`, true);
@@ -2124,7 +2121,7 @@ function toggleReportMsgs(id){
   if(icon) icon.textContent = open ? '▼' : '▲';
 }
 
-// ===== EXPOSER AU GLOBAL (requis avec type="module") =====
+// ===== EXPOSER AU GLOBAL =====
 Object.assign(window, {
   openFriendProfile, openChatProfile, showToast,
   switchTab, handleAuthAvatar, createAccount, loginWithCode,
@@ -2141,14 +2138,36 @@ Object.assign(window, {
   showTempBanForm, hideTempBanForm, confirmBan,
   openGroupEdit, handleGroupAvatar, saveGroupName,
   addMemberToGroup, removeMemberFromGroup, leaveGroup,
-  handleAttach, cancelAttach, openImagePreview
+  handleAttach, cancelAttach, openImagePreview,
+  // ── Invite link ──
+  copyGroupInviteLink, revokeGroupInviteLink, joinGroupFromLink
 });
 
 // ===== INIT =====
+const _urlParams   = new URLSearchParams(window.location.search);
+const _pendingJoin = _urlParams.get('joinGroup');
+const _pendingToken = _urlParams.get('token');
+
+// Stocke les paramètres d'invitation avant de nettoyer l'URL
+if(_pendingJoin){
+  localStorage.setItem('whoisat_pendingJoin',  _pendingJoin);
+  if(_pendingToken) localStorage.setItem('whoisat_pendingToken', _pendingToken);
+  history.replaceState({}, '', window.location.pathname);
+}
+
 if(meCode){
-  enterHome();
+  enterHome().then(async () => {
+    const pendingGid   = localStorage.getItem('whoisat_pendingJoin');
+    const pendingToken = localStorage.getItem('whoisat_pendingToken');
+    if(pendingGid){
+      localStorage.removeItem('whoisat_pendingJoin');
+      localStorage.removeItem('whoisat_pendingToken');
+      await joinGroupFromLink(pendingGid, pendingToken || null);
+    }
+  });
 } else {
   show('screen-auth');
+  if(_pendingJoin) showToast('🔗 Connecte-toi pour rejoindre le groupe !');
 }
 </script>
 
@@ -2159,14 +2178,10 @@ if(meCode){
   const iconBlob = new Blob([iconSvg], {type:'image/svg+xml'});
   const iconUrl  = URL.createObjectURL(iconBlob);
   const manifest = {
-    name: 'Who-isat',
-    short_name: 'Who-isat',
+    name: 'Who-isat', short_name: 'Who-isat',
     description: 'Crée de fausses conversations à partager avec tes amis',
-    start_url: '.',
-    display: 'standalone',
-    background_color: '#075E54',
-    theme_color: '#075E54',
-    orientation: 'portrait',
+    start_url: '.', display: 'standalone',
+    background_color: '#075E54', theme_color: '#075E54', orientation: 'portrait',
     icons: [
       { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
       { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
@@ -2177,3 +2192,4 @@ if(meCode){
 })();
 </script>
 </body>
+</html>
