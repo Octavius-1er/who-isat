@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Who-isat</title>
 
-  <!-- ===== PWA / ICÔNES ===== -->
   <meta name="theme-color" content="#075E54" />
   <meta name="application-name" content="Who-isat" />
   <meta name="description" content="Crée de fausses conversations à partager avec tes amis" />
 
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Who-isat" />
   <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23075E54'/%3E%3Ccircle cx='96' cy='96' r='62' fill='%2325D366'/%3E%3Cpath d='M117.5 83c-.8-3.8-4.5-6.5-8.5-6.5H83c-4 0-7.7 2.7-8.5 6.5l-4.5 22c-.5 2.2.2 4.5 1.8 6.2 1.6 1.7 3.8 2.8 6.2 2.8h4l-2 8 12-8h24.5c2.4 0 4.6-1.1 6.2-2.8 1.6-1.7 2.3-4 1.8-6.2L117.5 83z' fill='white'/%3E%3C/svg%3E" />
@@ -30,7 +29,6 @@
     .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
     .screen.active { display: flex; }
 
-    /* LOADING */
     .loading-screen { align-items: center; justify-content: center; background: #fff; gap: 16px; }
     .loading-spinner { width: 48px; height: 48px; border: 4px solid #e0e0e0; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -124,107 +122,47 @@
     .msg-status svg { width: 16px; height: 16px; }
     .msg.deleting { opacity: 0.4; transition: opacity 0.2s; }
 
-    /* ===== VOICE MESSAGE BUTTON ===== */
-    .mic-btn {
-      width: 42px; height: 42px; border-radius: 50%;
-      background: var(--green); border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; transition: transform 0.15s, background 0.2s;
-      user-select: none; -webkit-user-select: none;
-      touch-action: none;
-    }
+    .mic-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: transform 0.15s, background 0.2s; user-select: none; -webkit-user-select: none; touch-action: none; }
     .mic-btn svg { width: 20px; height: 20px; fill: white; pointer-events: none; }
-    .mic-btn.recording {
-      background: #e74c3c;
-      animation: mic-pulse 1s ease-in-out infinite;
-    }
-    @keyframes mic-pulse {
-      0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231,76,60,0.5); }
-      50%      { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(231,76,60,0); }
-    }
+    .mic-btn.recording { background: #e74c3c; animation: mic-pulse 1s ease-in-out infinite; }
+    @keyframes mic-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231,76,60,0.5); } 50% { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(231,76,60,0); } }
 
-    /* ===== RECORDING BAR ===== */
-    .recording-bar {
-      display: none; align-items: center; gap: 10px;
-      padding: 8px 14px; background: #fff3f3;
-      border-top: 1px solid #ffd5d5; flex-shrink: 0;
-      animation: slideUp 0.2s ease;
-    }
+    .recording-bar { display: none; align-items: center; gap: 10px; padding: 8px 14px; background: #fff3f3; border-top: 1px solid #ffd5d5; flex-shrink: 0; animation: slideUp 0.2s ease; }
     .recording-bar.active { display: flex; }
-    @keyframes slideUp {
-      from { transform: translateY(100%); opacity: 0; }
-      to   { transform: translateY(0);   opacity: 1; }
-    }
-    .rec-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: #e74c3c; flex-shrink: 0;
-      animation: blink 1s step-start infinite;
-    }
+    @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .rec-dot { width: 10px; height: 10px; border-radius: 50%; background: #e74c3c; flex-shrink: 0; animation: blink 1s step-start infinite; }
     @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
     .rec-label { font-size: 13px; color: #e74c3c; font-weight: 600; flex: 1; }
     .rec-timer { font-size: 13px; color: #e74c3c; font-family: monospace; font-weight: 700; min-width: 40px; text-align: right; }
-    .rec-cancel-btn {
-      background: none; border: none; font-size: 13px;
-      color: #888; cursor: pointer; padding: 4px 8px;
-      border-radius: 8px; font-family: inherit;
-    }
+    .rec-cancel-btn { background: none; border: none; font-size: 13px; color: #888; cursor: pointer; padding: 4px 8px; border-radius: 8px; font-family: inherit; }
     .rec-cancel-btn:hover { background: #f0f0f0; }
 
-    /* ===== WAVEFORM ANIMATION (in bar) ===== */
     .rec-wave { display: flex; align-items: center; gap: 2px; height: 20px; }
-    .rec-wave span {
-      display: block; width: 3px; border-radius: 2px;
-      background: #e74c3c; animation: wave-bar 0.8s ease-in-out infinite;
-    }
-    .rec-wave span:nth-child(1) { animation-delay: 0s;    height: 6px; }
-    .rec-wave span:nth-child(2) { animation-delay: 0.1s;  height: 14px; }
-    .rec-wave span:nth-child(3) { animation-delay: 0.2s;  height: 20px; }
+    .rec-wave span { display: block; width: 3px; border-radius: 2px; background: #e74c3c; animation: wave-bar 0.8s ease-in-out infinite; }
+    .rec-wave span:nth-child(1) { animation-delay: 0s; height: 6px; }
+    .rec-wave span:nth-child(2) { animation-delay: 0.1s; height: 14px; }
+    .rec-wave span:nth-child(3) { animation-delay: 0.2s; height: 20px; }
     .rec-wave span:nth-child(4) { animation-delay: 0.15s; height: 12px; }
     .rec-wave span:nth-child(5) { animation-delay: 0.05s; height: 8px; }
-    @keyframes wave-bar {
-      0%,100% { transform: scaleY(0.4); }
-      50%      { transform: scaleY(1); }
-    }
+    @keyframes wave-bar { 0%,100% { transform: scaleY(0.4); } 50% { transform: scaleY(1); } }
 
-    /* ===== AUDIO PLAYER in bubble ===== */
-    .msg-audio {
-      display: flex; align-items: center; gap: 8px;
-      min-width: 180px; max-width: 240px; padding: 2px 0 4px;
-    }
-    .audio-play-btn {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: none; cursor: pointer; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; transition: transform 0.1s;
-    }
+    .msg-audio { display: flex; align-items: center; gap: 8px; min-width: 180px; max-width: 240px; padding: 2px 0 4px; }
+    .audio-play-btn { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: transform 0.1s; }
     .msg.out .audio-play-btn { background: rgba(0,0,0,0.12); }
     .msg.in  .audio-play-btn { background: var(--green); }
     .audio-play-btn:active { transform: scale(0.9); }
     .audio-play-btn svg { width: 16px; height: 16px; }
     .msg.out .audio-play-btn svg { fill: #075E54; }
     .msg.in  .audio-play-btn svg { fill: white; }
-
-    .audio-waveform {
-      flex: 1; height: 28px; display: flex;
-      align-items: center; gap: 2px; overflow: hidden;
-      cursor: pointer; position: relative;
-    }
-    .audio-waveform-bar {
-      flex: 1; border-radius: 2px; transition: background 0.1s;
-      min-width: 2px;
-    }
-    .msg.out .audio-waveform-bar         { background: rgba(0,100,0,0.25); }
-    .msg.out .audio-waveform-bar.played  { background: rgba(0,100,0,0.6); }
-    .msg.in  .audio-waveform-bar         { background: rgba(0,0,0,0.15); }
-    .msg.in  .audio-waveform-bar.played  { background: var(--green); }
-
-    .audio-duration {
-      font-size: 11px; color: #888; min-width: 32px;
-      text-align: right; flex-shrink: 0;
-    }
+    .audio-waveform { flex: 1; height: 28px; display: flex; align-items: center; gap: 2px; overflow: hidden; cursor: pointer; position: relative; }
+    .audio-waveform-bar { flex: 1; border-radius: 2px; transition: background 0.1s; min-width: 2px; }
+    .msg.out .audio-waveform-bar { background: rgba(0,100,0,0.25); }
+    .msg.out .audio-waveform-bar.played { background: rgba(0,100,0,0.6); }
+    .msg.in  .audio-waveform-bar { background: rgba(0,0,0,0.15); }
+    .msg.in  .audio-waveform-bar.played { background: var(--green); }
+    .audio-duration { font-size: 11px; color: #888; min-width: 32px; text-align: right; flex-shrink: 0; }
     .msg.out .audio-duration { color: #5a8a5a; }
 
-    /* Reactions */
     .msg-reactions { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 3px; }
     .reaction-badge { display: inline-flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.07); border-radius: 10px; padding: 1px 6px; font-size: 13px; cursor: pointer; user-select: none; border: 1.5px solid transparent; transition: background 0.15s; }
     .reaction-badge.mine { background: #d4f0ff; border-color: #34B7F1; }
@@ -232,7 +170,6 @@
     .msg.out .reaction-badge { background: rgba(0,0,0,0.09); }
     .msg.out .reaction-badge.mine { background: #b2dfdb; border-color: #075E54; }
 
-    /* Emoji picker popup */
     .emoji-picker-popup { position: absolute; background: white; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.18); padding: 6px 10px; display: flex; gap: 6px; z-index: 50; font-size: 22px; }
     .emoji-picker-popup span { cursor: pointer; border-radius: 50%; padding: 2px 4px; transition: transform 0.1s, background 0.1s; }
     .emoji-picker-popup span:hover { transform: scale(1.3); background: #f0f0f0; }
@@ -249,7 +186,6 @@
     .toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: 13px; padding: 8px 16px; border-radius: 20px; z-index: 99; white-space: nowrap; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
 
-    /* ===== ADMIN PANEL ===== */
     .admin-screen { background: #f7f7f7; }
     .admin-header { background: #c0392b; color: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
     .admin-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 12px; }
@@ -264,9 +200,6 @@
     .report-badge { background: #ffeaea; color: #c0392b; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 8px; }
     .report-users { font-size: 13px; color: #333; }
     .report-reason { font-size: 12px; color: #888; font-style: italic; }
-    .report-msgs { background: #f9f9f9; border-radius: 8px; padding: 8px 10px; max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-    .report-msg-line { font-size: 12px; color: #444; line-height: 1.4; }
-    .report-msg-line .rm-sender { font-weight: 700; color: #075E54; }
     .report-actions { display: flex; gap: 6px; }
     .btn-ban { padding: 7px 14px; background: #c0392b; color: white; border: none; border-radius: 9px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; }
     .btn-ban:hover { opacity: 0.85; }
@@ -295,14 +228,13 @@
     .report-msgs-header:hover { background: #f0f0f0; }
     .report-msgs-header span { font-size: 12px; font-weight: 700; color: #555; }
     .report-msgs-header .toggle-icon { font-size: 11px; color: #aaa; transition: transform 0.2s; }
-    .report-msgs-body { display: none; padding: 8px 12px; max-height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; border-top: 1px solid #eee; }
+    .report-msgs-body { display: none; padding: 8px 12px; max-height: 180px; overflow-y: auto; flex-direction: column; gap: 5px; border-top: 1px solid #eee; }
     .report-msg-bubble { padding: 5px 9px; border-radius: 8px; font-size: 12px; line-height: 1.4; max-width: 90%; }
     .report-msg-bubble.out { align-self: flex-end; background: #DCF8C6; color: #111; }
     .report-msg-bubble.in { align-self: flex-start; background: #fff; color: #111; border: 1px solid #e8e8e8; }
     .report-msg-sender { font-size: 10px; font-weight: 700; margin-bottom: 2px; }
     .report-msg-time { font-size: 10px; color: #aaa; margin-top: 2px; text-align: right; }
 
-    /* ===== GROUP EDIT SCREEN ===== */
     .group-edit-screen { background: #f7f7f7; }
     .group-edit-header { background: var(--dark); color: white; padding: 10px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .group-edit-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 14px; }
@@ -326,11 +258,9 @@
     .btn-leave-group { width: 100%; padding: 12px; background: #ffeaea; color: #e74c3c; border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; font-family: inherit; }
     .btn-leave-group:hover { background: #ffd5d5; }
 
-    /* ===== INVITE LINK ===== */
     .invite-link-box { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 10px 14px; font-size: 12px; color: #166534; font-family: monospace; word-break: break-all; line-height: 1.5; user-select: all; cursor: text; }
     .invite-link-box:empty { display: none; }
 
-    /* ===== FILE MESSAGES ===== */
     .attach-btn { width: 36px; height: 36px; border-radius: 50%; background: #e0e0e0; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: background 0.15s; }
     .attach-btn:hover { background: #d0d0d0; }
     .msg-image { max-width: 100%; border-radius: 6px; display: block; cursor: pointer; margin-bottom: 3px; }
@@ -346,44 +276,11 @@
     .attach-preview { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #e8f5e9; border-top: 1px solid #c8e6c9; flex-shrink: 0; font-size: 13px; color: #2e7d32; }
     .attach-preview-cancel { background: none; border: none; font-size: 18px; cursor: pointer; color: #e74c3c; margin-left: auto; padding: 0 2px; }
 
-    /* ===== NOTIFICATIONS ===== */
-    /* Unread badge on conv list */
-    .unread-badge {
-      min-width: 20px; height: 20px; border-radius: 10px;
-      background: var(--green); color: white;
-      font-size: 11px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      padding: 0 5px; flex-shrink: 0;
-    }
-    /* Header tab badge */
-    .tab-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      min-width: 16px; height: 16px; border-radius: 8px;
-      background: #e74c3c; color: white;
-      font-size: 10px; font-weight: 700;
-      padding: 0 4px; margin-left: 4px;
-      vertical-align: middle;
-    }
-    /* In-app notification banner (when chat is open and msg arrives from other conv) */
-    .notif-banner {
-      position: absolute; top: 10px; left: 50%; transform: translateX(-50%) translateY(-80px);
-      background: #1a1a1a; color: white;
-      border-radius: 14px; padding: 10px 14px;
-      display: flex; align-items: center; gap: 10px;
-      z-index: 80; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
-      cursor: pointer; max-width: 340px; width: calc(100% - 28px);
-      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
-      pointer-events: none;
-    }
-    .notif-banner.show {
-      transform: translateX(-50%) translateY(0);
-      pointer-events: auto;
-    }
-    .notif-banner-av {
-      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
-      overflow: hidden; display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 13px; color: white;
-    }
+    .unread-badge { min-width: 20px; height: 20px; border-radius: 10px; background: var(--green); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; flex-shrink: 0; }
+    .tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; border-radius: 8px; background: #e74c3c; color: white; font-size: 10px; font-weight: 700; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
+    .notif-banner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%) translateY(-80px); background: #1a1a1a; color: white; border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; z-index: 80; box-shadow: 0 6px 24px rgba(0,0,0,0.35); cursor: pointer; max-width: 340px; width: calc(100% - 28px); transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
+    .notif-banner.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .notif-banner-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; }
     .notif-banner-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
     .notif-banner-body { flex: 1; min-width: 0; }
     .notif-banner-name { font-size: 13px; font-weight: 700; color: #fff; }
@@ -394,13 +291,11 @@
 <body>
 <div class="phone" id="app">
 
-  <!-- LOADING -->
   <div class="screen loading-screen active" id="screen-loading">
     <div class="loading-spinner"></div>
     <div class="loading-text">Connexion…</div>
   </div>
 
-  <!-- AUTH -->
   <div class="screen auth-screen" id="screen-auth">
     <div class="auth-logo">
       <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
@@ -431,7 +326,6 @@
     </div>
   </div>
 
-  <!-- HOME -->
   <div class="screen" id="screen-home">
     <div class="wa-header">
       <div class="wa-header-left">
@@ -455,7 +349,6 @@
     <div class="conv-list" id="conv-list"></div>
   </div>
 
-  <!-- CHAT -->
   <div class="screen" id="screen-chat">
     <div class="chat-header">
       <button class="chat-back" onclick="goHome()">&#8592;</button>
@@ -467,18 +360,13 @@
       <button class="wa-header-btn" id="btn-report-chat" title="Signaler" onclick="showReportModal()" style="font-size:16px;">🚨</button>
     </div>
     <div class="chat-messages" id="chat-messages"></div>
-
-    <!-- Recording bar (hidden until mic held) -->
     <div class="recording-bar" id="recording-bar">
       <div class="rec-dot"></div>
-      <div class="rec-wave">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
+      <div class="rec-wave"><span></span><span></span><span></span><span></span><span></span></div>
       <div class="rec-label">Enregistrement…</div>
       <div class="rec-timer" id="rec-timer">0:00</div>
       <button class="rec-cancel-btn" onclick="cancelRecording()">✕ Annuler</button>
     </div>
-
     <div id="attach-preview-bar" style="display:none;" class="attach-preview">
       <span id="attach-preview-label">📎 fichier sélectionné</span>
       <button class="attach-preview-cancel" onclick="cancelAttach()">✕</button>
@@ -489,7 +377,6 @@
       <input type="file" id="attach-img-input" accept="image/*" onchange="handleAttach(event,'image')" style="display:none" />
       <input type="file" id="attach-pdf-input" accept=".pdf" onchange="handleAttach(event,'pdf')" style="display:none" />
       <input class="chat-input" id="chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()" oninput="onChatInput()" />
-      <!-- Send button (text present) / Mic button (empty input) -->
       <button class="send-btn" id="send-btn" onclick="sendMsg()" style="display:none;">
         <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
       </button>
@@ -499,7 +386,6 @@
     </div>
   </div>
 
-  <!-- PROFILE -->
   <div class="screen profile-screen" id="screen-profile">
     <div class="profile-header">
       <button class="chat-back" onclick="show('screen-home')">&#8592;</button>
@@ -518,7 +404,6 @@
     </div>
   </div>
 
-  <!-- PROFIL AMI -->
   <div class="screen profile-screen" id="screen-friend-profile">
     <div class="profile-header">
       <button class="chat-back" id="friend-profile-back">&#8592;</button>
@@ -535,7 +420,6 @@
     </div>
   </div>
 
-  <!-- GROUP EDIT SCREEN -->
   <div class="screen group-edit-screen" id="screen-group-edit">
     <div class="group-edit-header">
       <button class="chat-back" id="group-edit-back" style="color:white;">&#8592;</button>
@@ -558,9 +442,7 @@
       <div class="group-edit-section">
         <div class="group-edit-section-title">Ajouter un membre</div>
         <div class="add-member-row">
-          <select id="gedit-add-select">
-            <option value="">-- Choisir un contact --</option>
-          </select>
+          <select id="gedit-add-select"><option value="">-- Choisir un contact --</option></select>
           <button class="btn-add-member" onclick="addMemberToGroup()">＋ Ajouter</button>
         </div>
         <div class="err" id="err-gedit"></div>
@@ -583,7 +465,6 @@
     </div>
   </div>
 
-  <!-- ADMIN PANEL -->
   <div class="screen admin-screen" id="screen-admin">
     <div class="admin-header">
       <button class="chat-back" onclick="show('screen-home')" style="color:white;">&#8592;</button>
@@ -599,7 +480,6 @@
     </div>
   </div>
 
-  <!-- MODAL ADD FRIEND -->
   <div class="modal-overlay" id="modal-add" style="display:none">
     <div class="modal-box">
       <div class="modal-title">Ajouter un ami</div>
@@ -613,7 +493,6 @@
     </div>
   </div>
 
-  <!-- MODAL MY CODE -->
   <div class="modal-overlay" id="modal-mycode" style="display:none">
     <div class="modal-box" style="text-align:center;gap:14px">
       <div class="modal-title">Mon code d'invitation</div>
@@ -624,7 +503,6 @@
     </div>
   </div>
 
-  <!-- MODAL CREATE GROUP -->
   <div class="modal-overlay" id="modal-group" style="display:none">
     <div class="modal-box">
       <div class="modal-title">Nouveau groupe</div>
@@ -639,7 +517,6 @@
     </div>
   </div>
 
-  <!-- MODAL DELETE -->
   <div class="modal-overlay" id="modal-delete" style="display:none">
     <div class="modal-box">
       <div class="modal-title">Supprimer le message ?</div>
@@ -651,7 +528,6 @@
     </div>
   </div>
 
-  <!-- MODAL CHANGE PASSWORD -->
   <div class="modal-overlay" id="modal-changepwd" style="display:none">
     <div class="modal-box">
       <div class="modal-title">Changer le mot de passe</div>
@@ -666,7 +542,6 @@
     </div>
   </div>
 
-  <!-- MODAL REPORT -->
   <div class="modal-overlay" id="modal-report" style="display:none">
     <div class="modal-box">
       <div class="modal-title">🚨 Signaler</div>
@@ -688,7 +563,6 @@
     </div>
   </div>
 
-  <!-- MODAL BAN OPTIONS -->
   <div class="ban-modal-overlay" id="modal-ban-options" style="display:none">
     <div class="ban-modal-box">
       <div class="modal-title">🚫 Sanctionner <span id="ban-target-name"></span></div>
@@ -716,7 +590,6 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- In-app notification banner -->
   <div class="notif-banner" id="notif-banner">
     <div class="notif-banner-av" id="notif-banner-av"></div>
     <div class="notif-banner-body">
@@ -727,7 +600,6 @@
   </div>
 </div>
 
-<!-- ===== FIREBASE SDK ===== -->
 <script type="module">
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getDatabase, ref, set, get, push, onValue, onChildAdded, onChildChanged, query, limitToLast }
@@ -746,10 +618,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-const dbRef    = path             => ref(db, path);
-const dbGet    = path             => get(dbRef(path));
-const dbSet    = (path, val)      => set(dbRef(path), val);
-const dbPush   = (path, val)      => push(dbRef(path), val);
+const dbRef    = path        => ref(db, path);
+const dbGet    = path        => get(dbRef(path));
+const dbSet    = (path, val) => set(dbRef(path), val);
+const dbPush   = (path, val) => push(dbRef(path), val);
 const dbListen = (path, cb, ...c) => onValue(c.length ? query(dbRef(path), ...c) : dbRef(path), cb);
 
 // ===== UTILS =====
@@ -769,7 +641,7 @@ async function hashPassword(pwd){
 
 // ===== STATE =====
 let meCode = localStorage.getItem('whoisat_me') || null;
-let myUser  = null;
+let myUser = null;
 let usersCache  = {};
 let groupsCache = {};
 let lastMsgsCache = {};
@@ -781,76 +653,52 @@ let homeListeners  = {};
 let authAvatarData = null;
 
 // ===== NOTIFICATIONS =====
-// unreadCounts[convKey] = number
 let unreadCounts = {};
 let notifBannerTimer = null;
 let notifPermission  = 'default';
 try { notifPermission = Notification.permission; } catch(e){}
 
-// Request permission once user is logged in
 async function requestNotifPermission(){
   if(notifPermission === 'granted') return;
   if(notifPermission === 'denied')  return;
-  try {
-    const result = await Notification.requestPermission();
-    notifPermission = result;
-  } catch(e){}
+  try { const r = await Notification.requestPermission(); notifPermission = r; } catch(e){}
 }
 
-// Soft notification sound (generated via Web Audio API — no external files needed)
 function playNotifSound(){
   try {
     const ctx  = new (window.AudioContext || window.webkitAudioContext)();
     const osc  = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    osc.connect(gain); gain.connect(ctx.destination);
     osc.type = 'sine';
     osc.frequency.setValueAtTime(880, ctx.currentTime);
     osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
     gain.gain.setValueAtTime(0.18, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.25);
   } catch(e){}
 }
 
-// Show OS push notification
 function sendPushNotif(title, body, onClick){
   if(notifPermission !== 'granted') return;
-  if(document.hasFocus && document.hasFocus()) return; // only when tab is in background
+  if(document.hasFocus && document.hasFocus()) return;
   try {
-    const n = new Notification(title, {
-      body,
-      icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%2325D366'/%3E%3Cpath d='M40 27c-.4-2-2.3-3.5-4.5-3.5H28c-2.2 0-4.1 1.5-4.5 3.5l-2 10c-.3 1.2.1 2.4 1 3.3.9.9 2.1 1.4 3.3 1.4h2l-1 4 6-4h8c1.2 0 2.4-.5 3.3-1.4.9-.9 1.3-2.1 1-3.3L40 27z' fill='white'/%3E%3C/svg%3E",
-      badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3C/svg%3E",
-      tag: 'whoisat-msg',
-      renotify: true,
-      silent: false
-    });
+    const n = new Notification(title, { body, tag: 'whoisat-msg', renotify: true });
     n.onclick = () => { window.focus(); n.close(); if(onClick) onClick(); };
   } catch(e){}
 }
 
-// Show in-app banner (slide down from top)
 function showInAppBanner({ avatarUser, name, text, time, onClick }){
-  const banner   = document.getElementById('notif-banner');
-  const avEl     = document.getElementById('notif-banner-av');
-  const nameEl   = document.getElementById('notif-banner-name');
-  const textEl   = document.getElementById('notif-banner-text');
-  const timeEl   = document.getElementById('notif-banner-time');
-
+  const banner = document.getElementById('notif-banner');
+  const avEl   = document.getElementById('notif-banner-av');
   avEl.innerHTML = avatarHTML(avatarUser, 36);
   avEl.style.background = (avatarUser && avatarUser.avatar) ? 'transparent' : getColor(avatarUser ? avatarUser.username : name);
-  nameEl.textContent = name;
-  textEl.textContent = text;
-  timeEl.textContent = time || '';
-
+  document.getElementById('notif-banner-name').textContent = name;
+  document.getElementById('notif-banner-text').textContent = text;
+  document.getElementById('notif-banner-time').textContent = time || '';
   banner.onclick = () => { hideBanner(); if(onClick) onClick(); };
-
   if(notifBannerTimer) clearTimeout(notifBannerTimer);
   banner.classList.remove('show');
-  // Force reflow to restart animation
   void banner.offsetWidth;
   banner.classList.add('show');
   notifBannerTimer = setTimeout(hideBanner, 4000);
@@ -861,14 +709,11 @@ function hideBanner(){
   if(notifBannerTimer){ clearTimeout(notifBannerTimer); notifBannerTimer = null; }
 }
 
-// Increment unread count for a convKey
 function markUnread(convKey, fromCode){
-  if(!fromCode || fromCode === meCode) return; // don't count own messages
-  // Don't count if this conv is currently open and visible
+  if(!fromCode || fromCode === meCode) return;
   const chatScreen = document.getElementById('screen-chat');
   if(chatScreen.classList.contains('active') && currentChat){
-    const currentKey = getConvKey();
-    if(currentKey === convKey) return;
+    if(getConvKey() === convKey) return;
   }
   unreadCounts[convKey] = (unreadCounts[convKey] || 0) + 1;
   updateUnreadUI();
@@ -885,62 +730,30 @@ function getTotalUnread(){
 }
 
 function updateUnreadUI(){
-  // Update conv list items badges (re-render handles this)
-  // Update home tab badges
-  const chatUnread  = Object.entries(unreadCounts)
-    .filter(([k]) => !k.startsWith('grp_'))
-    .reduce((a,[,v]) => a+v, 0);
-  const groupUnread = Object.entries(unreadCounts)
-    .filter(([k]) => k.startsWith('grp_'))
-    .reduce((a,[,v]) => a+v, 0);
-
+  const chatUnread  = Object.entries(unreadCounts).filter(([k]) => !k.startsWith('grp_')).reduce((a,[,v]) => a+v, 0);
+  const groupUnread = Object.entries(unreadCounts).filter(([k]) =>  k.startsWith('grp_')).reduce((a,[,v]) => a+v, 0);
   const chatTab  = document.getElementById('htab-chats');
   const groupTab = document.getElementById('htab-groups');
-
-  // Remove old badges
   chatTab.querySelectorAll('.tab-badge').forEach(b => b.remove());
   groupTab.querySelectorAll('.tab-badge').forEach(b => b.remove());
-
-  if(chatUnread > 0){
-    const b = document.createElement('span');
-    b.className = 'tab-badge';
-    b.textContent = chatUnread > 99 ? '99+' : chatUnread;
-    chatTab.appendChild(b);
-  }
-  if(groupUnread > 0){
-    const b = document.createElement('span');
-    b.className = 'tab-badge';
-    b.textContent = groupUnread > 99 ? '99+' : groupUnread;
-    groupTab.appendChild(b);
-  }
-
-  // Update document title
+  if(chatUnread > 0){ const b = document.createElement('span'); b.className='tab-badge'; b.textContent=chatUnread>99?'99+':chatUnread; chatTab.appendChild(b); }
+  if(groupUnread > 0){ const b = document.createElement('span'); b.className='tab-badge'; b.textContent=groupUnread>99?'99+':groupUnread; groupTab.appendChild(b); }
   const total = getTotalUnread();
   document.title = total > 0 ? `(${total}) Who-isat` : 'Who-isat';
 }
 
-// Called by conv listeners when a new message arrives
 function handleIncomingMessage(msg, convKey, isGroup){
   if(!msg || !msg.from || msg.from === meCode) return;
-
-  // Detect if this is actually a NEW message (not initial load)
   const prev = lastMsgsCache[convKey];
-  // We compare timestamps — if same or older, it's not new
   if(prev && msg.ts && prev.ts && msg.ts <= prev.ts) return;
-  // Also skip if ts is older than 10s (page just loaded)
   if(msg.ts && Date.now() - msg.ts > 10000) return;
-
   const sender = usersCache[msg.from];
   const senderName = sender ? sender.username : '?';
   let displayText = msg.text || '';
   if(msg.type === 'audio') displayText = '🎤 Message vocal';
   else if(msg.type === 'image') displayText = '📷 Image';
   else if(msg.type === 'pdf') displayText = `📄 ${msg.fileName || 'Document'}`;
-
-  let convName = senderName;
-  let avatarUser = sender;
-  let onClick = null;
-
+  let convName = senderName, avatarUser = sender, onClick = null;
   if(isGroup){
     const group = groupsCache[convKey];
     convName = group ? group.name : 'Groupe';
@@ -948,21 +761,11 @@ function handleIncomingMessage(msg, convKey, isGroup){
     displayText = `${senderName}: ${displayText}`;
     onClick = () => { openGroup(convKey); };
   } else {
-    onClick = () => {
-      const friendCode = convKey.replace(meCode, '').replace('_', '');
-      if(usersCache[friendCode]) openDM(friendCode);
-    };
+    onClick = () => { const fc = convKey.replace(meCode,'').replace('_',''); if(usersCache[fc]) openDM(fc); };
   }
-
   markUnread(convKey, msg.from);
   playNotifSound();
-  showInAppBanner({
-    avatarUser,
-    name: convName,
-    text: displayText,
-    time: msg.time || '',
-    onClick
-  });
+  showInAppBanner({ avatarUser, name: convName, text: displayText, time: msg.time||'', onClick });
   sendPushNotif(convName, displayText, onClick);
 }
 
@@ -971,8 +774,8 @@ function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
-function hideModal(id){document.getElementById(id).style.display='none';}
-function showModal(id){document.getElementById(id).style.display='flex';}
+function hideModal(id){ document.getElementById(id).style.display='none'; }
+function showModal(id){ document.getElementById(id).style.display='flex'; }
 
 function avatarHTML(user, size){
   size = size || 48;
@@ -982,7 +785,7 @@ function avatarHTML(user, size){
   return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:${fs}px;color:white;flex-shrink:0;">${initials(user ? user.username : '?')}</div>`;
 }
 
-// ===== AUTH TAB =====
+// ===== AUTH =====
 function switchTab(t){
   document.getElementById('tab-create').classList.toggle('active', t==='create');
   document.getElementById('tab-login').classList.toggle('active',  t==='login');
@@ -1000,15 +803,7 @@ function handleAuthAvatar(e){
   r.readAsDataURL(file);
 }
 
-// ===== CREATE ACCOUNT =====
-const FORBIDDEN_WORDS = [
-  'admin','moderateur','modo','support','officiel','whoisat','staff','bot','system',
-  'zizi','zgeg','bite','bitte','queue','teub','teubi','penis','vagin','chatte','pussy','cock','dick','zob','kekette','quéquette','quequette','nichon','sein','fesse','cul','anus','caca','pipi','popo','couille','couilles','burne','burnes','zgueg','zguègue',
-  'connard','connasse','salope','pute','putain','merde','enculé','encule','fdp','fils de pute','batard','bâtard','nique','niquer','niqué','ntm','ta mere','tamere','tocard','abruti','idiot','imbecile','débile','debile','cretin','crétin','con','conne','pd','tapette','grosse','gros','gras',
-  'negro','negre','nègre','neger','nigg','nigga','bougnoule','raton','youpin','feuj','rebeu','bicot','bamboula','chinetoque','bridé','suicide','viol',
-  'fuck','shit','ass','bitch','slut','whore','cunt','bastard','nigger','faggot','retard',
-  'anonymous','anon','hacker','hack','root','null','undefined','god','satan','diable','terrorist','isis'
-];
+const FORBIDDEN_WORDS = ['admin','moderateur','modo','support','officiel','whoisat','staff','bot','system','zizi','zgeg','bite','bitte','queue','teub','teubi','penis','vagin','chatte','pussy','cock','dick','zob','kekette','quéquette','quequette','nichon','sein','fesse','cul','anus','caca','pipi','popo','couille','couilles','burne','burnes','zgueg','zguègue','connard','connasse','salope','pute','putain','merde','enculé','encule','fdp','fils de pute','batard','bâtard','nique','niquer','niqué','ntm','ta mere','tamere','tocard','abruti','idiot','imbecile','débile','debile','cretin','crétin','con','conne','pd','tapette','grosse','gros','gras','negro','negre','nègre','neger','nigg','nigga','bougnoule','raton','youpin','feuj','rebeu','bicot','bamboula','chinetoque','bridé','suicide','viol','fuck','shit','ass','bitch','slut','whore','cunt','bastard','nigger','faggot','retard','anonymous','anon','hacker','hack','root','null','undefined','god','satan','diable','terrorist','isis'];
 const USERNAME_REGEX = /^[a-zA-Z0-9_\-\.]{2,20}$/;
 
 function validateUsername(name){
@@ -1026,783 +821,489 @@ async function createAccount(){
   const pwd2 = document.getElementById('password-create-confirm').value;
   const err  = document.getElementById('err-create');
   const nameErr = validateUsername(name);
-  if(nameErr){ err.style.color='#e74c3c'; err.textContent = nameErr; return; }
-  if(!pwd || pwd.length < 4){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe trop court (min 4 car.)'; return; }
-  if(pwd !== pwd2){ err.style.color='#e74c3c'; err.textContent = 'Les mots de passe ne correspondent pas.'; return; }
-  err.style.color = '#888'; err.textContent = 'Création du compte…';
+  if(nameErr){ err.style.color='#e74c3c'; err.textContent=nameErr; return; }
+  if(!pwd || pwd.length < 4){ err.style.color='#e74c3c'; err.textContent='Mot de passe trop court (min 4 car.)'; return; }
+  if(pwd !== pwd2){ err.style.color='#e74c3c'; err.textContent='Les mots de passe ne correspondent pas.'; return; }
+  err.style.color='#888'; err.textContent='Création du compte…';
   try {
     const code = genCode();
     const pwdHash = await hashPassword(pwd);
-    const user = { code, username: name, friends: [], avatar: authAvatarData || null, pwdHash };
+    const user = { code, username: name, friends: [], avatar: authAvatarData||null, pwdHash };
     await dbSet(`users/${code}`, user);
-    meCode = code;
-    localStorage.setItem('whoisat_me', code);
-    myUser = user;
-    usersCache[code] = user;
+    meCode = code; localStorage.setItem('whoisat_me', code);
+    myUser = user; usersCache[code] = user;
     err.textContent = '';
     await enterHome();
     const pending = localStorage.getItem('whoisat_pendingJoin');
     if(pending){ localStorage.removeItem('whoisat_pendingJoin'); await joinGroupFromLink(pending); }
-  } catch(e) {
-    err.style.color = '#e74c3c';
-    err.textContent = 'Erreur Firebase : vérifie la config.';
-    console.error(e);
-  }
+  } catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur Firebase : vérifie la config.'; console.error(e); }
 }
 
-// ===== LOGIN =====
 async function loginWithCode(){
   const code = document.getElementById('login-code').value.trim().toUpperCase();
   const pwd  = document.getElementById('login-password').value;
   const err  = document.getElementById('err-login');
-  if(!code || code.length !== 8){ err.style.color='#e74c3c'; err.textContent = 'Code invalide'; return; }
-  if(!pwd){ err.style.color='#e74c3c'; err.textContent = 'Entre ton mot de passe'; return; }
-  err.style.color = '#888'; err.textContent = 'Connexion…';
+  if(!code || code.length !== 8){ err.style.color='#e74c3c'; err.textContent='Code invalide'; return; }
+  if(!pwd){ err.style.color='#e74c3c'; err.textContent='Entre ton mot de passe'; return; }
+  err.style.color='#888'; err.textContent='Connexion…';
   try {
     const snap = await dbGet(`users/${code}`);
-    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun compte avec ce code !'; return; }
+    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent='Aucun compte avec ce code !'; return; }
     const userData = snap.val();
     if(userData.banned){
-      if(userData.banType === 'temp' && userData.bannedUntil && Date.now() > userData.bannedUntil){
-        await dbSet(`users/${code}/banned`, false);
-        await dbSet(`users/${code}/banType`, null);
-        await dbSet(`users/${code}/bannedUntil`, null);
+      if(userData.banType==='temp' && userData.bannedUntil && Date.now()>userData.bannedUntil){
+        await dbSet(`users/${code}/banned`,false); await dbSet(`users/${code}/banType`,null); await dbSet(`users/${code}/bannedUntil`,null);
       } else {
-        const banMsg = userData.banType === 'temp' && userData.bannedUntil
-          ? `🚫 Compte banni jusqu'au ${new Date(userData.bannedUntil).toLocaleDateString('fr-FR')}`
-          : userData.banType === 'ip' ? '🌐 Accès bloqué (IP ban)'
-          : '🚫 Ce compte a été banni.';
-        err.style.color='#e74c3c'; err.textContent = banMsg; return;
+        const banMsg = userData.banType==='temp'&&userData.bannedUntil ? `🚫 Compte banni jusqu'au ${new Date(userData.bannedUntil).toLocaleDateString('fr-FR')}` : userData.banType==='ip' ? '🌐 Accès bloqué (IP ban)' : '🚫 Ce compte a été banni.';
+        err.style.color='#e74c3c'; err.textContent=banMsg; return;
       }
     }
-    fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{
-      if(d && d.ip) dbSet(`users/${code}/lastIp`, d.ip).catch(()=>{});
-    }).catch(()=>{});
+    fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(d=>{ if(d&&d.ip) dbSet(`users/${code}/lastIp`,d.ip).catch(()=>{}); }).catch(()=>{});
     fetch('https://api.ipify.org?format=json').then(r=>r.json()).then(async d=>{
-      if(!d || !d.ip) return;
+      if(!d||!d.ip) return;
       const ipKey = d.ip.replace(/\./g,'_');
       const ipSnap = await dbGet(`bannedIps/${ipKey}`);
-      if(ipSnap.exists()){ err.style.color='#e74c3c'; err.textContent = '🌐 Accès bloqué (IP ban)'; meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); }
+      if(ipSnap.exists()){ err.style.color='#e74c3c'; err.textContent='🌐 Accès bloqué (IP ban)'; meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); }
     }).catch(()=>{});
     if(userData.pwdHash){
       const inputHash = await hashPassword(pwd);
-      if(inputHash !== userData.pwdHash){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe incorrect !'; return; }
+      if(inputHash !== userData.pwdHash){ err.style.color='#e74c3c'; err.textContent='Mot de passe incorrect !'; return; }
     }
-    meCode = code;
-    localStorage.setItem('whoisat_me', code);
-    myUser = userData;
-    if(!myUser.friends) myUser.friends = [];
-    usersCache[code] = myUser;
-    err.textContent = '';
+    meCode = code; localStorage.setItem('whoisat_me', code);
+    myUser = userData; if(!myUser.friends) myUser.friends=[];
+    usersCache[code] = myUser; err.textContent='';
     await enterHome();
     const pending = localStorage.getItem('whoisat_pendingJoin');
     if(pending){ localStorage.removeItem('whoisat_pendingJoin'); await joinGroupFromLink(pending); }
-  } catch(e) {
-    err.style.color = '#e74c3c';
-    err.textContent = 'Erreur Firebase : vérifie la config.';
-    console.error(e);
-  }
+  } catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur Firebase : vérifie la config.'; console.error(e); }
 }
 
 // ===== ENTER HOME =====
 async function enterHome(){
-  show('screen-loading');
-  cleanHomeListeners();
+  show('screen-loading'); cleanHomeListeners();
   try {
     const snap = await dbGet(`users/${meCode}`);
-    if(!snap.exists()){
-      meCode = null; localStorage.removeItem('whoisat_me'); show('screen-auth'); return;
-    }
-    myUser = snap.val();
-    if(!myUser.friends) myUser.friends = [];
+    if(!snap.exists()){ meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); return; }
+    myUser = snap.val(); if(!myUser.friends) myUser.friends=[];
     usersCache[meCode] = myUser;
-
     const friends = toArr(myUser.friends);
     await Promise.all(friends.map(async fcode => {
-      if(!usersCache[fcode]){
-        const fs = await dbGet(`users/${fcode}`);
-        if(fs.exists()) usersCache[fcode] = fs.val();
-      }
+      if(!usersCache[fcode]){ const fs=await dbGet(`users/${fcode}`); if(fs.exists()) usersCache[fcode]=fs.val(); }
     }));
-
     const gsnap = await dbGet('groups');
     groupsCache = {};
-    if(gsnap.exists()){
-      gsnap.forEach(child => {
-        const g = child.val();
-        if(g && g.members && toArr(g.members).includes(meCode)) groupsCache[g.id] = g;
-      });
-    }
-
-    document.getElementById('home-sub').textContent = myUser.username + ' • ' + myUser.code;
+    if(gsnap.exists()){ gsnap.forEach(child=>{ const g=child.val(); if(g&&g.members&&toArr(g.members).includes(meCode)) groupsCache[g.id]=g; }); }
+    document.getElementById('home-sub').textContent = myUser.username+' • '+myUser.code;
     renderHeaderAvatar();
-    const snapVal = snap.val();
-    const isAdmin = snapVal?.isAdmin === true || snapVal?.['isAdmin '] === true;
+    const isAdmin = myUser?.isAdmin===true || myUser?.['isAdmin ']===true;
     document.getElementById('btn-admin-panel').style.display = isAdmin ? 'inline-flex' : 'none';
     setupHomeListeners();
     show('screen-home');
     requestNotifPermission();
-  } catch(e) {
-    console.error('enterHome error', e);
-    show('screen-auth');
-  }
+  } catch(e){ console.error('enterHome error',e); show('screen-auth'); }
 }
 
 // ===== HOME LISTENERS =====
 function cleanHomeListeners(){
-  Object.values(homeListeners).forEach(off => { try { off(); } catch(e){} });
-  homeListeners = {};
+  Object.values(homeListeners).forEach(off=>{ try{off();}catch(e){} });
+  homeListeners={};
 }
 
 function setupHomeListeners(){
-  homeListeners['_me'] = dbListen(`users/${meCode}`, async snap => {
+  homeListeners['_me'] = dbListen(`users/${meCode}`, async snap=>{
     if(!snap.exists()) return;
-    const fresh = snap.val();
-    if(!fresh.friends) fresh.friends = [];
-    const oldFriends = toArr(myUser?.friends);
-    const newFriends = toArr(fresh.friends).filter(f => !oldFriends.includes(f));
-    myUser = fresh;
-    usersCache[meCode] = myUser;
-    document.getElementById('btn-admin-panel').style.display = (myUser.isAdmin === true || myUser['isAdmin '] === true) ? 'inline-flex' : 'none';
-    await Promise.all(newFriends.map(async f => {
-      const fs = await dbGet(`users/${f}`);
-      if(fs.exists()) usersCache[f] = fs.val();
-      addConvListener(f);
-    }));
+    const fresh=snap.val(); if(!fresh.friends) fresh.friends=[];
+    const oldFriends=toArr(myUser?.friends);
+    const newFriends=toArr(fresh.friends).filter(f=>!oldFriends.includes(f));
+    myUser=fresh; usersCache[meCode]=myUser;
+    document.getElementById('btn-admin-panel').style.display=(myUser.isAdmin===true||myUser['isAdmin ']===true)?'inline-flex':'none';
+    await Promise.all(newFriends.map(async f=>{ const fs=await dbGet(`users/${f}`); if(fs.exists()) usersCache[f]=fs.val(); addConvListener(f); }));
     if(document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
-
-  homeListeners['_groups'] = dbListen('groups', snap => {
-    if(snap.exists()){
-      snap.forEach(child => {
-        const g = child.val();
-        if(!g || !g.members || !toArr(g.members).includes(meCode)) return;
-        const isNew = !groupsCache[g.id];
-        groupsCache[g.id] = g;
-        if(isNew) addGroupConvListener(g.id);
-      });
-    }
-    if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  homeListeners['_groups'] = dbListen('groups', snap=>{
+    if(snap.exists()){ snap.forEach(child=>{ const g=child.val(); if(!g||!g.members||!toArr(g.members).includes(meCode)) return; const isNew=!groupsCache[g.id]; groupsCache[g.id]=g; if(isNew) addGroupConvListener(g.id); }); }
+    if(currentHomeTab==='groups'&&document.getElementById('screen-home').classList.contains('active')) renderConvList();
   });
-
-  toArr(myUser?.friends).forEach(fcode => addConvListener(fcode));
-  Object.keys(groupsCache).forEach(gid => addGroupConvListener(gid));
+  toArr(myUser?.friends).forEach(fcode=>addConvListener(fcode));
+  Object.keys(groupsCache).forEach(gid=>addGroupConvListener(gid));
 }
 
 function addConvListener(fcode){
-  const convKey = [meCode, fcode].sort().join('_');
+  const convKey=[meCode,fcode].sort().join('_');
   if(homeListeners[convKey]) return;
-  homeListeners[convKey] = dbListen(`conversations/${convKey}`, snap => {
-    let last = null;
-    snap.forEach(child => { last = child.val(); });
-    // Fire notification before updating cache
-    if(last) handleIncomingMessage(last, convKey, false);
-    lastMsgsCache[convKey] = last;
-    if(currentHomeTab === 'chats' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
-  }, limitToLast(1));
+  homeListeners[convKey]=dbListen(`conversations/${convKey}`,snap=>{
+    let last=null; snap.forEach(child=>{last=child.val();});
+    if(last) handleIncomingMessage(last,convKey,false);
+    lastMsgsCache[convKey]=last;
+    if(currentHomeTab==='chats'&&document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  },limitToLast(1));
 }
 
 function addGroupConvListener(gid){
   if(homeListeners[gid]) return;
-  homeListeners[gid] = dbListen(`conversations/${gid}`, snap => {
-    let last = null;
-    snap.forEach(child => { last = child.val(); });
-    // Fire notification before updating cache
-    if(last) handleIncomingMessage(last, gid, true);
-    lastMsgsCache[gid] = last;
-    if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
-  }, limitToLast(1));
+  homeListeners[gid]=dbListen(`conversations/${gid}`,snap=>{
+    let last=null; snap.forEach(child=>{last=child.val();});
+    if(last) handleIncomingMessage(last,gid,true);
+    lastMsgsCache[gid]=last;
+    if(currentHomeTab==='groups'&&document.getElementById('screen-home').classList.contains('active')) renderConvList();
+  },limitToLast(1));
 }
 
 // ===== RENDER HOME =====
 function renderHeaderAvatar(){
-  const el = document.getElementById('hdr-av');
-  el.innerHTML = avatarHTML(myUser, 36);
-  el.style.background = myUser.avatar ? 'transparent' : getColor(myUser.username);
+  const el=document.getElementById('hdr-av');
+  el.innerHTML=avatarHTML(myUser,36);
+  el.style.background=myUser.avatar?'transparent':getColor(myUser.username);
 }
 
 function switchHomeTab(tab){
-  currentHomeTab = tab;
-  document.getElementById('htab-chats').classList.toggle('active',  tab === 'chats');
-  document.getElementById('htab-groups').classList.toggle('active', tab === 'groups');
+  currentHomeTab=tab;
+  document.getElementById('htab-chats').classList.toggle('active',tab==='chats');
+  document.getElementById('htab-groups').classList.toggle('active',tab==='groups');
   renderConvList();
 }
 
 async function loadMissingUsers(codes){
-  const missing = codes.filter(c => !usersCache[c]);
+  const missing=codes.filter(c=>!usersCache[c]);
   if(!missing.length) return false;
-  await Promise.all(missing.map(async c => {
-    const s = await dbGet(`users/${c}`);
-    if(s.exists()) usersCache[c] = s.val();
-  }));
+  await Promise.all(missing.map(async c=>{ const s=await dbGet(`users/${c}`); if(s.exists()) usersCache[c]=s.val(); }));
   return true;
 }
 
 function renderConvList(){
-  const list = document.getElementById('conv-list');
-  list.innerHTML = '';
-  if(currentHomeTab === 'chats'){
-    const friends = toArr(myUser?.friends);
-    if(friends.length === 0){
-      list.innerHTML = '<div class="empty-list"><div style="font-size:48px">💬</div><div>Aucune conversation.<br>Ajoute un ami avec son code !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showAddFriend()">+ Ajouter un ami</button></div>';
-      return;
-    }
-    loadMissingUsers(friends).then(hadMissing => { if(hadMissing) renderConvList(); });
-    friends.forEach(fcode => {
-      const friend = usersCache[fcode];
-      if(!friend){
-        const div = document.createElement('div');
-        div.className = 'conv-item';
-        div.style.opacity = '0.4';
-        div.innerHTML = `<div class="ci-av" style="background:#ccc">${avatarHTML(null,48)}</div>
-          <div class="ci-info"><div class="ci-name">…</div><div class="ci-preview">chargement…</div></div>`;
-        list.appendChild(div);
-        return;
-      }
-      const convKey = [meCode, fcode].sort().join('_');
-      const last = lastMsgsCache[convKey];
-      const unread = unreadCounts[convKey] || 0;
+  const list=document.getElementById('conv-list');
+  list.innerHTML='';
+  if(currentHomeTab==='chats'){
+    const friends=toArr(myUser?.friends);
+    if(friends.length===0){ list.innerHTML='<div class="empty-list"><div style="font-size:48px">💬</div><div>Aucune conversation.<br>Ajoute un ami avec son code !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showAddFriend()">+ Ajouter un ami</button></div>'; return; }
+    loadMissingUsers(friends).then(had=>{ if(had) renderConvList(); });
+    friends.forEach(fcode=>{
+      const friend=usersCache[fcode];
+      if(!friend){ const div=document.createElement('div'); div.className='conv-item'; div.style.opacity='0.4'; div.innerHTML=`<div class="ci-av" style="background:#ccc">${avatarHTML(null,48)}</div><div class="ci-info"><div class="ci-name">…</div><div class="ci-preview">chargement…</div></div>`; list.appendChild(div); return; }
+      const convKey=[meCode,fcode].sort().join('_');
+      const last=lastMsgsCache[convKey];
+      const unread=unreadCounts[convKey]||0;
       addConvListener(fcode);
-      const div = document.createElement('div');
-      div.className = 'conv-item';
-      div.onclick = () => openDM(fcode);
-      const lastText = last
-        ? (last.type === 'audio' ? '🎤 Message vocal' : last.type === 'image' ? '📷 Image' : last.type === 'pdf' ? '📄 Document' : last.text || '')
-        : 'Dis bonjour !';
-      div.innerHTML = `<div class="ci-av" style="background:${friend.avatar ? 'transparent' : getColor(friend.username)}">${avatarHTML(friend, 48)}</div>
-        <div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${friend.username}</div>
-        <div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last ? (last.from === meCode ? 'Toi : ' : '') + lastText : 'Dis bonjour !'}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
-          ${last ? `<div class="ci-time">${last.time}</div>` : ''}
-          ${unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : ''}
-        </div>`;
+      const div=document.createElement('div'); div.className='conv-item'; div.onclick=()=>openDM(fcode);
+      const lastText=last?(last.type==='audio'?'🎤 Message vocal':last.type==='image'?'📷 Image':last.type==='pdf'?'📄 Document':last.text||''):'Dis bonjour !';
+      div.innerHTML=`<div class="ci-av" style="background:${friend.avatar?'transparent':getColor(friend.username)}">${avatarHTML(friend,48)}</div><div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${friend.username}</div><div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last?(last.from===meCode?'Toi : ':'')+lastText:'Dis bonjour !'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">${last?`<div class="ci-time">${last.time}</div>`:''} ${unread>0?`<div class="unread-badge">${unread>99?'99+':unread}</div>`:''}</div>`;
       list.appendChild(div);
     });
   } else {
-    const myGroups = Object.values(groupsCache);
-    if(myGroups.length === 0){
-      list.innerHTML = `<div class="empty-list"><div style="font-size:48px">👥</div><div>Aucun groupe.<br>Crée-en un !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showCreateGroup()">+ Créer un groupe</button></div>`;
-      return;
-    }
-    myGroups.forEach(group => {
-      const last = lastMsgsCache[group.id];
-      const lastSender = last ? usersCache[last.from] : null;
-      const unread = unreadCounts[group.id] || 0;
-      const lastText = last
-        ? (last.type === 'audio' ? '🎤 Message vocal' : last.type === 'image' ? '📷 Image' : last.type === 'pdf' ? '📄 Document' : last.text || '')
-        : 'Aucun message';
-      const div = document.createElement('div');
-      div.className = 'conv-item';
-      div.onclick = () => openGroup(group.id);
-      const groupAvHTML = group.avatar
-        ? `<img src="${group.avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;display:block;">`
-        : `<div style="width:48px;height:48px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>`;
-      div.innerHTML = `<div class="ci-av" style="background:transparent;padding:0;">${groupAvHTML}</div>
-        <div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${group.name}</div>
-        <div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last ? (last.from === meCode ? 'Toi' : lastSender ? lastSender.username : '?') + ' : ' + lastText : 'Aucun message'}</div></div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
-          ${last ? `<div class="ci-time">${last.time}</div>` : ''}
-          ${unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : ''}
-        </div>`;
+    const myGroups=Object.values(groupsCache);
+    if(myGroups.length===0){ list.innerHTML=`<div class="empty-list"><div style="font-size:48px">👥</div><div>Aucun groupe.<br>Crée-en un !</div><button class="btn-green" style="width:auto;padding:10px 22px;margin-top:8px" onclick="showCreateGroup()">+ Créer un groupe</button></div>`; return; }
+    myGroups.forEach(group=>{
+      const last=lastMsgsCache[group.id];
+      const lastSender=last?usersCache[last.from]:null;
+      const unread=unreadCounts[group.id]||0;
+      const lastText=last?(last.type==='audio'?'🎤 Message vocal':last.type==='image'?'📷 Image':last.type==='pdf'?'📄 Document':last.text||''):'Aucun message';
+      const div=document.createElement('div'); div.className='conv-item'; div.onclick=()=>openGroup(group.id);
+      const groupAvHTML=group.avatar?`<img src="${group.avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;display:block;">`:`<div style="width:48px;height:48px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>`;
+      div.innerHTML=`<div class="ci-av" style="background:transparent;padding:0;">${groupAvHTML}</div><div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${group.name}</div><div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last?(last.from===meCode?'Toi':lastSender?lastSender.username:'?')+' : '+lastText:'Aucun message'}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">${last?`<div class="ci-time">${last.time}</div>`:''} ${unread>0?`<div class="unread-badge">${unread>99?'99+':unread}</div>`:''}</div>`;
       list.appendChild(div);
     });
   }
 }
 
 // ===== ADD FRIEND =====
-function showAddFriend(){
-  document.getElementById('friend-code-input').value = '';
-  document.getElementById('err-add').textContent = '';
-  showModal('modal-add');
-}
+function showAddFriend(){ document.getElementById('friend-code-input').value=''; document.getElementById('err-add').textContent=''; showModal('modal-add'); }
 
 async function addFriend(){
-  const code = document.getElementById('friend-code-input').value.trim().toUpperCase();
-  const err  = document.getElementById('err-add');
-  if(!code || code.length !== 8){ err.textContent = 'Code invalide'; return; }
-  if(code === meCode){ err.textContent = "C'est ton propre code !"; return; }
-  const friends = toArr(myUser.friends);
-  if(friends.includes(code)){ err.textContent = 'Déjà dans tes contacts !'; return; }
-  err.style.color = '#888'; err.textContent = 'Recherche…';
+  const code=document.getElementById('friend-code-input').value.trim().toUpperCase();
+  const err=document.getElementById('err-add');
+  if(!code||code.length!==8){ err.textContent='Code invalide'; return; }
+  if(code===meCode){ err.textContent="C'est ton propre code !"; return; }
+  const friends=toArr(myUser.friends);
+  if(friends.includes(code)){ err.textContent='Déjà dans tes contacts !'; return; }
+  err.style.color='#888'; err.textContent='Recherche…';
   try {
-    const snap = await dbGet(`users/${code}`);
-    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent = 'Aucun utilisateur avec ce code'; return; }
-    const friend = snap.val();
-    usersCache[code] = friend;
-    const myFriends = [...friends, code];
-    await dbSet(`users/${meCode}/friends`, myFriends);
-    const theirFriends = toArr(friend.friends);
+    const snap=await dbGet(`users/${code}`);
+    if(!snap.exists()){ err.style.color='#e74c3c'; err.textContent='Aucun utilisateur avec ce code'; return; }
+    const friend=snap.val(); usersCache[code]=friend;
+    const myFriends=[...friends,code];
+    await dbSet(`users/${meCode}/friends`,myFriends);
+    const theirFriends=toArr(friend.friends);
     if(!theirFriends.includes(meCode)) theirFriends.push(meCode);
-    await dbSet(`users/${code}/friends`, theirFriends);
-    err.textContent = '';
-    hideModal('modal-add');
-  } catch(e) {
-    err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e);
-  }
+    await dbSet(`users/${code}/friends`,theirFriends);
+    err.textContent=''; hideModal('modal-add');
+  } catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
 }
 
-function showMyCode(){
-  document.getElementById('mycode-display').textContent = myUser.code;
-  document.getElementById('mycode-uname').textContent   = myUser.username;
-  showModal('modal-mycode');
-}
+function showMyCode(){ document.getElementById('mycode-display').textContent=myUser.code; document.getElementById('mycode-uname').textContent=myUser.username; showModal('modal-mycode'); }
 
 // ===== GROUPS =====
 function showCreateGroup(){
-  document.getElementById('group-name-input').value = '';
-  document.getElementById('err-group').textContent  = '';
-  const container = document.getElementById('group-contacts-list');
-  container.innerHTML = '';
-  const friends = toArr(myUser?.friends);
-  if(friends.length === 0){
-    container.innerHTML = '<div style="font-size:13px;color:#aaa;text-align:center;padding:10px;">Ajoute d\'abord des amis !</div>';
-  } else {
-    friends.forEach(fcode => {
-      const friend = usersCache[fcode]; if(!friend) return;
-      const label = document.createElement('label');
-      label.className = 'contact-check';
-      label.innerHTML = `<input type="checkbox" value="${fcode}">
-        <div class="cc-av" style="background:${friend.avatar ? 'transparent' : getColor(friend.username)}">${avatarHTML(friend, 34)}</div>
-        <div class="contact-check-name">${friend.username}</div>`;
-      container.appendChild(label);
-    });
-  }
+  document.getElementById('group-name-input').value=''; document.getElementById('err-group').textContent='';
+  const container=document.getElementById('group-contacts-list'); container.innerHTML='';
+  const friends=toArr(myUser?.friends);
+  if(friends.length===0){ container.innerHTML='<div style="font-size:13px;color:#aaa;text-align:center;padding:10px;">Ajoute d\'abord des amis !</div>'; }
+  else { friends.forEach(fcode=>{ const friend=usersCache[fcode]; if(!friend) return; const label=document.createElement('label'); label.className='contact-check'; label.innerHTML=`<input type="checkbox" value="${fcode}"><div class="cc-av" style="background:${friend.avatar?'transparent':getColor(friend.username)}">${avatarHTML(friend,34)}</div><div class="contact-check-name">${friend.username}</div>`; container.appendChild(label); }); }
   showModal('modal-group');
 }
 
 async function createGroup(){
-  const name = document.getElementById('group-name-input').value.trim();
-  const err  = document.getElementById('err-group');
-  if(!name){ err.textContent = 'Donne un nom au groupe !'; return; }
-  const checked = [...document.querySelectorAll('#group-contacts-list input[type=checkbox]:checked')].map(i => i.value);
-  if(checked.length === 0){ err.textContent = 'Sélectionne au moins un contact !'; return; }
-  err.style.color = '#888'; err.textContent = 'Création…';
-  const gid   = 'grp_' + genCode();
-  const group = { id: gid, name, members: [meCode, ...checked], createdBy: meCode };
-  try {
-    await dbSet(`groups/${gid}`, group);
-    err.textContent = '';
-    hideModal('modal-group');
-    switchHomeTab('groups');
-  } catch(e) {
-    err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e);
-  }
+  const name=document.getElementById('group-name-input').value.trim();
+  const err=document.getElementById('err-group');
+  if(!name){ err.textContent='Donne un nom au groupe !'; return; }
+  const checked=[...document.querySelectorAll('#group-contacts-list input[type=checkbox]:checked')].map(i=>i.value);
+  if(checked.length===0){ err.textContent='Sélectionne au moins un contact !'; return; }
+  err.style.color='#888'; err.textContent='Création…';
+  const gid='grp_'+genCode();
+  const group={id:gid,name,members:[meCode,...checked],createdBy:meCode};
+  try { await dbSet(`groups/${gid}`,group); err.textContent=''; hideModal('modal-group'); switchHomeTab('groups'); }
+  catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
 }
 
 // ===== CHAT =====
 function getConvKey(){
   if(!currentChat) return null;
-  if(currentChat.type === 'group') return currentChat.id;
-  return [meCode, currentChat.id].sort().join('_');
+  if(currentChat.type==='group') return currentChat.id;
+  return [meCode,currentChat.id].sort().join('_');
 }
 
-// ===== MIC / VOICE MESSAGE =====
-let mediaRecorder   = null;
-let audioChunks     = [];
-let recTimerInterval = null;
-let recSeconds      = 0;
-let isRecording     = false;
+// ===== MIC =====
+let mediaRecorder=null, audioChunks=[], recTimerInterval=null, recSeconds=0, isRecording=false;
 
-function formatDuration(secs){
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
-  return `${m}:${s.toString().padStart(2,'0')}`;
-}
-
-function generateFakeWaveform(n){
-  // Returns an array of relative heights (0.2–1.0) simulating audio bars
-  n = n || 30;
-  const bars = [];
-  for(let i = 0; i < n; i++) bars.push(Math.random() * 0.8 + 0.2);
-  return bars;
-}
+function formatDuration(secs){ const m=Math.floor(secs/60),s=secs%60; return `${m}:${s.toString().padStart(2,'0')}`; }
+function generateFakeWaveform(n){ n=n||30; const bars=[]; for(let i=0;i<n;i++) bars.push(Math.random()*0.8+0.2); return bars; }
 
 function startRecordingTimer(){
-  recSeconds = 0;
-  document.getElementById('rec-timer').textContent = formatDuration(0);
-  recTimerInterval = setInterval(() => {
-    recSeconds++;
-    document.getElementById('rec-timer').textContent = formatDuration(recSeconds);
-    // Auto-stop at 2 minutes
-    if(recSeconds >= 120) stopRecording();
-  }, 1000);
+  recSeconds=0; document.getElementById('rec-timer').textContent=formatDuration(0);
+  recTimerInterval=setInterval(()=>{ recSeconds++; document.getElementById('rec-timer').textContent=formatDuration(recSeconds); if(recSeconds>=120) stopRecording(); },1000);
 }
-
-function stopRecordingTimer(){
-  clearInterval(recTimerInterval);
-  recTimerInterval = null;
-}
+function stopRecordingTimer(){ clearInterval(recTimerInterval); recTimerInterval=null; }
 
 async function startRecording(){
   if(isRecording) return;
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    audioChunks  = [];
-    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
-    mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
-    mediaRecorder.onstop = async () => {
-      stream.getTracks().forEach(t => t.stop());
-      const blob = new Blob(audioChunks, { type: 'audio/webm' });
-      if(blob.size < 1000){ audioChunks = []; return; } // too short
-      if(blob.size > 4 * 1024 * 1024){ showToast('❌ Audio trop lourd (max 4 Mo)'); audioChunks = []; return; }
-      const reader = new FileReader();
-      reader.onload = async ev => {
-        const base64 = ev.target.result;
-        const durationSecs = recSeconds || 1;
-        const waveform = generateFakeWaveform(30);
-        const convKey  = getConvKey();
-        if(!convKey) return;
-        try {
-          await dbPush(`conversations/${convKey}`, {
-            from: meCode,
-            type: 'audio',
-            fileData: base64,
-            audioDuration: durationSecs,
-            audioWaveform: waveform,
-            text: '🎤 Message vocal',
-            time: nowTime(),
-            ts: Date.now(),
-            status: 'sent'
-          });
-        } catch(err){ showToast('❌ Erreur envoi audio : ' + err.message); }
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[];
+    mediaRecorder=new MediaRecorder(stream,{mimeType:'audio/webm;codecs=opus'});
+    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) audioChunks.push(e.data); };
+    mediaRecorder.onstop=async()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      if(blob.size<1000){ audioChunks=[]; return; }
+      if(blob.size>4*1024*1024){ showToast('❌ Audio trop lourd (max 4 Mo)'); audioChunks=[]; return; }
+      const reader=new FileReader();
+      reader.onload=async ev=>{
+        const base64=ev.target.result;
+        const durationSecs=recSeconds||1;
+        const waveform=generateFakeWaveform(30);
+        const convKey=getConvKey(); if(!convKey) return;
+        try { await dbPush(`conversations/${convKey}`,{from:meCode,type:'audio',fileData:base64,audioDuration:durationSecs,audioWaveform:waveform,text:'🎤 Message vocal',time:nowTime(),ts:Date.now(),status:'sent'}); }
+        catch(err){ showToast('❌ Erreur envoi audio : '+err.message); }
       };
       reader.readAsDataURL(blob);
     };
-    mediaRecorder.start();
-    isRecording = true;
+    mediaRecorder.start(); isRecording=true;
     document.getElementById('mic-btn').classList.add('recording');
     document.getElementById('recording-bar').classList.add('active');
     startRecordingTimer();
   } catch(err){
-    if(err.name === 'NotAllowedError') showToast('🎤 Micro refusé par le navigateur');
+    if(err.name==='NotAllowedError') showToast('🎤 Micro refusé par le navigateur');
     else showToast('❌ Impossible d\'accéder au micro');
     console.error(err);
   }
 }
 
 function stopRecording(){
-  if(!isRecording || !mediaRecorder) return;
-  isRecording = false;
-  stopRecordingTimer();
-  mediaRecorder.stop();
+  if(!isRecording||!mediaRecorder) return;
+  isRecording=false; stopRecordingTimer(); mediaRecorder.stop();
   document.getElementById('mic-btn').classList.remove('recording');
   document.getElementById('recording-bar').classList.remove('active');
 }
 
 function cancelRecording(){
-  if(!isRecording || !mediaRecorder) return;
-  isRecording = false;
-  stopRecordingTimer();
-  audioChunks = []; // discard
-  mediaRecorder.onstop = () => {}; // prevent sending
+  if(!isRecording||!mediaRecorder) return;
+  isRecording=false; stopRecordingTimer(); audioChunks=[];
+  mediaRecorder.onstop=()=>{};
   mediaRecorder.stop();
-  mediaRecorder.stream?.getTracks().forEach(t => t.stop());
+  mediaRecorder.stream?.getTracks().forEach(t=>t.stop());
   document.getElementById('mic-btn').classList.remove('recording');
   document.getElementById('recording-bar').classList.remove('active');
   showToast('🗑️ Enregistrement annulé');
 }
 
-// Setup mic button: hold to record, release to send
 function setupMicButton(){
-  const btn = document.getElementById('mic-btn');
-
-  let holdTimer = null;
-  const HOLD_MS = 200; // start recording after 200ms hold
-
-  const onStart = (e) => {
-    e.preventDefault();
-    holdTimer = setTimeout(() => startRecording(), HOLD_MS);
-  };
-  const onEnd = (e) => {
-    e.preventDefault();
-    clearTimeout(holdTimer);
-    if(isRecording) stopRecording();
-  };
-
-  btn.addEventListener('mousedown',  onStart);
-  btn.addEventListener('touchstart', onStart, { passive: false });
-  btn.addEventListener('mouseup',    onEnd);
-  btn.addEventListener('mouseleave', onEnd);
-  btn.addEventListener('touchend',   onEnd, { passive: false });
-  btn.addEventListener('touchcancel',onEnd, { passive: false });
+  const btn=document.getElementById('mic-btn');
+  let holdTimer=null;
+  const onStart=e=>{ e.preventDefault(); holdTimer=setTimeout(()=>startRecording(),200); };
+  const onEnd=e=>{ e.preventDefault(); clearTimeout(holdTimer); if(isRecording) stopRecording(); };
+  btn.addEventListener('mousedown',onStart);
+  btn.addEventListener('touchstart',onStart,{passive:false});
+  btn.addEventListener('mouseup',onEnd);
+  btn.addEventListener('mouseleave',onEnd);
+  btn.addEventListener('touchend',onEnd,{passive:false});
+  btn.addEventListener('touchcancel',onEnd,{passive:false});
 }
 
-// Toggle send/mic button based on input
 function onChatInput(){
-  const val = document.getElementById('chat-input').value.trim();
-  document.getElementById('send-btn').style.display = val ? 'flex' : 'none';
-  document.getElementById('mic-btn').style.display  = val ? 'none' : 'flex';
+  const val=document.getElementById('chat-input').value.trim();
+  document.getElementById('send-btn').style.display=val?'flex':'none';
+  document.getElementById('mic-btn').style.display=val?'none':'flex';
 }
 
-// Audio player in bubble
-function buildAudioBubble(msg, key, convKey){
-  const bars    = msg.audioWaveform || generateFakeWaveform(30);
-  const dur     = msg.audioDuration || 0;
-  const durStr  = formatDuration(dur);
-  const barsHTML = bars.map((h, i) => {
-    const heightPx = Math.round(h * 24) + 4;
-    return `<div class="audio-waveform-bar" data-bar="${i}" style="height:${heightPx}px;"></div>`;
-  }).join('');
-
-  return `
-    <div class="msg-audio" data-audiokey="${key}">
-      <button class="audio-play-btn" onclick="toggleAudio('${key}','${convKey}')">
-        <svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-        <svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-      </button>
-      <div class="audio-waveform" onclick="seekAudio('${key}', event)">${barsHTML}</div>
-      <div class="audio-duration">${durStr}</div>
-    </div>`;
+// ===== AUDIO PLAYER =====
+function buildAudioBubble(msg,key,convKey){
+  const bars=msg.audioWaveform||generateFakeWaveform(30);
+  const dur=msg.audioDuration||0;
+  const barsHTML=bars.map((h,i)=>{ const hp=Math.round(h*24)+4; return `<div class="audio-waveform-bar" data-bar="${i}" style="height:${hp}px;"></div>`; }).join('');
+  return `<div class="msg-audio" data-audiokey="${key}"><button class="audio-play-btn" onclick="toggleAudio('${key}','${convKey}')"><svg class="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg class="pause-icon" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button><div class="audio-waveform" onclick="seekAudio('${key}',event)">${barsHTML}</div><div class="audio-duration">${formatDuration(dur)}</div></div>`;
 }
 
-// Active audio players map: key -> { audio, bars, durEl }
-const audioPlayers = {};
+const audioPlayers={};
 
-function toggleAudio(key, convKey){
-  const container = document.querySelector(`[data-msgkey="${key}"]`);
-  if(!container) return;
-  const player = audioPlayers[key];
-
-  if(player && player.audio){
-    if(!player.audio.paused){
-      player.audio.pause();
-      updatePlayPauseIcon(key, false);
-      return;
-    } else {
-      // Stop all others
-      Object.entries(audioPlayers).forEach(([k, p]) => {
-        if(k !== key && p.audio && !p.audio.paused){ p.audio.pause(); updatePlayPauseIcon(k, false); }
-      });
-      player.audio.play();
-      updatePlayPauseIcon(key, true);
-      return;
-    }
+function toggleAudio(key,convKey){
+  const container=document.querySelector(`[data-msgkey="${key}"]`); if(!container) return;
+  const player=audioPlayers[key];
+  if(player&&player.audio){
+    if(!player.audio.paused){ player.audio.pause(); updatePlayPauseIcon(key,false); return; }
+    else { Object.entries(audioPlayers).forEach(([k,p])=>{ if(k!==key&&p.audio&&!p.audio.paused){ p.audio.pause(); updatePlayPauseIcon(k,false); } }); player.audio.play(); updatePlayPauseIcon(key,true); return; }
   }
-
-  // Need to load the audio data from Firebase
-  dbGet(`conversations/${convKey}/${key}/fileData`).then(snap => {
+  dbGet(`conversations/${convKey}/${key}/fileData`).then(snap=>{
     if(!snap.exists()) return;
-    const audio = new Audio(snap.val());
-    const waveform = container.querySelector('.audio-waveform');
-    const durationEl = container.querySelector('.audio-duration');
-    const barEls = waveform ? [...waveform.querySelectorAll('.audio-waveform-bar')] : [];
-    const totalBars = barEls.length;
-
-    audioPlayers[key] = { audio, bars: barEls, durEl: durationEl };
-
-    audio.addEventListener('timeupdate', () => {
-      const pct = audio.duration ? audio.currentTime / audio.duration : 0;
-      const played = Math.floor(pct * totalBars);
-      barEls.forEach((b, i) => b.classList.toggle('played', i < played));
-      if(durationEl) durationEl.textContent = formatDuration(Math.round(audio.duration - audio.currentTime));
-    });
-
-    audio.addEventListener('ended', () => {
-      updatePlayPauseIcon(key, false);
-      barEls.forEach(b => b.classList.remove('played'));
-      if(durationEl){
-        const origDur = container.closest('[data-msgkey]')?.dataset?.audioduration;
-        durationEl.textContent = formatDuration(origDur ? parseInt(origDur) : 0);
-      }
-    });
-
-    // Stop all others
-    Object.entries(audioPlayers).forEach(([k, p]) => {
-      if(k !== key && p.audio && !p.audio.paused){ p.audio.pause(); updatePlayPauseIcon(k, false); }
-    });
-
-    audio.play().then(() => updatePlayPauseIcon(key, true)).catch(console.error);
+    const audio=new Audio(snap.val());
+    const waveform=container.querySelector('.audio-waveform');
+    const durationEl=container.querySelector('.audio-duration');
+    const barEls=waveform?[...waveform.querySelectorAll('.audio-waveform-bar')]:[];
+    audioPlayers[key]={audio,bars:barEls,durEl:durationEl};
+    audio.addEventListener('timeupdate',()=>{ const pct=audio.duration?audio.currentTime/audio.duration:0; const played=Math.floor(pct*barEls.length); barEls.forEach((b,i)=>b.classList.toggle('played',i<played)); if(durationEl) durationEl.textContent=formatDuration(Math.round(audio.duration-audio.currentTime)); });
+    audio.addEventListener('ended',()=>{ updatePlayPauseIcon(key,false); barEls.forEach(b=>b.classList.remove('played')); if(durationEl){ const od=container.closest('[data-msgkey]')?.dataset?.audioduration; durationEl.textContent=formatDuration(od?parseInt(od):0); } });
+    Object.entries(audioPlayers).forEach(([k,p])=>{ if(k!==key&&p.audio&&!p.audio.paused){ p.audio.pause(); updatePlayPauseIcon(k,false); } });
+    audio.play().then(()=>updatePlayPauseIcon(key,true)).catch(console.error);
   });
 }
 
-function seekAudio(key, e){
-  const player = audioPlayers[key];
-  if(!player || !player.audio || !player.audio.duration) return;
-  const waveform = e.currentTarget;
-  const rect = waveform.getBoundingClientRect();
-  const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  player.audio.currentTime = pct * player.audio.duration;
+function seekAudio(key,e){
+  const player=audioPlayers[key]; if(!player||!player.audio||!player.audio.duration) return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  player.audio.currentTime=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width))*player.audio.duration;
 }
 
-function updatePlayPauseIcon(key, playing){
-  const container = document.querySelector(`[data-msgkey="${key}"]`);
-  if(!container) return;
-  const playIcon  = container.querySelector('.play-icon');
-  const pauseIcon = container.querySelector('.pause-icon');
-  if(playIcon)  playIcon.style.display  = playing ? 'none' : 'block';
-  if(pauseIcon) pauseIcon.style.display = playing ? 'block' : 'none';
+function updatePlayPauseIcon(key,playing){
+  const container=document.querySelector(`[data-msgkey="${key}"]`); if(!container) return;
+  const pi=container.querySelector('.play-icon'), pai=container.querySelector('.pause-icon');
+  if(pi) pi.style.display=playing?'none':'block';
+  if(pai) pai.style.display=playing?'block':'none';
 }
 
+// ===== OPEN DM / GROUP =====
 function openDM(fcode){
-  currentChat = { type: 'dm', id: fcode };
-  const convKey = [meCode, fcode].sort().join('_');
-  clearUnread(convKey);
-  hideBanner();
-  const friend = usersCache[fcode];
-  const hav = document.getElementById('chat-hd-av');
-  hav.innerHTML = avatarHTML(friend, 38);
-  hav.style.background = friend.avatar ? 'transparent' : getColor(friend.username);
-  document.getElementById('chat-hd-name').textContent = friend.username;
-  document.getElementById('chat-hd-sub').textContent  = 'en ligne';
-  document.getElementById('btn-report-chat').style.display = 'inline-flex';
-  // Reset input bar state
-  document.getElementById('chat-input').value = '';
-  document.getElementById('send-btn').style.display = 'none';
-  document.getElementById('mic-btn').style.display  = 'flex';
-  startChatListener();
-  show('screen-chat');
+  currentChat={type:'dm',id:fcode};
+  const convKey=[meCode,fcode].sort().join('_');
+  clearUnread(convKey); hideBanner();
+  const friend=usersCache[fcode];
+  const hav=document.getElementById('chat-hd-av');
+  hav.innerHTML=avatarHTML(friend,38);
+  hav.style.background=friend.avatar?'transparent':getColor(friend.username);
+  document.getElementById('chat-hd-name').textContent=friend.username;
+  document.getElementById('chat-hd-sub').textContent='en ligne';
+  document.getElementById('btn-report-chat').style.display='inline-flex';
+  document.getElementById('chat-input').value='';
+  document.getElementById('send-btn').style.display='none';
+  document.getElementById('mic-btn').style.display='flex';
+  startChatListener(); show('screen-chat');
 }
 
 function openGroup(gid){
-  currentChat = { type: 'group', id: gid };
-  clearUnread(gid);
-  hideBanner();
-  const group = groupsCache[gid];
-  const hav   = document.getElementById('chat-hd-av');
-  if(group.avatar){
-    hav.innerHTML = `<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
-    hav.style.background = 'transparent';
-  } else {
-    hav.innerHTML = `<div style="width:38px;height:38px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`;
-    hav.style.background = 'transparent';
-  }
-  document.getElementById('chat-hd-name').textContent = group.name;
-  const names = toArr(group.members).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ');
-  document.getElementById('chat-hd-sub').textContent = names;
-  document.getElementById('btn-report-chat').style.display = 'none';
-  // Reset input bar state
-  document.getElementById('chat-input').value = '';
-  document.getElementById('send-btn').style.display = 'none';
-  document.getElementById('mic-btn').style.display  = 'flex';
-  Promise.all(toArr(group.members).filter(m => !usersCache[m]).map(m =>
-    dbGet(`users/${m}`).then(s => { if(s.exists()) usersCache[m] = s.val(); })
-  )).then(() => { startChatListener(); show('screen-chat'); });
+  currentChat={type:'group',id:gid};
+  clearUnread(gid); hideBanner();
+  const group=groupsCache[gid];
+  const hav=document.getElementById('chat-hd-av');
+  if(group.avatar){ hav.innerHTML=`<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`; hav.style.background='transparent'; }
+  else { hav.innerHTML=`<div style="width:38px;height:38px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:20px;">👥</div>`; hav.style.background='transparent'; }
+  document.getElementById('chat-hd-name').textContent=group.name;
+  document.getElementById('chat-hd-sub').textContent=toArr(group.members).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ');
+  document.getElementById('btn-report-chat').style.display='none';
+  document.getElementById('chat-input').value='';
+  document.getElementById('send-btn').style.display='none';
+  document.getElementById('mic-btn').style.display='flex';
+  Promise.all(toArr(group.members).filter(m=>!usersCache[m]).map(m=>dbGet(`users/${m}`).then(s=>{ if(s.exists()) usersCache[m]=s.val(); }))).then(()=>{ startChatListener(); show('screen-chat'); });
 }
 
-  function openFriendProfile(){
-  if(!currentChat || currentChat.type !== 'dm') return;
-  const fcode  = currentChat.id;
-  const friend = usersCache[fcode];
-  if(!friend) return;
-
-  const pav = document.getElementById('friend-pav');
-  pav.innerHTML = friend.avatar
-    ? `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-    : `<span style="font-size:36px;font-weight:700;color:#888;">${initials(friend.username)}</span>`;
-  pav.style.background = friend.avatar ? 'transparent' : '#eee';
-
-  document.getElementById('friend-uname').textContent      = friend.username;
-  document.getElementById('friend-code-label').textContent  = friend.code || fcode;
-  document.getElementById('friend-code-big').textContent    = friend.code || fcode;
-
-  document.getElementById('friend-profile-back').onclick = () => show('screen-chat');
-
+function openFriendProfile(){
+  if(!currentChat||currentChat.type!=='dm') return;
+  const fcode=currentChat.id;
+  const friend=usersCache[fcode]; if(!friend) return;
+  const pav=document.getElementById('friend-pav');
+  pav.innerHTML=friend.avatar?`<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:36px;font-weight:700;color:#888;">${initials(friend.username)}</span>`;
+  pav.style.background=friend.avatar?'transparent':'#eee';
+  document.getElementById('friend-uname').textContent=friend.username;
+  document.getElementById('friend-code-label').textContent=friend.code||fcode;
+  document.getElementById('friend-code-big').textContent=friend.code||fcode;
+  document.getElementById('friend-profile-back').onclick=()=>show('screen-chat');
   show('screen-friend-profile');
 }
-  
+
 function openChatProfile(){
   if(!currentChat) return;
-  if(currentChat.type === 'group'){
-    openGroupEdit(currentChat.id);
-  } else {
-    openFriendProfile();
-  }
+  if(currentChat.type==='group') openGroupEdit(currentChat.id);
+  else openFriendProfile();
 }
 
 function goHome(){
-  if(chatListener){ chatListener(); chatListener = null; }
-  if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
-  Object.values(audioPlayers).forEach(p => { if(p.audio) p.audio.pause(); });
-  currentChat = null;
+  if(chatListener){ chatListener(); chatListener=null; }
+  if(chatChangedListener){ chatChangedListener(); chatChangedListener=null; }
+  Object.values(audioPlayers).forEach(p=>{ if(p.audio) p.audio.pause(); });
+  currentChat=null;
   show('screen-home');
   renderConvList();
 }
-// ── REACTIONS ───────────────────────────────────────────────────────────────
-const REACTION_EMOJIS = ['❤️','😂','😮','😢','👍','🙏'];
-let emojiPickerEl = null;
 
-function showEmojiPicker(msgEl, key, convKey){
+// ===== REACTIONS =====
+const REACTION_EMOJIS=['❤️','😂','😮','😢','👍','🙏'];
+let emojiPickerEl=null;
+
+function showEmojiPicker(msgEl,key,convKey){
   closeEmojiPicker();
-  const picker = document.createElement('div');
-  picker.className = 'emoji-picker-popup';
-  picker.id = 'emoji-picker';
-  REACTION_EMOJIS.forEach(emoji => {
-    const span = document.createElement('span');
-    span.textContent = emoji;
-    span.onclick = (e) => { e.stopPropagation(); toggleReaction(key, convKey, emoji); closeEmojiPicker(); };
-    picker.appendChild(span);
-  });
-  const phone = document.querySelector('.phone');
-  const rect  = msgEl.getBoundingClientRect();
-  const pRect = phone.getBoundingClientRect();
+  const picker=document.createElement('div'); picker.className='emoji-picker-popup'; picker.id='emoji-picker';
+  REACTION_EMOJIS.forEach(emoji=>{ const span=document.createElement('span'); span.textContent=emoji; span.onclick=e=>{ e.stopPropagation(); toggleReaction(key,convKey,emoji); closeEmojiPicker(); }; picker.appendChild(span); });
+  const phone=document.querySelector('.phone');
+  const rect=msgEl.getBoundingClientRect(), pRect=phone.getBoundingClientRect();
   phone.appendChild(picker);
-  const pw = picker.offsetWidth;
-  const isMe = msgEl.classList.contains('out');
-  let left = isMe ? rect.right - pRect.left - pw : rect.left - pRect.left;
-  left = Math.max(4, Math.min(left, pRect.width - pw - 4));
-  picker.style.left = left + 'px';
-  picker.style.top  = (rect.top - pRect.top - 48) + 'px';
-  emojiPickerEl = picker;
-  setTimeout(() => document.addEventListener('click', closeEmojiPicker, {once:true}), 10);
+  const pw=picker.offsetWidth, isMe=msgEl.classList.contains('out');
+  let left=isMe?rect.right-pRect.left-pw:rect.left-pRect.left;
+  left=Math.max(4,Math.min(left,pRect.width-pw-4));
+  picker.style.left=left+'px'; picker.style.top=(rect.top-pRect.top-48)+'px';
+  emojiPickerEl=picker;
+  setTimeout(()=>document.addEventListener('click',closeEmojiPicker,{once:true}),10);
 }
 
-function closeEmojiPicker(){
-  if(emojiPickerEl){ emojiPickerEl.remove(); emojiPickerEl = null; }
+function closeEmojiPicker(){ if(emojiPickerEl){ emojiPickerEl.remove(); emojiPickerEl=null; } }
+
+async function toggleReaction(key,convKey,emoji){
+  const path=`conversations/${convKey}/${key}/reactions/${emoji.codePointAt(0)}`;
+  const snap=await dbGet(path);
+  const users=snap.exists()?(snap.val()||{}):{};
+  if(users[meCode]){ const u={...users}; delete u[meCode]; await dbSet(path,Object.keys(u).length?u:null); }
+  else { await dbSet(`${path}/${meCode}`,true); }
 }
 
-async function toggleReaction(key, convKey, emoji){
-  const path = `conversations/${convKey}/${key}/reactions/${emoji.codePointAt(0)}`;
-  const snap = await dbGet(path);
-  const users = snap.exists() ? (snap.val() || {}) : {};
-  if(users[meCode]){
-    const updated = {...users};
-    delete updated[meCode];
-    await dbSet(path, Object.keys(updated).length ? updated : null);
-  } else {
-    await dbSet(`${path}/${meCode}`, true);
-  }
-}
-
-function renderReactions(reactions, key, convKey){
+function renderReactions(reactions,key,convKey){
   if(!reactions) return '';
-  const counts = {};
-  Object.entries(reactions).forEach(([cpStr, users]) => {
-    if(!users) return;
-    const emoji = String.fromCodePoint(parseInt(cpStr));
-    const cnt   = Object.keys(users).length;
-    const mine  = !!users[meCode];
-    if(cnt > 0) counts[emoji] = {cnt, mine};
-  });
+  const counts={};
+  Object.entries(reactions).forEach(([cpStr,users])=>{ if(!users) return; const emoji=String.fromCodePoint(parseInt(cpStr)); const cnt=Object.keys(users).length; const mine=!!users[meCode]; if(cnt>0) counts[emoji]={cnt,mine}; });
   if(!Object.keys(counts).length) return '';
-  return '<div class="msg-reactions">'
-    + Object.entries(counts).map(([emoji,{cnt,mine}]) =>
-        `<span class="reaction-badge${mine?' mine':''}" data-emoji="${emoji}" onclick="toggleReaction('${key}','${convKey}','${emoji}')">${emoji}<span class="r-count">${cnt > 1 ? cnt : ''}</span></span>`
-      ).join('')
-    + '</div>';
+  return '<div class="msg-reactions">'+Object.entries(counts).map(([emoji,{cnt,mine}])=>`<span class="reaction-badge${mine?' mine':''}" onclick="toggleReaction('${key}','${convKey}','${emoji}')">${emoji}<span class="r-count">${cnt>1?cnt:''}</span></span>`).join('')+'</div>';
 }
 
-// ── TICKS ──────────────────────────────────────────────────────────────────
+// ===== TICKS =====
 function tickSVG(status){
-  if(status === 'pending') return `<span class="msg-status"><svg viewBox="0 0 16 16" fill="none"><polyline points="2,8 6,12 14,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  if(status === 'sent')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-  if(status === 'read')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  if(status==='pending') return `<span class="msg-status"><svg viewBox="0 0 16 16" fill="none"><polyline points="2,8 6,12 14,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  if(status==='sent')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+  if(status==='read')    return `<span class="msg-status"><svg viewBox="0 0 20 16" fill="none"><polyline points="1,8 5,12 13,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="6,8 10,12 18,4" stroke="#34B7F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
   return '';
 }
-function updateMsgTick(msgKey, status){
-  const el = document.querySelector(`[data-msgkey="${msgKey}"] .msg-time`);
-  if(el) el.innerHTML = (el.dataset.time || '') + tickSVG(status);
-}
+function updateMsgTick(msgKey,status){ const el=document.querySelector(`[data-msgkey="${msgKey}"] .msg-time`); if(el) el.innerHTML=(el.dataset.time||'')+tickSVG(status); }
 
-// ── DELETE ──────────────────────────────────────────────────────────────────
-let deletingKey = null;
-let deletingConvKey = null;
+// ===== DELETE =====
+let deletingKey=null, deletingConvKey=null;
+function isAdminUser(){ return myUser&&(myUser.isAdmin===true||myUser['isAdmin ']===true); }
 
-function isAdminUser(){ return myUser && (myUser.isAdmin === true || myUser['isAdmin '] === true); }
-
-function askDelete(key, convKey, isMe){
-  deletingKey     = key;
-  deletingConvKey = convKey;
-  document.getElementById('del-all-btn').style.display = (isMe || isAdminUser()) ? 'block' : 'none';
+function askDelete(key,convKey,isMe){
+  deletingKey=key; deletingConvKey=convKey;
+  document.getElementById('del-all-btn').style.display=(isMe||isAdminUser())?'block':'none';
   showModal('modal-delete');
 }
 
@@ -1810,968 +1311,515 @@ async function doDelete(mode){
   if(!deletingKey) return;
   hideModal('modal-delete');
   try {
-    if(mode === 'all'){
-      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/text`, '🚫 Ce message a été supprimé');
-      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/deleted`, true);
-      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/fileData`, null);
-    } else {
-      await dbSet(`conversations/${deletingConvKey}/${deletingKey}/_deletedForMe/${meCode}`, true);
-      const el = document.querySelector(`[data-msgkey="${deletingKey}"]`);
-      if(el) el.remove();
-    }
-  } catch(e){ showToast('❌ Erreur : ' + e.message); }
-  deletingKey = deletingConvKey = null;
+    if(mode==='all'){ await dbSet(`conversations/${deletingConvKey}/${deletingKey}/text`,'🚫 Ce message a été supprimé'); await dbSet(`conversations/${deletingConvKey}/${deletingKey}/deleted`,true); await dbSet(`conversations/${deletingConvKey}/${deletingKey}/fileData`,null); }
+    else { await dbSet(`conversations/${deletingConvKey}/${deletingKey}/_deletedForMe/${meCode}`,true); const el=document.querySelector(`[data-msgkey="${deletingKey}"]`); if(el) el.remove(); }
+  } catch(e){ showToast('❌ Erreur : '+e.message); }
+  deletingKey=deletingConvKey=null;
 }
 
-// ── LISTENER ────────────────────────────────────────────────────────────────
+// ===== CHAT LISTENER =====
 function startChatListener(){
-  if(chatListener){ chatListener(); chatListener = null; }
-  if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
-  // Stop any playing audio when switching chats
-  Object.values(audioPlayers).forEach(p => { if(p.audio) p.audio.pause(); });
-  const convKey = getConvKey(); if(!convKey) return;
-  const container = document.getElementById('chat-messages');
-  container.innerHTML = '<div class="no-msgs">Envoie le premier message !</div>';
-  const convRef = ref(db, `conversations/${convKey}`);
+  if(chatListener){ chatListener(); chatListener=null; }
+  if(chatChangedListener){ chatChangedListener(); chatChangedListener=null; }
+  Object.values(audioPlayers).forEach(p=>{ if(p.audio) p.audio.pause(); });
+  const convKey=getConvKey(); if(!convKey) return;
+  const container=document.getElementById('chat-messages');
+  container.innerHTML='<div class="no-msgs">Envoie le premier message !</div>';
+  const convRef=ref(db,`conversations/${convKey}`);
+  dbGet(`conversations/${convKey}`).then(snap=>{ if(!snap.exists()) return; snap.forEach(child=>{ const msg=child.val(); if(msg&&msg.from!==meCode&&msg.status!=='read') dbSet(`conversations/${convKey}/${child.key}/status`,'read'); }); });
 
-  dbGet(`conversations/${convKey}`).then(snap => {
-    if(!snap.exists()) return;
-    snap.forEach(child => {
-      const msg = child.val();
-      if(msg && msg.from !== meCode && msg.status !== 'read')
-        dbSet(`conversations/${convKey}/${child.key}/status`, 'read');
-    });
-  });
-
-  chatListener = onChildAdded(convRef, snap => {
-    const key = snap.key;
-    const msg = snap.val();
-    if(!msg || msg._deletedForMe?.[meCode]) return;
+  chatListener=onChildAdded(convRef,snap=>{
+    const key=snap.key, msg=snap.val();
+    if(!msg||msg._deletedForMe?.[meCode]) return;
     if(document.querySelector(`[data-msgkey="${key}"]`)) return;
-    const noMsg = container.querySelector('.no-msgs');
-    if(noMsg) noMsg.remove();
-    const isMe   = msg.from === meCode;
-    const sender = usersCache[msg.from];
-    const div    = document.createElement('div');
-    div.className = 'msg ' + (isMe ? 'out' : 'in');
-    div.dataset.msgkey = key;
-    if(msg.audioDuration) div.dataset.audioduration = msg.audioDuration;
-    const showSender = !isMe && currentChat && currentChat.type === 'group';
-    const status = isMe ? (msg.status || 'sent') : '';
-
-    let contentHTML = '';
-    if(msg.deleted){
-      contentHTML = '<em style="color:#aaa">🚫 Ce message a été supprimé</em>';
-    } else if(msg.type === 'audio' && msg.fileData){
-      contentHTML = buildAudioBubble(msg, key, convKey);
-    } else if(msg.type === 'image' && msg.fileData){
-      contentHTML = `<img class="msg-image" src="${msg.fileData}" onclick="openImagePreview('${key}')" data-src="${msg.fileData}" />`;
-    } else if(msg.type === 'pdf' && msg.fileData){
-      const sizeStr = msg.fileSize ? formatBytes(msg.fileSize) : 'PDF';
-      contentHTML = `<a class="msg-pdf" href="${msg.fileData}" download="${msg.fileName||'document.pdf'}" onclick="event.stopPropagation()">
-        <span class="msg-pdf-icon">📄</span>
-        <div class="msg-pdf-info">
-          <div class="msg-pdf-name">${msg.fileName||'document.pdf'}</div>
-          <div class="msg-pdf-size">${sizeStr}</div>
-        </div>
-        <span style="font-size:18px;color:#075E54;">⬇️</span>
-      </a>`;
-    } else {
-      contentHTML = msg.text || '';
-    }
-
-    div.innerHTML = (showSender && sender ? `<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>` : '')
-      + `<div class="msg-content">${contentHTML}</div>`
-      + `<div class="msg-time" data-time="${msg.time}">${msg.time}${isMe ? tickSVG(status) : ''}</div>`
-      + renderReactions(msg.reactions, key, convKey);
-    div.addEventListener('dblclick', () => askDelete(key, convKey, isMe || isAdminUser()));
-    let pressTimer = null;
-    const startPress = (e) => { pressTimer = setTimeout(() => showEmojiPicker(div, key, convKey), 500); };
-    const endPress   = ()    => clearTimeout(pressTimer);
-    div.addEventListener('mousedown',  startPress);
-    div.addEventListener('touchstart', startPress, {passive:true});
-    div.addEventListener('mouseup',    endPress);
-    div.addEventListener('mouseleave', endPress);
-    div.addEventListener('touchend',   endPress);
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-    if(!isMe && msg.status !== 'read')
-      dbSet(`conversations/${convKey}/${key}/status`, 'read');
+    const noMsg=container.querySelector('.no-msgs'); if(noMsg) noMsg.remove();
+    const isMe=msg.from===meCode;
+    const sender=usersCache[msg.from];
+    const div=document.createElement('div');
+    div.className='msg '+(isMe?'out':'in');
+    div.dataset.msgkey=key;
+    if(msg.audioDuration) div.dataset.audioduration=msg.audioDuration;
+    const showSender=!isMe&&currentChat&&currentChat.type==='group';
+    const status=isMe?(msg.status||'sent'):'';
+    let contentHTML='';
+    if(msg.deleted){ contentHTML='<em style="color:#aaa">🚫 Ce message a été supprimé</em>'; }
+    else if(msg.type==='audio'&&msg.fileData){ contentHTML=buildAudioBubble(msg,key,convKey); }
+    else if(msg.type==='image'&&msg.fileData){ contentHTML=`<img class="msg-image" src="${msg.fileData}" onclick="openImagePreview('${key}')" data-src="${msg.fileData}" />`; }
+    else if(msg.type==='pdf'&&msg.fileData){ const sz=msg.fileSize?formatBytes(msg.fileSize):'PDF'; contentHTML=`<a class="msg-pdf" href="${msg.fileData}" download="${msg.fileName||'document.pdf'}" onclick="event.stopPropagation()"><span class="msg-pdf-icon">📄</span><div class="msg-pdf-info"><div class="msg-pdf-name">${msg.fileName||'document.pdf'}</div><div class="msg-pdf-size">${sz}</div></div><span style="font-size:18px;color:#075E54;">⬇️</span></a>`; }
+    else { contentHTML=msg.text||''; }
+    div.innerHTML=(showSender&&sender?`<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>`:'')+`<div class="msg-content">${contentHTML}</div><div class="msg-time" data-time="${msg.time}">${msg.time}${isMe?tickSVG(status):''}</div>`+renderReactions(msg.reactions,key,convKey);
+    div.addEventListener('dblclick',()=>askDelete(key,convKey,isMe||isAdminUser()));
+    let pressTimer=null;
+    const startPress=()=>{ pressTimer=setTimeout(()=>showEmojiPicker(div,key,convKey),500); };
+    const endPress=()=>clearTimeout(pressTimer);
+    div.addEventListener('mousedown',startPress); div.addEventListener('touchstart',startPress,{passive:true});
+    div.addEventListener('mouseup',endPress); div.addEventListener('mouseleave',endPress); div.addEventListener('touchend',endPress);
+    container.appendChild(div); container.scrollTop=container.scrollHeight;
+    if(!isMe&&msg.status!=='read') dbSet(`conversations/${convKey}/${key}/status`,'read');
   });
 
-  chatChangedListener = onChildChanged(convRef, snap => {
-    const key = snap.key;
-    const msg = snap.val();
-    if(!msg) return;
-    if(msg._deletedForMe?.[meCode]){
-      const el = document.querySelector(`[data-msgkey="${key}"]`);
-      if(el) el.remove(); return;
-    }
-    if(msg.from === meCode) updateMsgTick(key, msg.status || 'sent');
-    const el = document.querySelector(`[data-msgkey="${key}"]`);
-    if(!el) return;
-    if(msg.deleted){
-      const contentDiv = el.querySelector('.msg-content');
-      if(contentDiv) contentDiv.innerHTML = '<em style="color:#aaa">🚫 Ce message a été supprimé</em>';
-    }
-    const newReactHTML = renderReactions(msg.reactions, key, convKey);
-    let rDiv = el.querySelector('.msg-reactions');
-    if(rDiv) rDiv.remove();
-    if(newReactHTML) el.insertAdjacentHTML('beforeend', newReactHTML);
+  chatChangedListener=onChildChanged(convRef,snap=>{
+    const key=snap.key, msg=snap.val(); if(!msg) return;
+    if(msg._deletedForMe?.[meCode]){ const el=document.querySelector(`[data-msgkey="${key}"]`); if(el) el.remove(); return; }
+    if(msg.from===meCode) updateMsgTick(key,msg.status||'sent');
+    const el=document.querySelector(`[data-msgkey="${key}"]`); if(!el) return;
+    if(msg.deleted){ const cd=el.querySelector('.msg-content'); if(cd) cd.innerHTML='<em style="color:#aaa">🚫 Ce message a été supprimé</em>'; }
+    const newReactHTML=renderReactions(msg.reactions,key,convKey);
+    let rDiv=el.querySelector('.msg-reactions'); if(rDiv) rDiv.remove();
+    if(newReactHTML) el.insertAdjacentHTML('beforeend',newReactHTML);
   });
 }
 
-function showToast(msg){
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
+function showToast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
 
 // ===== FILE ATTACH =====
-let pendingAttach = null;
+let pendingAttach=null;
 
-function formatBytes(bytes){
-  if(!bytes) return '';
-  if(bytes < 1024) return bytes + ' o';
-  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' Ko';
-  return (bytes/(1024*1024)).toFixed(1) + ' Mo';
+function formatBytes(bytes){ if(!bytes) return ''; if(bytes<1024) return bytes+' o'; if(bytes<1024*1024) return (bytes/1024).toFixed(1)+' Ko'; return (bytes/(1024*1024)).toFixed(1)+' Mo'; }
+
+function handleAttach(e,type){
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size>4*1024*1024){ showToast('❌ Fichier trop lourd (max 4 Mo)'); e.target.value=''; return; }
+  const r=new FileReader();
+  r.onload=ev=>{ pendingAttach={type,fileData:ev.target.result,fileName:file.name,fileSize:file.size}; const bar=document.getElementById('attach-preview-bar'),label=document.getElementById('attach-preview-label'); label.textContent=`${type==='image'?'🖼️':'📄'} ${file.name} (${formatBytes(file.size)})`; bar.style.display='flex'; };
+  r.readAsDataURL(file); e.target.value='';
 }
 
-function handleAttach(e, type){
-  const file = e.target.files[0]; if(!file) return;
-  if(file.size > 4 * 1024 * 1024){ showToast('❌ Fichier trop lourd (max 4 Mo)'); e.target.value=''; return; }
-  const r = new FileReader();
-  r.onload = ev => {
-    pendingAttach = { type, fileData: ev.target.result, fileName: file.name, fileSize: file.size };
-    const bar   = document.getElementById('attach-preview-bar');
-    const label = document.getElementById('attach-preview-label');
-    const icon  = type === 'image' ? '🖼️' : '📄';
-    label.textContent = `${icon} ${file.name} (${formatBytes(file.size)})`;
-    bar.style.display = 'flex';
-  };
-  r.readAsDataURL(file);
-  e.target.value = '';
-}
-
-function cancelAttach(){
-  pendingAttach = null;
-  document.getElementById('attach-preview-bar').style.display = 'none';
-}
+function cancelAttach(){ pendingAttach=null; document.getElementById('attach-preview-bar').style.display='none'; }
 
 async function sendMsg(){
-  const input   = document.getElementById('chat-input');
-  const text    = input.value.trim();
-  if(!currentChat) return;
-  if(!text && !pendingAttach) return;
-  const convKey = getConvKey();
-  const timeStr = nowTime();
-  const ts      = Date.now();
-
+  const input=document.getElementById('chat-input'), text=input.value.trim();
+  if(!currentChat) return; if(!text&&!pendingAttach) return;
+  const convKey=getConvKey(), timeStr=nowTime(), ts=Date.now();
   try {
-    if(pendingAttach){
-      const { type, fileData, fileName, fileSize } = pendingAttach;
-      cancelAttach();
-      await dbPush(`conversations/${convKey}`, {
-        from: meCode, type, fileData, fileName, fileSize,
-        text: type === 'image' ? '📷 Image' : `📄 ${fileName}`,
-        time: timeStr, ts, status: 'sent'
-      });
-      if(text){
-        input.value = '';
-        onChatInput();
-        await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts: ts+1, status: 'sent' });
-      }
-    } else {
-      input.value = '';
-      onChatInput();
-      await dbPush(`conversations/${convKey}`, { from: meCode, text, time: timeStr, ts, status: 'sent' });
-    }
-  } catch(e) {
-    input.value = text;
-    onChatInput();
-    showToast('❌ Envoi impossible : ' + e.message);
-    console.error('sendMsg error', e);
-  }
+    if(pendingAttach){ const {type,fileData,fileName,fileSize}=pendingAttach; cancelAttach(); await dbPush(`conversations/${convKey}`,{from:meCode,type,fileData,fileName,fileSize,text:type==='image'?'📷 Image':`📄 ${fileName}`,time:timeStr,ts,status:'sent'}); if(text){ input.value=''; onChatInput(); await dbPush(`conversations/${convKey}`,{from:meCode,text,time:timeStr,ts:ts+1,status:'sent'}); } }
+    else { input.value=''; onChatInput(); await dbPush(`conversations/${convKey}`,{from:meCode,text,time:timeStr,ts,status:'sent'}); }
+  } catch(e){ input.value=text; onChatInput(); showToast('❌ Envoi impossible : '+e.message); console.error(e); }
 }
 
 // ===== IMAGE PREVIEW =====
 function openImagePreview(key){
-  const msgEl = document.querySelector(`[data-msgkey="${key}"] img.msg-image`);
-  if(!msgEl) return;
-  const src = msgEl.getAttribute('data-src') || msgEl.src;
-  const phone = document.querySelector('.phone');
-  const overlay = document.createElement('div');
-  overlay.className = 'img-preview-overlay';
-  overlay.id = 'img-preview-overlay';
-  overlay.innerHTML = `
-    <button class="img-preview-close" onclick="document.getElementById('img-preview-overlay').remove()">✕</button>
-    <img src="${src}" />
-  `;
-  overlay.addEventListener('click', e => { if(e.target === overlay) overlay.remove(); });
+  const msgEl=document.querySelector(`[data-msgkey="${key}"] img.msg-image`); if(!msgEl) return;
+  const src=msgEl.getAttribute('data-src')||msgEl.src;
+  const phone=document.querySelector('.phone');
+  const overlay=document.createElement('div'); overlay.className='img-preview-overlay'; overlay.id='img-preview-overlay';
+  overlay.innerHTML=`<button class="img-preview-close" onclick="document.getElementById('img-preview-overlay').remove()">✕</button><img src="${src}" />`;
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.remove(); });
   phone.appendChild(overlay);
 }
 
-// ===== AUTO CLEANUP (fichiers > 1 semaine uniquement) =====
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-const FILE_TYPES  = ['image', 'pdf', 'audio'];
+// ===== CLEANUP =====
+const ONE_WEEK_MS=7*24*60*60*1000;
+const FILE_TYPES=['image','pdf','audio'];
 
 async function runCleanup(){
-  const cutoff = Date.now() - ONE_WEEK_MS;
+  const cutoff=Date.now()-ONE_WEEK_MS;
   try {
-    const convSnap = await dbGet('conversations');
-    if(!convSnap.exists()) return;
-    const convData = convSnap.val();
+    const convSnap=await dbGet('conversations'); if(!convSnap.exists()) return;
+    const convData=convSnap.val();
     for(const convKey of Object.keys(convData)){
-      const msgs = convData[convKey];
-      if(!msgs) continue;
-      for(const [msgKey, msg] of Object.entries(msgs)){
-        if(!msg || !msg.ts) continue;
-        // Ne supprime que les fichiers (image/pdf/audio), pas les textes
+      const msgs=convData[convKey]; if(!msgs) continue;
+      for(const [msgKey,msg] of Object.entries(msgs)){
+        if(!msg||!msg.ts) continue;
         if(!FILE_TYPES.includes(msg.type)) continue;
-        if(msg.ts < cutoff){
-          // Conserve le message mais efface la data binaire + marque comme expiré
-          await dbSet(`conversations/${convKey}/${msgKey}/fileData`,     null);
+        if(msg.ts<cutoff){
+          await dbSet(`conversations/${convKey}/${msgKey}/fileData`,null);
           await dbSet(`conversations/${convKey}/${msgKey}/audioWaveform`,null);
-          await dbSet(`conversations/${convKey}/${msgKey}/expired`,       true);
-          await dbSet(`conversations/${convKey}/${msgKey}/text`,
-            msg.type === 'image' ? '🖼️ Image expirée' :
-            msg.type === 'audio' ? '🎤 Audio expiré'  :
-                                   `📄 ${msg.fileName || 'Fichier'} (expiré)`
-          );
+          await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);
+          await dbSet(`conversations/${convKey}/${msgKey}/text`,msg.type==='image'?'🖼️ Image expirée':msg.type==='audio'?'🎤 Audio expiré':`📄 ${msg.fileName||'Fichier'} (expiré)`);
         }
       }
     }
-  } catch(e){ console.warn('Cleanup error:', e); }
+  } catch(e){ console.warn('Cleanup error:',e); }
 }
 
 // ===== PROFILE =====
 function showProfile(){
-  const pav = document.getElementById('profile-pav');
-  pav.innerHTML = myUser.avatar
-    ? `<img src="${myUser.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-    : `<span style="font-size:36px;font-weight:700;color:#888;">${initials(myUser.username)}</span>`;
-  pav.style.background = myUser.avatar ? 'transparent' : '#eee';
-  document.getElementById('profile-uname').textContent      = myUser.username;
-  document.getElementById('profile-code-label').textContent  = myUser.code;
-  document.getElementById('profile-code-big').textContent    = myUser.code;
+  const pav=document.getElementById('profile-pav');
+  pav.innerHTML=myUser.avatar?`<img src="${myUser.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:36px;font-weight:700;color:#888;">${initials(myUser.username)}</span>`;
+  pav.style.background=myUser.avatar?'transparent':'#eee';
+  document.getElementById('profile-uname').textContent=myUser.username;
+  document.getElementById('profile-code-label').textContent=myUser.code;
+  document.getElementById('profile-code-big').textContent=myUser.code;
   show('screen-profile');
 }
 
 function handleProfileAvatar(e){
-  const file = e.target.files[0]; if(!file) return;
-  const r = new FileReader();
-  r.onload = async ev => {
-    myUser.avatar = ev.target.result;
-    usersCache[meCode] = myUser;
-    try { await dbSet(`users/${meCode}/avatar`, myUser.avatar); } catch(err){ console.error(err); }
-    showProfile();
-    renderHeaderAvatar();
-  };
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=async ev=>{ myUser.avatar=ev.target.result; usersCache[meCode]=myUser; try{ await dbSet(`users/${meCode}/avatar`,myUser.avatar); }catch(err){ console.error(err); } showProfile(); renderHeaderAvatar(); };
   r.readAsDataURL(file);
 }
 
 // ===== CHANGE PASSWORD =====
-function showChangePassword(){
-  document.getElementById('pwd-current').value = '';
-  document.getElementById('pwd-new').value = '';
-  document.getElementById('pwd-new2').value = '';
-  document.getElementById('err-changepwd').textContent = '';
-  showModal('modal-changepwd');
-}
+function showChangePassword(){ document.getElementById('pwd-current').value=''; document.getElementById('pwd-new').value=''; document.getElementById('pwd-new2').value=''; document.getElementById('err-changepwd').textContent=''; showModal('modal-changepwd'); }
 
 async function doChangePassword(){
-  const cur  = document.getElementById('pwd-current').value;
-  const nw   = document.getElementById('pwd-new').value;
-  const nw2  = document.getElementById('pwd-new2').value;
-  const err  = document.getElementById('err-changepwd');
-  if(!cur){ err.style.color='#e74c3c'; err.textContent = 'Entre ton mot de passe actuel'; return; }
-  if(!nw || nw.length < 4){ err.style.color='#e74c3c'; err.textContent = 'Nouveau mot de passe trop court (min 4 car.)'; return; }
-  if(nw !== nw2){ err.style.color='#e74c3c'; err.textContent = 'Les nouveaux mots de passe ne correspondent pas'; return; }
-  err.style.color='#888'; err.textContent = 'Vérification…';
-  const curHash = await hashPassword(cur);
-  if(myUser.pwdHash && curHash !== myUser.pwdHash){ err.style.color='#e74c3c'; err.textContent = 'Mot de passe actuel incorrect !'; return; }
-  const newHash = await hashPassword(nw);
-  try {
-    await dbSet(`users/${meCode}/pwdHash`, newHash);
-    myUser.pwdHash = newHash;
-    usersCache[meCode] = myUser;
-    hideModal('modal-changepwd');
-    showToast('✅ Mot de passe modifié !');
-  } catch(e){
-    err.style.color='#e74c3c'; err.textContent = 'Erreur Firebase.';
-    console.error(e);
-  }
+  const cur=document.getElementById('pwd-current').value, nw=document.getElementById('pwd-new').value, nw2=document.getElementById('pwd-new2').value;
+  const err=document.getElementById('err-changepwd');
+  if(!cur){ err.style.color='#e74c3c'; err.textContent='Entre ton mot de passe actuel'; return; }
+  if(!nw||nw.length<4){ err.style.color='#e74c3c'; err.textContent='Nouveau mot de passe trop court (min 4 car.)'; return; }
+  if(nw!==nw2){ err.style.color='#e74c3c'; err.textContent='Les nouveaux mots de passe ne correspondent pas'; return; }
+  err.style.color='#888'; err.textContent='Vérification…';
+  const curHash=await hashPassword(cur);
+  if(myUser.pwdHash&&curHash!==myUser.pwdHash){ err.style.color='#e74c3c'; err.textContent='Mot de passe actuel incorrect !'; return; }
+  const newHash=await hashPassword(nw);
+  try { await dbSet(`users/${meCode}/pwdHash`,newHash); myUser.pwdHash=newHash; usersCache[meCode]=myUser; hideModal('modal-changepwd'); showToast('✅ Mot de passe modifié !'); }
+  catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur Firebase.'; console.error(e); }
 }
 
 // ===== GROUP EDIT =====
-let editingGroupId = null;
+let editingGroupId=null;
 
 function openGroupEdit(gid){
-  editingGroupId = gid;
-  const group = groupsCache[gid];
-  if(!group) return;
-
-  const avEl = document.getElementById('gedit-av');
-  if(group.avatar){
-    avEl.innerHTML = `<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-  } else {
-    avEl.innerHTML = `<span style="font-size:32px;">👥</span>`;
-  }
-
-  document.getElementById('gedit-name').value = group.name;
-  document.getElementById('err-gedit').textContent = '';
-  document.getElementById('group-edit-back').onclick = () => show('screen-chat');
-
-  const members = toArr(group.members);
-  const leaveBtn = document.querySelector('.btn-leave-group');
+  editingGroupId=gid;
+  const group=groupsCache[gid]; if(!group) return;
+  const avEl=document.getElementById('gedit-av');
+  avEl.innerHTML=group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:32px;">👥</span>`;
+  document.getElementById('gedit-name').value=group.name;
+  document.getElementById('err-gedit').textContent='';
+  document.getElementById('group-edit-back').onclick=()=>show('screen-chat');
+  const members=toArr(group.members);
+  const leaveBtn=document.querySelector('.btn-leave-group');
   if(leaveBtn){
-    const isMember = members.includes(meCode);
-    if(!isMember && isAdminUser()){
-      leaveBtn.textContent = '🛡️ Rejoindre ce groupe (admin)';
-      leaveBtn.style.background = '#e8f5e9';
-      leaveBtn.style.color = '#27ae60';
-      leaveBtn.onclick = () => adminJoinGroup(gid);
-    } else {
-      leaveBtn.textContent = '🚪 Quitter le groupe';
-      leaveBtn.style.background = '';
-      leaveBtn.style.color = '';
-      leaveBtn.onclick = leaveGroup;
-    }
+    const isMember=members.includes(meCode);
+    if(!isMember&&isAdminUser()){ leaveBtn.textContent='🛡️ Rejoindre ce groupe (admin)'; leaveBtn.style.background='#e8f5e9'; leaveBtn.style.color='#27ae60'; leaveBtn.onclick=()=>adminJoinGroup(gid); }
+    else { leaveBtn.textContent='🚪 Quitter le groupe'; leaveBtn.style.background=''; leaveBtn.style.color=''; leaveBtn.onclick=leaveGroup; }
   }
-
-  const isCreator = group.createdBy === meCode;
-  const canInvite = isCreator || isAdminUser();
-  const inviteSection = document.getElementById('gedit-invite-section');
-  inviteSection.style.display = canInvite ? 'flex' : 'none';
+  const isCreator=group.createdBy===meCode, canInvite=isCreator||isAdminUser();
+  const inviteSection=document.getElementById('gedit-invite-section');
+  inviteSection.style.display=canInvite?'flex':'none';
   if(canInvite) refreshInviteLinkDisplay(group);
-
-  renderGroupMembers();
-  renderAddMemberSelect();
+  renderGroupMembers(); renderAddMemberSelect();
   show('screen-group-edit');
 }
 
 function refreshInviteLinkDisplay(group){
-  const linkEl = document.getElementById('gedit-invite-link');
-  if(group.inviteToken){
-    const base  = window.location.href.split('?')[0];
-    linkEl.textContent = `${base}?joinGroup=${group.id}&token=${group.inviteToken}`;
-    linkEl.style.color = '';
-    linkEl.style.fontStyle = '';
-    linkEl.style.fontSize  = '';
-  } else {
-    linkEl.style.color = '#aaa';
-    linkEl.style.fontStyle = 'italic';
-    linkEl.style.fontSize = '12px';
-    linkEl.textContent = 'Aucun lien actif — clique sur "Copier le lien" pour en générer un.';
-  }
+  const linkEl=document.getElementById('gedit-invite-link');
+  if(group.inviteToken){ const base=window.location.href.split('?')[0]; linkEl.textContent=`${base}?joinGroup=${group.id}&token=${group.inviteToken}`; linkEl.style.color=''; linkEl.style.fontStyle=''; linkEl.style.fontSize=''; }
+  else { linkEl.style.color='#aaa'; linkEl.style.fontStyle='italic'; linkEl.style.fontSize='12px'; linkEl.textContent='Aucun lien actif — clique sur "Copier le lien" pour en générer un.'; }
 }
 
 async function copyGroupInviteLink(){
   if(!editingGroupId) return;
-  const group = groupsCache[editingGroupId];
-  const isCreator = group.createdBy === meCode;
-  if(!isCreator && !isAdminUser()){ showToast('⛔ Seul le créateur peut générer un lien'); return; }
-  let token = group.inviteToken;
-  if(!token){
-    token = genInviteToken();
-    await dbSet(`groups/${editingGroupId}/inviteToken`, token);
-    groupsCache[editingGroupId].inviteToken = token;
-  }
-  const base = window.location.href.split('?')[0];
-  const link = `${base}?joinGroup=${editingGroupId}&token=${token}`;
-  const linkEl = document.getElementById('gedit-invite-link');
-  linkEl.textContent = link;
-  linkEl.style.color  = '';
-  linkEl.style.fontStyle = '';
-  linkEl.style.fontSize  = '';
-  navigator.clipboard.writeText(link)
-    .then(() => showToast('🔗 Lien copié dans le presse-papier !'))
-    .catch(() => { prompt('Copie ce lien :', link); });
+  const group=groupsCache[editingGroupId];
+  if(group.createdBy!==meCode&&!isAdminUser()){ showToast('⛔ Seul le créateur peut générer un lien'); return; }
+  let token=group.inviteToken;
+  if(!token){ token=genInviteToken(); await dbSet(`groups/${editingGroupId}/inviteToken`,token); groupsCache[editingGroupId].inviteToken=token; }
+  const base=window.location.href.split('?')[0];
+  const link=`${base}?joinGroup=${editingGroupId}&token=${token}`;
+  const linkEl=document.getElementById('gedit-invite-link');
+  linkEl.textContent=link; linkEl.style.color=''; linkEl.style.fontStyle=''; linkEl.style.fontSize='';
+  navigator.clipboard.writeText(link).then(()=>showToast('🔗 Lien copié dans le presse-papier !')).catch(()=>{ prompt('Copie ce lien :',link); });
 }
 
 async function revokeGroupInviteLink(){
   if(!editingGroupId) return;
-  const group = groupsCache[editingGroupId];
-  const isCreator = group.createdBy === meCode;
-  if(!isCreator && !isAdminUser()){ showToast('⛔ Seul le créateur peut révoquer le lien'); return; }
+  const group=groupsCache[editingGroupId];
+  if(group.createdBy!==meCode&&!isAdminUser()){ showToast('⛔ Seul le créateur peut révoquer le lien'); return; }
   if(!group.inviteToken){ showToast('Aucun lien actif à révoquer'); return; }
   if(!confirm('Révoquer le lien d\'invitation ? Les anciens liens ne fonctionneront plus.')) return;
-  try {
-    await dbSet(`groups/${editingGroupId}/inviteToken`, null);
-    groupsCache[editingGroupId].inviteToken = null;
-    delete groupsCache[editingGroupId].inviteToken;
-    refreshInviteLinkDisplay(groupsCache[editingGroupId]);
-    showToast('🗑️ Lien révoqué');
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  try { await dbSet(`groups/${editingGroupId}/inviteToken`,null); groupsCache[editingGroupId].inviteToken=null; delete groupsCache[editingGroupId].inviteToken; refreshInviteLinkDisplay(groupsCache[editingGroupId]); showToast('🗑️ Lien révoqué'); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
-// ===== JOIN GROUP VIA INVITE LINK =====
-async function joinGroupFromLink(gid, token){
+async function joinGroupFromLink(gid,token){
   try {
-    const snap = await dbGet(`groups/${gid}`);
+    const snap=await dbGet(`groups/${gid}`);
     if(!snap.exists()){ showToast('❌ Groupe introuvable ou supprimé'); return; }
-    const group = snap.val();
-    if(group.inviteToken && group.inviteToken !== token){
-      showToast('❌ Lien d\'invitation invalide ou révoqué'); return;
-    }
-    if(!group.inviteToken){
-      showToast('❌ Lien d\'invitation invalide'); return;
-    }
-    const members = toArr(group.members);
-    if(members.includes(meCode)){
-      groupsCache[gid] = group;
-      switchHomeTab('groups');
-      showToast('✅ Tu es déjà dans ce groupe !');
-      return;
-    }
+    const group=snap.val();
+    if(group.inviteToken&&group.inviteToken!==token){ showToast('❌ Lien d\'invitation invalide ou révoqué'); return; }
+    if(!group.inviteToken){ showToast('❌ Lien d\'invitation invalide'); return; }
+    const members=toArr(group.members);
+    if(members.includes(meCode)){ groupsCache[gid]=group; switchHomeTab('groups'); showToast('✅ Tu es déjà dans ce groupe !'); return; }
     members.push(meCode);
-    await dbSet(`groups/${gid}/members`, members);
-    group.members = members;
-    groupsCache[gid] = group;
-    addGroupConvListener(gid);
-    switchHomeTab('groups');
+    await dbSet(`groups/${gid}/members`,members);
+    group.members=members; groupsCache[gid]=group;
+    addGroupConvListener(gid); switchHomeTab('groups');
     showToast(`✅ Tu as rejoint "${group.name}" !`);
   } catch(e){ showToast('❌ Erreur en rejoignant le groupe'); console.error(e); }
 }
 
 function renderGroupMembers(){
-  const group   = groupsCache[editingGroupId];
-  const list    = document.getElementById('gedit-members-list');
-  const members = toArr(group.members);
-  const canManage = group.createdBy === meCode || isAdminUser();
-  list.innerHTML = '';
-  members.forEach(mcode => {
-    const u = usersCache[mcode];
-    if(!u) return;
-    const isMe = mcode === meCode;
-    const isCreatorMember = mcode === group.createdBy;
-    const div = document.createElement('div');
-    div.className = 'member-item';
-    div.innerHTML = `
-      <div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u, 36)}</div>
-      <div class="member-info">
-        <div class="member-name">${u.username}${isMe ? ' <span style="font-size:11px;color:#aaa">(toi)</span>' : ''}${isAdminUser() && isCreatorMember ? ' <span style="font-size:10px;color:#e67e22;">👑</span>' : ''}</div>
-        <div class="member-role">${isCreatorMember ? '👑 Créateur' : 'Membre'}${isAdminUser() && !isCreatorMember && isMe ? ' · 🛡️ Admin' : ''}</div>
-      </div>
-      ${(canManage && !isMe) ? `<button class="btn-remove-member" onclick="removeMemberFromGroup('${mcode}')">Retirer</button>` : ''}
-    `;
+  const group=groupsCache[editingGroupId], list=document.getElementById('gedit-members-list');
+  const members=toArr(group.members), canManage=group.createdBy===meCode||isAdminUser();
+  list.innerHTML='';
+  members.forEach(mcode=>{
+    const u=usersCache[mcode]; if(!u) return;
+    const isMe=mcode===meCode, isCreatorMember=mcode===group.createdBy;
+    const div=document.createElement('div'); div.className='member-item';
+    div.innerHTML=`<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u,36)}</div><div class="member-info"><div class="member-name">${u.username}${isMe?' <span style="font-size:11px;color:#aaa">(toi)</span>':''}${isAdminUser()&&isCreatorMember?' <span style="font-size:10px;color:#e67e22;">👑</span>':''}</div><div class="member-role">${isCreatorMember?'👑 Créateur':'Membre'}${isAdminUser()&&!isCreatorMember&&isMe?' · 🛡️ Admin':''}</div></div>${canManage&&!isMe?`<button class="btn-remove-member" onclick="removeMemberFromGroup('${mcode}')">Retirer</button>`:''}`;
     list.appendChild(div);
   });
 }
 
 function renderAddMemberSelect(){
-  const group   = groupsCache[editingGroupId];
-  const members = toArr(group.members);
-  const sel = document.getElementById('gedit-add-select');
-  sel.innerHTML = '<option value="">-- Choisir un contact --</option>';
-  if(isAdminUser()){
-    Object.entries(usersCache).forEach(([code, u]) => {
-      if(!u || members.includes(code)) return;
-      const opt = document.createElement('option');
-      opt.value = code;
-      opt.textContent = u.username + ' (' + code + ')';
-      sel.appendChild(opt);
-    });
-  } else {
-    const friends = toArr(myUser.friends).filter(f => !members.includes(f));
-    friends.forEach(fcode => {
-      const u = usersCache[fcode];
-      if(!u) return;
-      const opt = document.createElement('option');
-      opt.value = fcode;
-      opt.textContent = u.username;
-      sel.appendChild(opt);
-    });
-  }
+  const group=groupsCache[editingGroupId], members=toArr(group.members);
+  const sel=document.getElementById('gedit-add-select'); sel.innerHTML='<option value="">-- Choisir un contact --</option>';
+  if(isAdminUser()){ Object.entries(usersCache).forEach(([code,u])=>{ if(!u||members.includes(code)) return; const opt=document.createElement('option'); opt.value=code; opt.textContent=u.username+' ('+code+')'; sel.appendChild(opt); }); }
+  else { toArr(myUser.friends).filter(f=>!members.includes(f)).forEach(fcode=>{ const u=usersCache[fcode]; if(!u) return; const opt=document.createElement('option'); opt.value=fcode; opt.textContent=u.username; sel.appendChild(opt); }); }
 }
 
 async function adminJoinGroup(gid){
   if(!isAdminUser()) return;
-  try {
-    const snap = await dbGet(`groups/${gid}`);
-    if(!snap.exists()) return;
-    const group = snap.val();
-    const members = toArr(group.members);
-    if(!members.includes(meCode)){
-      members.push(meCode);
-      await dbSet(`groups/${gid}/members`, members);
-      group.members = members;
-    }
-    groupsCache[gid] = group;
-    showToast('🛡️ Tu as rejoint le groupe !');
-    openGroupEdit(gid);
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  try { const snap=await dbGet(`groups/${gid}`); if(!snap.exists()) return; const group=snap.val(); const members=toArr(group.members); if(!members.includes(meCode)){ members.push(meCode); await dbSet(`groups/${gid}/members`,members); group.members=members; } groupsCache[gid]=group; showToast('🛡️ Tu as rejoint le groupe !'); openGroupEdit(gid); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 function handleGroupAvatar(e){
-  const file = e.target.files[0]; if(!file) return;
-  const r = new FileReader();
-  r.onload = async ev => {
-    const avatarData = ev.target.result;
-    const avEl = document.getElementById('gedit-av');
-    avEl.innerHTML = `<img src="${avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    try {
-      await dbSet(`groups/${editingGroupId}/avatar`, avatarData);
-      groupsCache[editingGroupId].avatar = avatarData;
-      if(currentChat && currentChat.type === 'group' && currentChat.id === editingGroupId){
-        const hav = document.getElementById('chat-hd-av');
-        hav.innerHTML = `<img src="${avatarData}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;
-      }
-      showToast('✅ Photo de groupe mise à jour !');
-    } catch(err){ showToast('❌ Erreur'); console.error(err); }
-  };
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=async ev=>{ const avatarData=ev.target.result; const avEl=document.getElementById('gedit-av'); avEl.innerHTML=`<img src="${avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; try{ await dbSet(`groups/${editingGroupId}/avatar`,avatarData); groupsCache[editingGroupId].avatar=avatarData; if(currentChat&&currentChat.type==='group'&&currentChat.id===editingGroupId){ const hav=document.getElementById('chat-hd-av'); hav.innerHTML=`<img src="${avatarData}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`; } showToast('✅ Photo de groupe mise à jour !'); }catch(err){ showToast('❌ Erreur'); console.error(err); } };
   r.readAsDataURL(file);
 }
 
 async function saveGroupName(){
-  const name = document.getElementById('gedit-name').value.trim();
-  const err  = document.getElementById('err-gedit');
-  if(!name){ err.style.color='#e74c3c'; err.textContent = 'Le nom ne peut pas être vide !'; return; }
-  if(name.length > 30){ err.style.color='#e74c3c'; err.textContent = 'Nom trop long (max 30 car.)'; return; }
-  try {
-    await dbSet(`groups/${editingGroupId}/name`, name);
-    groupsCache[editingGroupId].name = name;
-    if(currentChat && currentChat.type === 'group' && currentChat.id === editingGroupId){
-      document.getElementById('chat-hd-name').textContent = name;
-    }
-    err.style.color = '#27ae60'; err.textContent = '✅ Nom mis à jour !';
-    setTimeout(() => err.textContent = '', 2000);
-  } catch(e){ err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e); }
+  const name=document.getElementById('gedit-name').value.trim(), err=document.getElementById('err-gedit');
+  if(!name){ err.style.color='#e74c3c'; err.textContent='Le nom ne peut pas être vide !'; return; }
+  if(name.length>30){ err.style.color='#e74c3c'; err.textContent='Nom trop long (max 30 car.)'; return; }
+  try { await dbSet(`groups/${editingGroupId}/name`,name); groupsCache[editingGroupId].name=name; if(currentChat&&currentChat.type==='group'&&currentChat.id===editingGroupId){ document.getElementById('chat-hd-name').textContent=name; } err.style.color='#27ae60'; err.textContent='✅ Nom mis à jour !'; setTimeout(()=>err.textContent='',2000); }
+  catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
 }
 
 async function addMemberToGroup(){
-  const sel  = document.getElementById('gedit-add-select');
-  const code = sel.value;
-  const err  = document.getElementById('err-gedit');
-  if(!code){ err.style.color='#e74c3c'; err.textContent = 'Sélectionne un contact !'; return; }
-  const group   = groupsCache[editingGroupId];
-  const members = toArr(group.members);
-  if(members.includes(code)){ err.style.color='#e74c3c'; err.textContent = 'Déjà membre !'; return; }
-  try {
-    const newMembers = [...members, code];
-    await dbSet(`groups/${editingGroupId}/members`, newMembers);
-    groupsCache[editingGroupId].members = newMembers;
-    err.style.color = '#27ae60'; err.textContent = `✅ ${usersCache[code]?.username || code} ajouté !`;
-    setTimeout(() => err.textContent = '', 2000);
-    renderGroupMembers();
-    renderAddMemberSelect();
-  } catch(e){ err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e); }
+  const sel=document.getElementById('gedit-add-select'), code=sel.value, err=document.getElementById('err-gedit');
+  if(!code){ err.style.color='#e74c3c'; err.textContent='Sélectionne un contact !'; return; }
+  const group=groupsCache[editingGroupId], members=toArr(group.members);
+  if(members.includes(code)){ err.style.color='#e74c3c'; err.textContent='Déjà membre !'; return; }
+  try { const newMembers=[...members,code]; await dbSet(`groups/${editingGroupId}/members`,newMembers); groupsCache[editingGroupId].members=newMembers; err.style.color='#27ae60'; err.textContent=`✅ ${usersCache[code]?.username||code} ajouté !`; setTimeout(()=>err.textContent='',2000); renderGroupMembers(); renderAddMemberSelect(); }
+  catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
 }
 
 async function removeMemberFromGroup(mcode){
-  const group = groupsCache[editingGroupId];
-  if(group.createdBy !== meCode && !isAdminUser()){ showToast('⛔ Seul le créateur peut retirer des membres'); return; }
-  const u = usersCache[mcode];
-  if(!confirm(`Retirer ${u ? u.username : mcode} du groupe ?`)) return;
-  try {
-    const newMembers = toArr(group.members).filter(m => m !== mcode);
-    await dbSet(`groups/${editingGroupId}/members`, newMembers);
-    groupsCache[editingGroupId].members = newMembers;
-    showToast(`✅ ${u ? u.username : mcode} retiré`);
-    renderGroupMembers();
-    renderAddMemberSelect();
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  const group=groupsCache[editingGroupId];
+  if(group.createdBy!==meCode&&!isAdminUser()){ showToast('⛔ Seul le créateur peut retirer des membres'); return; }
+  const u=usersCache[mcode];
+  if(!confirm(`Retirer ${u?u.username:mcode} du groupe ?`)) return;
+  try { const newMembers=toArr(group.members).filter(m=>m!==mcode); await dbSet(`groups/${editingGroupId}/members`,newMembers); groupsCache[editingGroupId].members=newMembers; showToast(`✅ ${u?u.username:mcode} retiré`); renderGroupMembers(); renderAddMemberSelect(); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function leaveGroup(){
-  const group = groupsCache[editingGroupId];
+  const group=groupsCache[editingGroupId];
   if(!confirm('Quitter ce groupe ?')) return;
   try {
-    const newMembers = toArr(group.members).filter(m => m !== meCode);
-    if(newMembers.length === 0){
-      await dbSet(`groups/${editingGroupId}`, null);
-    } else {
-      await dbSet(`groups/${editingGroupId}/members`, newMembers);
-      if(group.createdBy === meCode && newMembers.length > 0){
-        await dbSet(`groups/${editingGroupId}/createdBy`, newMembers[0]);
-      }
-    }
-    delete groupsCache[editingGroupId];
-    editingGroupId = null;
-    showToast('👋 Groupe quitté');
-    goHome();
+    const newMembers=toArr(group.members).filter(m=>m!==meCode);
+    if(newMembers.length===0){ await dbSet(`groups/${editingGroupId}`,null); }
+    else { await dbSet(`groups/${editingGroupId}/members`,newMembers); if(group.createdBy===meCode&&newMembers.length>0){ await dbSet(`groups/${editingGroupId}/createdBy`,newMembers[0]); } }
+    delete groupsCache[editingGroupId]; editingGroupId=null;
+    showToast('👋 Groupe quitté'); goHome();
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
-// ===== MODERATION / SIGNALEMENT =====
-let reportTargetCode = null;
-let reportConvKey    = null;
+// ===== MODERATION =====
+let reportTargetCode=null, reportConvKey=null;
 
 function showReportModal(){
   if(!currentChat) return;
-  const isGroup = currentChat.type === 'group';
-  reportTargetCode = isGroup ? null : currentChat.id;
-  reportConvKey    = getConvKey();
-  const desc = document.getElementById('report-desc');
-  if(isGroup) desc.textContent = 'Signaler ce groupe';
-  else {
-    const friend = usersCache[currentChat.id];
-    desc.textContent = friend ? `Signaler @${friend.username}` : 'Signaler cet utilisateur';
-  }
-  document.getElementById('report-reason').value = '';
-  document.getElementById('report-detail').value = '';
-  document.getElementById('err-report').textContent = '';
+  const isGroup=currentChat.type==='group';
+  reportTargetCode=isGroup?null:currentChat.id;
+  reportConvKey=getConvKey();
+  const desc=document.getElementById('report-desc');
+  if(isGroup) desc.textContent='Signaler ce groupe';
+  else { const friend=usersCache[currentChat.id]; desc.textContent=friend?`Signaler @${friend.username}`:'Signaler cet utilisateur'; }
+  document.getElementById('report-reason').value=''; document.getElementById('report-detail').value=''; document.getElementById('err-report').textContent='';
   showModal('modal-report');
 }
 
 function showReportFromProfile(){
-  const friendCode = document.getElementById('friend-code-big').textContent;
-  reportTargetCode = friendCode;
-  reportConvKey    = [meCode, friendCode].sort().join('_');
-  const desc = document.getElementById('report-desc');
-  desc.textContent = `Signaler @${document.getElementById('friend-uname').textContent}`;
-  document.getElementById('report-reason').value = '';
-  document.getElementById('report-detail').value = '';
-  document.getElementById('err-report').textContent = '';
+  const friendCode=document.getElementById('friend-code-big').textContent;
+  reportTargetCode=friendCode; reportConvKey=[meCode,friendCode].sort().join('_');
+  document.getElementById('report-desc').textContent=`Signaler @${document.getElementById('friend-uname').textContent}`;
+  document.getElementById('report-reason').value=''; document.getElementById('report-detail').value=''; document.getElementById('err-report').textContent='';
   showModal('modal-report');
 }
 
 async function submitReport(){
-  const reason = document.getElementById('report-reason').value;
-  const detail = document.getElementById('report-detail').value.trim();
-  const err    = document.getElementById('err-report');
-  if(!reason){ err.style.color='#e74c3c'; err.textContent = 'Choisis une raison !'; return; }
-  err.style.color='#888'; err.textContent = 'Envoi…';
-  let messages = [];
-  try {
-    const msnap = await dbGet(`conversations/${reportConvKey}`);
-    if(msnap.exists()){
-      msnap.forEach(child => {
-        const m = child.val();
-        if(m && !m.deleted && !m._deletedForMe) messages.push({from: m.from, text: m.text, time: m.time});
-      });
-      messages = messages.slice(-10);
-    }
-  } catch(e){}
-  const report = {
-    reportedBy: meCode, reportedUser: reportTargetCode || 'group',
-    convKey: reportConvKey, reason, detail: detail || '',
-    timestamp: Date.now(), messages, status: 'pending'
-  };
-  try {
-    await dbPush('reports', report);
-    hideModal('modal-report');
-    showToast('✅ Signalement envoyé aux admins');
-  } catch(e) {
-    err.style.color='#e74c3c'; err.textContent = 'Erreur réseau'; console.error(e);
-  }
+  const reason=document.getElementById('report-reason').value, detail=document.getElementById('report-detail').value.trim();
+  const err=document.getElementById('err-report');
+  if(!reason){ err.style.color='#e74c3c'; err.textContent='Choisis une raison !'; return; }
+  err.style.color='#888'; err.textContent='Envoi…';
+  let messages=[];
+  try { const msnap=await dbGet(`conversations/${reportConvKey}`); if(msnap.exists()){ msnap.forEach(child=>{ const m=child.val(); if(m&&!m.deleted&&!m._deletedForMe) messages.push({from:m.from,text:m.text,time:m.time}); }); messages=messages.slice(-10); } } catch(e){}
+  const report={reportedBy:meCode,reportedUser:reportTargetCode||'group',convKey:reportConvKey,reason,detail:detail||'',timestamp:Date.now(),messages,status:'pending'};
+  try { await dbPush('reports',report); hideModal('modal-report'); showToast('✅ Signalement envoyé aux admins'); }
+  catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
 }
 
-// ===== ADMIN PANEL =====
-let currentAdminTab = 'reports';
+// ===== ADMIN =====
+let currentAdminTab='reports';
 
 function showAdminPanel(){
-  if(!myUser.isAdmin && !myUser['isAdmin ']){ showToast('⛔ Accès refusé'); return; }
-  currentAdminTab = 'reports';
+  if(!myUser.isAdmin&&!myUser['isAdmin ']){ showToast('⛔ Accès refusé'); return; }
+  currentAdminTab='reports';
   document.getElementById('atab-reports').classList.add('active');
   document.getElementById('atab-users').classList.remove('active');
-  renderAdminContent();
-  show('screen-admin');
+  renderAdminContent(); show('screen-admin');
 }
 
 function switchAdminTab(tab){
-  currentAdminTab = tab;
-  document.getElementById('atab-reports').classList.toggle('active', tab === 'reports');
-  document.getElementById('atab-users').classList.toggle('active',   tab === 'users');
-  document.getElementById('atab-groups').classList.toggle('active',  tab === 'groups');
+  currentAdminTab=tab;
+  document.getElementById('atab-reports').classList.toggle('active',tab==='reports');
+  document.getElementById('atab-users').classList.toggle('active',tab==='users');
+  document.getElementById('atab-groups').classList.toggle('active',tab==='groups');
   renderAdminContent();
 }
 
 async function renderAdminContent(){
-  const content = document.getElementById('admin-content');
-  content.innerHTML = '<div class="empty-admin">Chargement…</div>';
-  if(currentAdminTab === 'reports') await renderAdminReports(content);
-  else if(currentAdminTab === 'users') await renderAdminUsers(content);
+  const content=document.getElementById('admin-content'); content.innerHTML='<div class="empty-admin">Chargement…</div>';
+  if(currentAdminTab==='reports') await renderAdminReports(content);
+  else if(currentAdminTab==='users') await renderAdminUsers(content);
   else await renderAdminGroups(content);
 }
 
 async function renderAdminGroups(content){
   try {
-    const snap = await dbGet('groups');
-    if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun groupe</div>'; return; }
-    const groups = [];
-    Object.entries(snap.val()).forEach(([gid, data]) => { if(data) groups.push({...data, id: gid}); });
-    groups.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-    const allCodes = [...new Set(groups.flatMap(g => toArr(g.members)))];
-    await Promise.all(allCodes.filter(c => !usersCache[c]).map(async c => {
-      const s = await dbGet(`users/${c}`); if(s.exists()) usersCache[c] = s.val();
-    }));
-    content.innerHTML = '';
-    const section = document.createElement('div');
-    section.className = 'admin-section';
-    section.innerHTML = `<div class="admin-section-title">Tous les groupes (${groups.length})</div>`;
-    groups.forEach(group => {
-      if(!groupsCache[group.id]) groupsCache[group.id] = group;
-      const members  = toArr(group.members);
-      const isMember = members.includes(meCode);
-      const creator  = usersCache[group.createdBy];
-      const memberNames = members.slice(0,3).map(m => usersCache[m] ? usersCache[m].username : '?').join(', ')
-        + (members.length > 3 ? ` +${members.length-3}` : '');
-      const div = document.createElement('div');
-      div.className = 'user-item';
-      div.innerHTML = `
-        <div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:${getColor(group.name)};font-size:20px;">
-          ${group.avatar ? `<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : '👥'}
-        </div>
-        <div class="user-item-info">
-          <div class="user-item-name">${group.name} ${isMember ? '<span style="font-size:10px;color:#27ae60;">✓ membre</span>' : ''}</div>
-          <div class="user-item-meta">${members.length} membre(s) · ${memberNames}</div>
-          <div class="user-item-meta">Créé par ${creator ? creator.username : group.createdBy}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          <button class="btn-make-admin" style="background:#075E54;" onclick="adminOpenGroup('${group.id}')">⚙️ Gérer</button>
-        </div>`;
+    const snap=await dbGet('groups'); if(!snap.exists()){ content.innerHTML='<div class="empty-admin">Aucun groupe</div>'; return; }
+    const groups=[]; Object.entries(snap.val()).forEach(([gid,data])=>{ if(data) groups.push({...data,id:gid}); }); groups.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+    const allCodes=[...new Set(groups.flatMap(g=>toArr(g.members)))];
+    await Promise.all(allCodes.filter(c=>!usersCache[c]).map(async c=>{ const s=await dbGet(`users/${c}`); if(s.exists()) usersCache[c]=s.val(); }));
+    content.innerHTML='';
+    const section=document.createElement('div'); section.className='admin-section'; section.innerHTML=`<div class="admin-section-title">Tous les groupes (${groups.length})</div>`;
+    groups.forEach(group=>{
+      if(!groupsCache[group.id]) groupsCache[group.id]=group;
+      const members=toArr(group.members), isMember=members.includes(meCode), creator=usersCache[group.createdBy];
+      const memberNames=members.slice(0,3).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ')+(members.length>3?` +${members.length-3}`:'');
+      const div=document.createElement('div'); div.className='user-item';
+      div.innerHTML=`<div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:${getColor(group.name)};font-size:20px;">${group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` :'👥'}</div><div class="user-item-info"><div class="user-item-name">${group.name} ${isMember?'<span style="font-size:10px;color:#27ae60;">✓ membre</span>':''}</div><div class="user-item-meta">${members.length} membre(s) · ${memberNames}</div><div class="user-item-meta">Créé par ${creator?creator.username:group.createdBy}</div></div><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-make-admin" style="background:#075E54;" onclick="adminOpenGroup('${group.id}')">⚙️ Gérer</button></div>`;
       section.appendChild(div);
     });
     content.appendChild(section);
-  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
+  } catch(e){ content.innerHTML='<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
 async function adminOpenGroup(gid){
   if(!isAdminUser()) return;
-  if(!groupsCache[gid]){
-    const snap = await dbGet(`groups/${gid}`);
-    if(!snap.exists()){ showToast('❌ Groupe introuvable'); return; }
-    groupsCache[gid] = snap.val();
-  }
-  const members = toArr(groupsCache[gid].members);
-  await Promise.all(members.filter(m => !usersCache[m]).map(async m => {
-    const s = await dbGet(`users/${m}`); if(s.exists()) usersCache[m] = s.val();
-  }));
-  const isMember = members.includes(meCode);
-  if(!isMember) document.getElementById('group-edit-back').onclick = () => { show('screen-admin'); };
-  else {
-    currentChat = { type: 'group', id: gid };
-    document.getElementById('group-edit-back').onclick = () => show('screen-chat');
-  }
+  if(!groupsCache[gid]){ const snap=await dbGet(`groups/${gid}`); if(!snap.exists()){ showToast('❌ Groupe introuvable'); return; } groupsCache[gid]=snap.val(); }
+  const members=toArr(groupsCache[gid].members);
+  await Promise.all(members.filter(m=>!usersCache[m]).map(async m=>{ const s=await dbGet(`users/${m}`); if(s.exists()) usersCache[m]=s.val(); }));
+  const isMember=members.includes(meCode);
+  if(!isMember) document.getElementById('group-edit-back').onclick=()=>{ show('screen-admin'); };
+  else { currentChat={type:'group',id:gid}; document.getElementById('group-edit-back').onclick=()=>show('screen-chat'); }
   openGroupEdit(gid);
 }
 
 async function renderAdminReports(content){
   try {
-    const snap = await dbGet('reports');
-    if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement !</div>'; return; }
-    const reports = [];
-    Object.entries(snap.val()).forEach(([key, data]) => { if(data) reports.push({key, ...data}); });
-    const pending = reports.filter(r => r.status === 'pending').reverse();
-    if(pending.length === 0){ content.innerHTML = '<div class="empty-admin">🎉 Aucun signalement en attente !</div>'; return; }
-    const codes = [...new Set(pending.flatMap(r => [r.reportedBy, r.reportedUser]).filter(c => c && c !== 'group'))];
-    await Promise.all(codes.filter(c => !usersCache[c]).map(async c => {
-      const s = await dbGet(`users/${c}`); if(s.exists()) usersCache[c] = s.val();
-    }));
-    content.innerHTML = '';
-    pending.forEach((r, idx) => {
-      const reporterUser  = usersCache[r.reportedBy];
-      const reportedUser  = r.reportedUser !== 'group' ? usersCache[r.reportedUser] : null;
-      const reporterName  = reporterUser ? reporterUser.username : r.reportedBy;
-      const reportedName  = reportedUser ? reportedUser.username : (r.reportedUser === 'group' ? 'Groupe' : r.reportedUser);
-      const reasonLabels  = {harcelement:'Harcèlement',contenu_choquant:'Contenu choquant',spam:'Spam',usurpation:'Usurpation',autre:'Autre'};
-      let msgsHTML = '';
-      if(r.messages && r.messages.length){
-        msgsHTML = r.messages.map(m => {
-          const s  = usersCache[m.from];
-          const sn = s ? s.username : m.from;
-          const isReported = m.from === r.reportedUser;
-          return `<div class="report-msg-bubble ${isReported ? 'out' : 'in'}">
-            <div class="report-msg-sender" style="color:${getColor(sn)}">${sn}</div>
-            <div>${m.text || ''}</div>
-            <div class="report-msg-time">${m.time || ''}</div>
-          </div>`;
-        }).join('');
-      } else {
-        msgsHTML = '<div style="color:#aaa;font-size:12px;text-align:center;padding:8px;">Aucun message capturé</div>';
-      }
-      const div = document.createElement('div');
-      div.className = 'admin-section';
-      div.innerHTML = `
-        <div class="report-item">
-          <div class="report-meta">
-            <span class="report-badge">${reasonLabels[r.reason]||r.reason}</span>
-            <span style="font-size:11px;color:#aaa">${new Date(r.timestamp).toLocaleString('fr-FR')}</span>
-          </div>
-          <div class="report-users">🚨 <strong>${reporterName}</strong> signale <strong>${reportedName}</strong></div>
-          ${r.detail ? `<div class="report-reason">"${r.detail}"</div>` : ''}
-          <div class="report-msgs-expand" style="margin-top:8px;">
-            <div class="report-msgs-header" onclick="toggleReportMsgs('${idx}')">
-              <span>💬 Messages (${r.messages ? r.messages.length : 0})</span>
-              <span class="toggle-icon" id="report-msgs-icon-${idx}">▼</span>
-            </div>
-            <div class="report-msgs-body" id="report-msgs-body-${idx}" style="display:none;">${msgsHTML}</div>
-          </div>
-          <div class="report-actions" style="margin-top:8px;flex-wrap:wrap;gap:6px;">
-            ${r.reportedUser !== 'group' ? `<button class="btn-ban" onclick="adminBanUser('${r.reportedUser}','${r.key}')">🚫 Sanctionner ${reportedName}</button>` : ''}
-            <button class="btn-dismiss" onclick="adminDismissReport('${r.key}')">✅ Ignorer</button>
-          </div>
-        </div>`;
+    const snap=await dbGet('reports'); if(!snap.exists()){ content.innerHTML='<div class="empty-admin">🎉 Aucun signalement !</div>'; return; }
+    const reports=[]; Object.entries(snap.val()).forEach(([key,data])=>{ if(data) reports.push({key,...data}); });
+    const pending=reports.filter(r=>r.status==='pending').reverse();
+    if(pending.length===0){ content.innerHTML='<div class="empty-admin">🎉 Aucun signalement en attente !</div>'; return; }
+    const codes=[...new Set(pending.flatMap(r=>[r.reportedBy,r.reportedUser]).filter(c=>c&&c!=='group'))];
+    await Promise.all(codes.filter(c=>!usersCache[c]).map(async c=>{ const s=await dbGet(`users/${c}`); if(s.exists()) usersCache[c]=s.val(); }));
+    content.innerHTML='';
+    pending.forEach((r,idx)=>{
+      const reporterUser=usersCache[r.reportedBy], reportedUser=r.reportedUser!=='group'?usersCache[r.reportedUser]:null;
+      const reporterName=reporterUser?reporterUser.username:r.reportedBy;
+      const reportedName=reportedUser?reportedUser.username:(r.reportedUser==='group'?'Groupe':r.reportedUser);
+      const reasonLabels={harcelement:'Harcèlement',contenu_choquant:'Contenu choquant',spam:'Spam',usurpation:'Usurpation',autre:'Autre'};
+      let msgsHTML=r.messages&&r.messages.length?r.messages.map(m=>{ const s=usersCache[m.from],sn=s?s.username:m.from; return `<div class="report-msg-bubble ${m.from===r.reportedUser?'out':'in'}"><div class="report-msg-sender" style="color:${getColor(sn)}">${sn}</div><div>${m.text||''}</div><div class="report-msg-time">${m.time||''}</div></div>`; }).join(''):'<div style="color:#aaa;font-size:12px;text-align:center;padding:8px;">Aucun message capturé</div>';
+      const div=document.createElement('div'); div.className='admin-section';
+      div.innerHTML=`<div class="report-item"><div class="report-meta"><span class="report-badge">${reasonLabels[r.reason]||r.reason}</span><span style="font-size:11px;color:#aaa">${new Date(r.timestamp).toLocaleString('fr-FR')}</span></div><div class="report-users">🚨 <strong>${reporterName}</strong> signale <strong>${reportedName}</strong></div>${r.detail?`<div class="report-reason">"${r.detail}"</div>`:''}<div class="report-msgs-expand" style="margin-top:8px;"><div class="report-msgs-header" onclick="toggleReportMsgs('${idx}')"><span>💬 Messages (${r.messages?r.messages.length:0})</span><span class="toggle-icon" id="report-msgs-icon-${idx}">▼</span></div><div class="report-msgs-body" id="report-msgs-body-${idx}" style="display:none;">${msgsHTML}</div></div><div class="report-actions" style="margin-top:8px;flex-wrap:wrap;gap:6px;">${r.reportedUser!=='group'?`<button class="btn-ban" onclick="adminBanUser('${r.reportedUser}','${r.key}')">🚫 Sanctionner ${reportedName}</button>`:''}<button class="btn-dismiss" onclick="adminDismissReport('${r.key}')">✅ Ignorer</button></div></div>`;
       content.appendChild(div);
     });
-  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
+  } catch(e){ content.innerHTML='<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
 async function renderAdminUsers(content){
   try {
-    const snap = await dbGet('users');
-    if(!snap.exists()){ content.innerHTML = '<div class="empty-admin">Aucun utilisateur</div>'; return; }
-    const users = [];
-    Object.entries(snap.val()).forEach(([code, data]) => { if(data) users.push({code, ...data}); });
-    users.sort((a,b) => (a.username||'').localeCompare(b.username||''));
-    content.innerHTML = '';
-    const section = document.createElement('div');
-    section.className = 'admin-section';
-    section.innerHTML = `<div class="admin-section-title">Tous les utilisateurs (${users.length})</div>`;
-    users.forEach(u => {
-      const div = document.createElement('div');
-      div.className = 'user-item';
-      const isSelf   = u.code === meCode;
-      const isBanned = u.banned === true;
-      const banLabel = isBanned
-        ? (u.banType === 'ip' ? '<span class="ip-banned-badge">IP BAN 🌐</span>'
-          : u.banType === 'temp' ? `<span class="temp-banned-badge">BAN TEMP ⏱️${u.bannedUntil ? ' jusqu\'au ' + new Date(u.bannedUntil).toLocaleDateString('fr-FR') : ''}</span>`
-          : '<span class="banned-badge">BANNI 🚫</span>')
-        : '';
-      div.innerHTML = `<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u, 36)}</div>
-        <div class="user-item-info">
-          <div class="user-item-name">${u.username||'?'}${banLabel}
-            ${u.isAdmin || u['isAdmin '] ? '<span class="admin-badge">ADMIN 👑</span>' : ''}
-            ${isSelf ? '<span style="font-size:10px;color:#aaa;margin-left:4px;">(toi)</span>' : ''}
-          </div>
-          <div class="user-item-meta">${u.code}${u.lastIp ? ' · ' + u.lastIp : ''}</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
-          ${!isSelf ? (isBanned
-            ? `<button class="btn-unban" onclick="adminUnbanUser('${u.code}')">Débannir</button>`
-            : `<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">🚫 Sanctionner</button>`)
-            : ''}
-          ${!isSelf && !u.isAdmin && !u['isAdmin '] ? `<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>` : ''}
-        </div>`;
+    const snap=await dbGet('users'); if(!snap.exists()){ content.innerHTML='<div class="empty-admin">Aucun utilisateur</div>'; return; }
+    const users=[]; Object.entries(snap.val()).forEach(([code,data])=>{ if(data) users.push({code,...data}); }); users.sort((a,b)=>(a.username||'').localeCompare(b.username||''));
+    content.innerHTML='';
+    const section=document.createElement('div'); section.className='admin-section'; section.innerHTML=`<div class="admin-section-title">Tous les utilisateurs (${users.length})</div>`;
+    users.forEach(u=>{
+      const div=document.createElement('div'); div.className='user-item';
+      const isSelf=u.code===meCode, isBanned=u.banned===true;
+      const banLabel=isBanned?(u.banType==='ip'?'<span class="ip-banned-badge">IP BAN 🌐</span>':u.banType==='temp'?`<span class="temp-banned-badge">BAN TEMP ⏱️${u.bannedUntil?' jusqu\'au '+new Date(u.bannedUntil).toLocaleDateString('fr-FR'):''}</span>`:'<span class="banned-badge">BANNI 🚫</span>'):'';
+      div.innerHTML=`<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u,36)}</div><div class="user-item-info"><div class="user-item-name">${u.username||'?'}${banLabel}${u.isAdmin||u['isAdmin ']?'<span class="admin-badge">ADMIN 👑</span>':''}${isSelf?'<span style="font-size:10px;color:#aaa;margin-left:4px;">(toi)</span>':''}</div><div class="user-item-meta">${u.code}${u.lastIp?' · '+u.lastIp:''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${!isSelf?(isBanned?`<button class="btn-unban" onclick="adminUnbanUser('${u.code}')">Débannir</button>`:`<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">🚫 Sanctionner</button>`):''} ${!isSelf&&!u.isAdmin&&!u['isAdmin ']?`<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>`:''}</div>`;
       section.appendChild(div);
     });
     content.appendChild(section);
-  } catch(e){ content.innerHTML = '<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
+  } catch(e){ content.innerHTML='<div class="empty-admin">Erreur de chargement</div>'; console.error(e); }
 }
 
-async function adminBanUser(userCode, reportKey){
-  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
-  if(!userCode || userCode === meCode){ showToast('⛔ Impossible de te bannir toi-même'); return; }
-  const u = usersCache[userCode];
-  document.getElementById('ban-target-name').textContent = u ? u.username : userCode;
-  window._banTargetCode  = userCode;
-  window._banReportKey   = reportKey;
-  document.getElementById('ban-options-list').style.display = 'flex';
-  document.getElementById('temp-ban-form').style.display    = 'none';
+async function adminBanUser(userCode,reportKey){
+  if(!myUser.isAdmin&&!myUser['isAdmin ']) return;
+  if(!userCode||userCode===meCode){ showToast('⛔ Impossible de te bannir toi-même'); return; }
+  const u=usersCache[userCode];
+  document.getElementById('ban-target-name').textContent=u?u.username:userCode;
+  window._banTargetCode=userCode; window._banReportKey=reportKey;
+  document.getElementById('ban-options-list').style.display='flex';
+  document.getElementById('temp-ban-form').style.display='none';
   showModal('modal-ban-options');
 }
 
-function showTempBanForm(){
-  document.getElementById('ban-options-list').style.display = 'none';
-  document.getElementById('temp-ban-form').style.display    = 'flex';
-}
-function hideTempBanForm(){
-  document.getElementById('ban-options-list').style.display = 'flex';
-  document.getElementById('temp-ban-form').style.display    = 'none';
-}
+function showTempBanForm(){ document.getElementById('ban-options-list').style.display='none'; document.getElementById('temp-ban-form').style.display='flex'; }
+function hideTempBanForm(){ document.getElementById('ban-options-list').style.display='flex'; document.getElementById('temp-ban-form').style.display='none'; }
 
 async function confirmBan(type){
   hideModal('modal-ban-options');
-  const userCode  = window._banTargetCode;
-  const reportKey = window._banReportKey;
-  if(!userCode) return;
+  const userCode=window._banTargetCode, reportKey=window._banReportKey; if(!userCode) return;
   try {
-    if(type === 'permanent'){
-      await dbSet(`users/${userCode}/banned`, true);
-      await dbSet(`users/${userCode}/banType`, 'permanent');
-      showToast('🚫 Ban permanent appliqué !');
-    } else if(type === 'temp'){
-      const duration = parseInt(document.getElementById('ban-duration').value);
-      const until    = Date.now() + duration;
-      await dbSet(`users/${userCode}/banned`, true);
-      await dbSet(`users/${userCode}/banType`, 'temp');
-      await dbSet(`users/${userCode}/bannedUntil`, until);
-      const labels = {'3600000':'1h','21600000':'6h','86400000':'1 jour','259200000':'3 jours','604800000':'1 semaine','2592000000':'1 mois'};
-      showToast(`⏱️ Ban temporaire ${labels[duration]||''} appliqué !`);
-    } else if(type === 'ip'){
-      const usnap = await dbGet(`users/${userCode}/lastIp`);
-      const ip    = usnap.exists() ? usnap.val() : null;
-      await dbSet(`users/${userCode}/banned`, true);
-      await dbSet(`users/${userCode}/banType`, 'ip');
-      if(ip){
-        await dbSet(`bannedIps/${ip.replace(/\./g,'_')}`, { ip, bannedAt: Date.now(), reason: userCode });
-        showToast('🌐 IP Ban appliqué !');
-      } else {
-        showToast('🌐 IP Ban appliqué (IP non disponible, ban compte uniquement)');
-      }
-    }
-    if(reportKey) await dbSet(`reports/${reportKey}/status`, 'resolved');
+    if(type==='permanent'){ await dbSet(`users/${userCode}/banned`,true); await dbSet(`users/${userCode}/banType`,'permanent'); showToast('🚫 Ban permanent appliqué !'); }
+    else if(type==='temp'){ const duration=parseInt(document.getElementById('ban-duration').value), until=Date.now()+duration; await dbSet(`users/${userCode}/banned`,true); await dbSet(`users/${userCode}/banType`,'temp'); await dbSet(`users/${userCode}/bannedUntil`,until); const labels={'3600000':'1h','21600000':'6h','86400000':'1 jour','259200000':'3 jours','604800000':'1 semaine','2592000000':'1 mois'}; showToast(`⏱️ Ban temporaire ${labels[duration]||''} appliqué !`); }
+    else if(type==='ip'){ const usnap=await dbGet(`users/${userCode}/lastIp`); const ip=usnap.exists()?usnap.val():null; await dbSet(`users/${userCode}/banned`,true); await dbSet(`users/${userCode}/banType`,'ip'); if(ip){ await dbSet(`bannedIps/${ip.replace(/\./g,'_')}`,{ip,bannedAt:Date.now(),reason:userCode}); showToast('🌐 IP Ban appliqué !'); } else { showToast('🌐 IP Ban appliqué (IP non disponible, ban compte uniquement)'); } }
+    if(reportKey) await dbSet(`reports/${reportKey}/status`,'resolved');
     renderAdminContent();
   } catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function adminUnbanUser(userCode){
-  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
-  try {
-    await dbSet(`users/${userCode}/banned`, false);
-    await dbSet(`users/${userCode}/banType`, null);
-    await dbSet(`users/${userCode}/bannedUntil`, null);
-    showToast('✅ Utilisateur débanni');
-    renderAdminContent();
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  if(!myUser.isAdmin&&!myUser['isAdmin ']) return;
+  try { await dbSet(`users/${userCode}/banned`,false); await dbSet(`users/${userCode}/banType`,null); await dbSet(`users/${userCode}/bannedUntil`,null); showToast('✅ Utilisateur débanni'); renderAdminContent(); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function adminDismissReport(reportKey){
-  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
-  try {
-    await dbSet(`reports/${reportKey}/status`, 'dismissed');
-    showToast('✅ Signalement ignoré');
-    renderAdminContent();
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  if(!myUser.isAdmin&&!myUser['isAdmin ']) return;
+  try { await dbSet(`reports/${reportKey}/status`,'dismissed'); showToast('✅ Signalement ignoré'); renderAdminContent(); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 async function adminMakeAdmin(userCode){
-  if(!myUser.isAdmin && !myUser['isAdmin ']) return;
+  if(!myUser.isAdmin&&!myUser['isAdmin ']) return;
   if(!confirm('Donner les droits admin à cet utilisateur ?')) return;
-  try {
-    await dbSet(`users/${userCode}/isAdmin`, true);
-    showToast('👑 Admin accordé !');
-    renderAdminContent();
-  } catch(e){ showToast('❌ Erreur'); console.error(e); }
+  try { await dbSet(`users/${userCode}/isAdmin`,true); showToast('👑 Admin accordé !'); renderAdminContent(); }
+  catch(e){ showToast('❌ Erreur'); console.error(e); }
 }
 
 function toggleReportMsgs(id){
-  const body = document.getElementById('report-msgs-body-' + id);
-  const icon = document.getElementById('report-msgs-icon-' + id);
+  const body=document.getElementById('report-msgs-body-'+id), icon=document.getElementById('report-msgs-icon-'+id);
   if(!body) return;
-  const open = body.style.display !== 'none' && body.style.display !== '';
-  body.style.display = open ? 'none' : 'flex';
-  if(icon) icon.textContent = open ? '▼' : '▲';
+  const open=body.style.display!=='none'&&body.style.display!=='';
+  body.style.display=open?'none':'flex';
+  if(icon) icon.textContent=open?'▼':'▲';
 }
 
-// ===== EXPOSER AU GLOBAL =====
-Object.assign(window, {
-  openFriendProfile, openChatProfile, showToast,
-  switchTab, handleAuthAvatar, createAccount, loginWithCode,
-  showAddFriend, addFriend, showMyCode,
-  showCreateGroup, createGroup, switchHomeTab,
-  showProfile, handleProfileAvatar,
-  showChangePassword, doChangePassword,
-  goHome, sendMsg, hideModal, showModal, show,
-  doDelete, askDelete, toggleReaction, closeEmojiPicker,
-  showReportModal, showReportFromProfile, submitReport,
-  showAdminPanel, switchAdminTab, toggleReportMsgs,
-  adminBanUser, adminUnbanUser, adminDismissReport, adminMakeAdmin,
-  adminJoinGroup, adminOpenGroup,
-  showTempBanForm, hideTempBanForm, confirmBan,
-  openGroupEdit, handleGroupAvatar, saveGroupName,
-  addMemberToGroup, removeMemberFromGroup, leaveGroup,
-  handleAttach, cancelAttach, openImagePreview,
-  copyGroupInviteLink, revokeGroupInviteLink, joinGroupFromLink,
-  // Voice
-  cancelRecording, toggleAudio, seekAudio, onChatInput,
-  // Notifications
+// ===== EXPOSE GLOBALS =====
+Object.assign(window,{
+  openFriendProfile,openChatProfile,showToast,
+  switchTab,handleAuthAvatar,createAccount,loginWithCode,
+  showAddFriend,addFriend,showMyCode,
+  showCreateGroup,createGroup,switchHomeTab,
+  showProfile,handleProfileAvatar,
+  showChangePassword,doChangePassword,
+  goHome,sendMsg,hideModal,showModal,show,
+  doDelete,askDelete,toggleReaction,closeEmojiPicker,
+  showReportModal,showReportFromProfile,submitReport,
+  showAdminPanel,switchAdminTab,toggleReportMsgs,
+  adminBanUser,adminUnbanUser,adminDismissReport,adminMakeAdmin,
+  adminJoinGroup,adminOpenGroup,
+  showTempBanForm,hideTempBanForm,confirmBan,
+  openGroupEdit,handleGroupAvatar,saveGroupName,
+  addMemberToGroup,removeMemberFromGroup,leaveGroup,
+  handleAttach,cancelAttach,openImagePreview,
+  copyGroupInviteLink,revokeGroupInviteLink,joinGroupFromLink,
+  cancelRecording,toggleAudio,seekAudio,onChatInput,
   hideBanner
 });
 
 // ===== INIT =====
-const _urlParams    = new URLSearchParams(window.location.search);
+const _urlParams   = new URLSearchParams(window.location.search);
 const _pendingJoin  = _urlParams.get('joinGroup');
 const _pendingToken = _urlParams.get('token');
 
@@ -2792,6 +1840,7 @@ if(meCode){
       localStorage.removeItem('whoisat_pendingToken');
       await joinGroupFromLink(pendingGid, pendingToken || null);
     }
+    runCleanup(); // clean up expired files in background
   });
 } else {
   show('screen-auth');
@@ -2800,23 +1849,13 @@ if(meCode){
 </script>
 
 <script>
-// ===== PWA MANIFEST INJECTION =====
 (function(){
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#075E54"/><circle cx="256" cy="256" r="168" fill="#25D366"/><path d="M316 218c-2-10-11-17-21-17H217c-10 0-19 7-21 17l-11 55c-1.5 6 .5 12 5 16.5 4.5 4.5 10.5 7 16.5 7h10l-6 22 28-22h78c6 0 12-2.5 16.5-7 4.5-4.5 6.5-10.5 5-16.5L316 218z" fill="white"/></svg>`;
-  const iconBlob = new Blob([iconSvg], {type:'image/svg+xml'});
-  const iconUrl  = URL.createObjectURL(iconBlob);
-  const manifest = {
-    name: 'Who-isat', short_name: 'Who-isat',
-    description: 'Crée de fausses conversations à partager avec tes amis',
-    start_url: '.', display: 'standalone',
-    background_color: '#075E54', theme_color: '#075E54', orientation: 'portrait',
-    icons: [
-      { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-      { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-    ]
-  };
-  const mBlob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
-  document.getElementById('pwa-manifest').href = URL.createObjectURL(mBlob);
+  const iconSvg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#075E54"/><circle cx="256" cy="256" r="168" fill="#25D366"/><path d="M316 218c-2-10-11-17-21-17H217c-10 0-19 7-21 17l-11 55c-1.5 6 .5 12 5 16.5 4.5 4.5 10.5 7 16.5 7h10l-6 22 28-22h78c6 0 12-2.5 16.5-7 4.5-4.5 6.5-10.5 5-16.5L316 218z" fill="white"/></svg>`;
+  const iconBlob=new Blob([iconSvg],{type:'image/svg+xml'});
+  const iconUrl=URL.createObjectURL(iconBlob);
+  const manifest={name:'Who-isat',short_name:'Who-isat',description:'Crée de fausses conversations à partager avec tes amis',start_url:'.',display:'standalone',background_color:'#075E54',theme_color:'#075E54',orientation:'portrait',icons:[{src:iconUrl,sizes:'192x192',type:'image/svg+xml',purpose:'any maskable'},{src:iconUrl,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
+  const mBlob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(mBlob);
 })();
 </script>
 </body>
