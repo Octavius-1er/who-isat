@@ -345,6 +345,50 @@
     .img-preview-close { position: absolute; top: 14px; right: 16px; background: rgba(255,255,255,0.15); border: none; color: white; font-size: 22px; cursor: pointer; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
     .attach-preview { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: #e8f5e9; border-top: 1px solid #c8e6c9; flex-shrink: 0; font-size: 13px; color: #2e7d32; }
     .attach-preview-cancel { background: none; border: none; font-size: 18px; cursor: pointer; color: #e74c3c; margin-left: auto; padding: 0 2px; }
+
+    /* ===== NOTIFICATIONS ===== */
+    /* Unread badge on conv list */
+    .unread-badge {
+      min-width: 20px; height: 20px; border-radius: 10px;
+      background: var(--green); color: white;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 5px; flex-shrink: 0;
+    }
+    /* Header tab badge */
+    .tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      background: #e74c3c; color: white;
+      font-size: 10px; font-weight: 700;
+      padding: 0 4px; margin-left: 4px;
+      vertical-align: middle;
+    }
+    /* In-app notification banner (when chat is open and msg arrives from other conv) */
+    .notif-banner {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%) translateY(-80px);
+      background: #1a1a1a; color: white;
+      border-radius: 14px; padding: 10px 14px;
+      display: flex; align-items: center; gap: 10px;
+      z-index: 80; box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+      cursor: pointer; max-width: 340px; width: calc(100% - 28px);
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: none;
+    }
+    .notif-banner.show {
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+    .notif-banner-av {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: white;
+    }
+    .notif-banner-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .notif-banner-body { flex: 1; min-width: 0; }
+    .notif-banner-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .notif-banner-text { font-size: 12px; color: #bbb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .notif-banner-time { font-size: 10px; color: #888; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -671,6 +715,16 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- In-app notification banner -->
+  <div class="notif-banner" id="notif-banner">
+    <div class="notif-banner-av" id="notif-banner-av"></div>
+    <div class="notif-banner-body">
+      <div class="notif-banner-name" id="notif-banner-name"></div>
+      <div class="notif-banner-text" id="notif-banner-text"></div>
+    </div>
+    <div class="notif-banner-time" id="notif-banner-time"></div>
+  </div>
 </div>
 
 <!-- ===== FIREBASE SDK ===== -->
@@ -725,6 +779,191 @@ let chatListener        = null;
 let chatChangedListener = null;
 let homeListeners  = {};
 let authAvatarData = null;
+
+// ===== NOTIFICATIONS =====
+// unreadCounts[convKey] = number
+let unreadCounts = {};
+let notifBannerTimer = null;
+let notifPermission  = Notification.permission; // 'default'|'granted'|'denied'
+
+// Request permission once user is logged in
+async function requestNotifPermission(){
+  if(notifPermission === 'granted') return;
+  if(notifPermission === 'denied')  return;
+  try {
+    const result = await Notification.requestPermission();
+    notifPermission = result;
+  } catch(e){}
+}
+
+// Soft notification sound (generated via Web Audio API — no external files needed)
+function playNotifSound(){
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.25);
+  } catch(e){}
+}
+
+// Show OS push notification
+function sendPushNotif(title, body, onClick){
+  if(notifPermission !== 'granted') return;
+  if(document.hasFocus && document.hasFocus()) return; // only when tab is in background
+  try {
+    const n = new Notification(title, {
+      body,
+      icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3Ccircle cx='32' cy='32' r='20' fill='%2325D366'/%3E%3Cpath d='M40 27c-.4-2-2.3-3.5-4.5-3.5H28c-2.2 0-4.1 1.5-4.5 3.5l-2 10c-.3 1.2.1 2.4 1 3.3.9.9 2.1 1.4 3.3 1.4h2l-1 4 6-4h8c1.2 0 2.4-.5 3.3-1.4.9-.9 1.3-2.1 1-3.3L40 27z' fill='white'/%3E%3C/svg%3E",
+      badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23075E54'/%3E%3C/svg%3E",
+      tag: 'whoisat-msg',
+      renotify: true,
+      silent: false
+    });
+    n.onclick = () => { window.focus(); n.close(); if(onClick) onClick(); };
+  } catch(e){}
+}
+
+// Show in-app banner (slide down from top)
+function showInAppBanner({ avatarUser, name, text, time, onClick }){
+  const banner   = document.getElementById('notif-banner');
+  const avEl     = document.getElementById('notif-banner-av');
+  const nameEl   = document.getElementById('notif-banner-name');
+  const textEl   = document.getElementById('notif-banner-text');
+  const timeEl   = document.getElementById('notif-banner-time');
+
+  avEl.innerHTML = avatarHTML(avatarUser, 36);
+  avEl.style.background = (avatarUser && avatarUser.avatar) ? 'transparent' : getColor(avatarUser ? avatarUser.username : name);
+  nameEl.textContent = name;
+  textEl.textContent = text;
+  timeEl.textContent = time || '';
+
+  banner.onclick = () => { hideBanner(); if(onClick) onClick(); };
+
+  if(notifBannerTimer) clearTimeout(notifBannerTimer);
+  banner.classList.remove('show');
+  // Force reflow to restart animation
+  void banner.offsetWidth;
+  banner.classList.add('show');
+  notifBannerTimer = setTimeout(hideBanner, 4000);
+}
+
+function hideBanner(){
+  document.getElementById('notif-banner').classList.remove('show');
+  if(notifBannerTimer){ clearTimeout(notifBannerTimer); notifBannerTimer = null; }
+}
+
+// Increment unread count for a convKey
+function markUnread(convKey, fromCode){
+  if(!fromCode || fromCode === meCode) return; // don't count own messages
+  // Don't count if this conv is currently open and visible
+  const chatScreen = document.getElementById('screen-chat');
+  if(chatScreen.classList.contains('active') && currentChat){
+    const currentKey = getConvKey();
+    if(currentKey === convKey) return;
+  }
+  unreadCounts[convKey] = (unreadCounts[convKey] || 0) + 1;
+  updateUnreadUI();
+}
+
+function clearUnread(convKey){
+  if(!unreadCounts[convKey]) return;
+  delete unreadCounts[convKey];
+  updateUnreadUI();
+}
+
+function getTotalUnread(){
+  return Object.values(unreadCounts).reduce((a,b) => a+b, 0);
+}
+
+function updateUnreadUI(){
+  // Update conv list items badges (re-render handles this)
+  // Update home tab badges
+  const chatUnread  = Object.entries(unreadCounts)
+    .filter(([k]) => !k.startsWith('grp_'))
+    .reduce((a,[,v]) => a+v, 0);
+  const groupUnread = Object.entries(unreadCounts)
+    .filter(([k]) => k.startsWith('grp_'))
+    .reduce((a,[,v]) => a+v, 0);
+
+  const chatTab  = document.getElementById('htab-chats');
+  const groupTab = document.getElementById('htab-groups');
+
+  // Remove old badges
+  chatTab.querySelectorAll('.tab-badge').forEach(b => b.remove());
+  groupTab.querySelectorAll('.tab-badge').forEach(b => b.remove());
+
+  if(chatUnread > 0){
+    const b = document.createElement('span');
+    b.className = 'tab-badge';
+    b.textContent = chatUnread > 99 ? '99+' : chatUnread;
+    chatTab.appendChild(b);
+  }
+  if(groupUnread > 0){
+    const b = document.createElement('span');
+    b.className = 'tab-badge';
+    b.textContent = groupUnread > 99 ? '99+' : groupUnread;
+    groupTab.appendChild(b);
+  }
+
+  // Update document title
+  const total = getTotalUnread();
+  document.title = total > 0 ? `(${total}) Who-isat` : 'Who-isat';
+}
+
+// Called by conv listeners when a new message arrives
+function handleIncomingMessage(msg, convKey, isGroup){
+  if(!msg || !msg.from || msg.from === meCode) return;
+
+  // Detect if this is actually a NEW message (not initial load)
+  const prev = lastMsgsCache[convKey];
+  // We compare timestamps — if same or older, it's not new
+  if(prev && msg.ts && prev.ts && msg.ts <= prev.ts) return;
+  // Also skip if ts is older than 10s (page just loaded)
+  if(msg.ts && Date.now() - msg.ts > 10000) return;
+
+  const sender = usersCache[msg.from];
+  const senderName = sender ? sender.username : '?';
+  let displayText = msg.text || '';
+  if(msg.type === 'audio') displayText = '🎤 Message vocal';
+  else if(msg.type === 'image') displayText = '📷 Image';
+  else if(msg.type === 'pdf') displayText = `📄 ${msg.fileName || 'Document'}`;
+
+  let convName = senderName;
+  let avatarUser = sender;
+  let onClick = null;
+
+  if(isGroup){
+    const group = groupsCache[convKey];
+    convName = group ? group.name : 'Groupe';
+    avatarUser = group ? { username: convName, avatar: group.avatar } : null;
+    displayText = `${senderName}: ${displayText}`;
+    onClick = () => { openGroup(convKey); };
+  } else {
+    onClick = () => {
+      const friendCode = convKey.replace(meCode, '').replace('_', '');
+      if(usersCache[friendCode]) openDM(friendCode);
+    };
+  }
+
+  markUnread(convKey, msg.from);
+  playNotifSound();
+  showInAppBanner({
+    avatarUser,
+    name: convName,
+    text: displayText,
+    time: msg.time || '',
+    onClick
+  });
+  sendPushNotif(convName, displayText, onClick);
+}
 
 // ===== DISPLAY HELPERS =====
 function show(id){
@@ -901,6 +1140,7 @@ async function enterHome(){
     document.getElementById('btn-admin-panel').style.display = isAdmin ? 'inline-flex' : 'none';
     setupHomeListeners();
     show('screen-home');
+    requestNotifPermission();
   } catch(e) {
     console.error('enterHome error', e);
     show('screen-auth');
@@ -954,6 +1194,8 @@ function addConvListener(fcode){
   homeListeners[convKey] = dbListen(`conversations/${convKey}`, snap => {
     let last = null;
     snap.forEach(child => { last = child.val(); });
+    // Fire notification before updating cache
+    if(last) handleIncomingMessage(last, convKey, false);
     lastMsgsCache[convKey] = last;
     if(currentHomeTab === 'chats' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
   }, limitToLast(1));
@@ -964,6 +1206,8 @@ function addGroupConvListener(gid){
   homeListeners[gid] = dbListen(`conversations/${gid}`, snap => {
     let last = null;
     snap.forEach(child => { last = child.val(); });
+    // Fire notification before updating cache
+    if(last) handleIncomingMessage(last, gid, true);
     lastMsgsCache[gid] = last;
     if(currentHomeTab === 'groups' && document.getElementById('screen-home').classList.contains('active')) renderConvList();
   }, limitToLast(1));
@@ -1016,6 +1260,7 @@ function renderConvList(){
       }
       const convKey = [meCode, fcode].sort().join('_');
       const last = lastMsgsCache[convKey];
+      const unread = unreadCounts[convKey] || 0;
       addConvListener(fcode);
       const div = document.createElement('div');
       div.className = 'conv-item';
@@ -1024,9 +1269,12 @@ function renderConvList(){
         ? (last.type === 'audio' ? '🎤 Message vocal' : last.type === 'image' ? '📷 Image' : last.type === 'pdf' ? '📄 Document' : last.text || '')
         : 'Dis bonjour !';
       div.innerHTML = `<div class="ci-av" style="background:${friend.avatar ? 'transparent' : getColor(friend.username)}">${avatarHTML(friend, 48)}</div>
-        <div class="ci-info"><div class="ci-name">${friend.username}</div>
-        <div class="ci-preview">${last ? (last.from === meCode ? 'Toi : ' : '') + lastText : 'Dis bonjour !'}</div></div>
-        ${last ? `<div class="ci-time">${last.time}</div>` : ''}`;
+        <div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${friend.username}</div>
+        <div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last ? (last.from === meCode ? 'Toi : ' : '') + lastText : 'Dis bonjour !'}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          ${last ? `<div class="ci-time">${last.time}</div>` : ''}
+          ${unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : ''}
+        </div>`;
       list.appendChild(div);
     });
   } else {
@@ -1038,6 +1286,7 @@ function renderConvList(){
     myGroups.forEach(group => {
       const last = lastMsgsCache[group.id];
       const lastSender = last ? usersCache[last.from] : null;
+      const unread = unreadCounts[group.id] || 0;
       const lastText = last
         ? (last.type === 'audio' ? '🎤 Message vocal' : last.type === 'image' ? '📷 Image' : last.type === 'pdf' ? '📄 Document' : last.text || '')
         : 'Aucun message';
@@ -1048,9 +1297,12 @@ function renderConvList(){
         ? `<img src="${group.avatar}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;display:block;">`
         : `<div style="width:48px;height:48px;border-radius:50%;background:${getColor(group.name)};display:flex;align-items:center;justify-content:center;font-size:22px;">👥</div>`;
       div.innerHTML = `<div class="ci-av" style="background:transparent;padding:0;">${groupAvHTML}</div>
-        <div class="ci-info"><div class="ci-name">${group.name}</div>
-        <div class="ci-preview">${last ? (last.from === meCode ? 'Toi' : lastSender ? lastSender.username : '?') + ' : ' + lastText : 'Aucun message'}</div></div>
-        ${last ? `<div class="ci-time">${last.time}</div>` : ''}`;
+        <div class="ci-info"><div class="ci-name" style="${unread>0?'font-weight:700;color:#111;':''}">${group.name}</div>
+        <div class="ci-preview" style="${unread>0?'font-weight:600;color:#333;':''}">${last ? (last.from === meCode ? 'Toi' : lastSender ? lastSender.username : '?') + ' : ' + lastText : 'Aucun message'}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+          ${last ? `<div class="ci-time">${last.time}</div>` : ''}
+          ${unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : ''}
+        </div>`;
       list.appendChild(div);
     });
   }
@@ -1382,6 +1634,9 @@ function updatePlayPauseIcon(key, playing){
 
 function openDM(fcode){
   currentChat = { type: 'dm', id: fcode };
+  const convKey = [meCode, fcode].sort().join('_');
+  clearUnread(convKey);
+  hideBanner();
   const friend = usersCache[fcode];
   const hav = document.getElementById('chat-hd-av');
   hav.innerHTML = avatarHTML(friend, 38);
@@ -1399,6 +1654,8 @@ function openDM(fcode){
 
 function openGroup(gid){
   currentChat = { type: 'group', id: gid };
+  clearUnread(gid);
+  hideBanner();
   const group = groupsCache[gid];
   const hav   = document.getElementById('chat-hd-av');
   if(group.avatar){
@@ -2498,7 +2755,9 @@ Object.assign(window, {
   handleAttach, cancelAttach, openImagePreview,
   copyGroupInviteLink, revokeGroupInviteLink, joinGroupFromLink,
   // Voice
-  cancelRecording, toggleAudio, seekAudio, onChatInput
+  cancelRecording, toggleAudio, seekAudio, onChatInput,
+  // Notifications
+  hideBanner
 });
 
 // ===== INIT =====
