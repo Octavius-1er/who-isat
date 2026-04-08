@@ -784,7 +784,8 @@ let authAvatarData = null;
 // unreadCounts[convKey] = number
 let unreadCounts = {};
 let notifBannerTimer = null;
-let notifPermission  = Notification.permission; // 'default'|'granted'|'denied'
+let notifPermission  = 'default';
+try { notifPermission = Notification.permission; } catch(e){}
 
 // Request permission once user is logged in
 async function requestNotifPermission(){
@@ -2751,7 +2752,6 @@ if(_pendingJoin){
   history.replaceState({}, '', window.location.pathname);
 }
 
-// Setup mic button after DOM ready
 setupMicButton();
 
 if(meCode){
