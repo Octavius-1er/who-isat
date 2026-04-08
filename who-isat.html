@@ -1981,8 +1981,9 @@ function openImagePreview(key){
   phone.appendChild(overlay);
 }
 
-// ===== AUTO CLEANUP =====
+// ===== AUTO CLEANUP (fichiers > 1 semaine uniquement) =====
 const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
+const FILE_TYPES  = ['image', 'pdf', 'audio'];
 
 async function runCleanup(){
   const cutoff = Date.now() - ONE_WEEK_MS;
@@ -1995,43 +1996,22 @@ async function runCleanup(){
       if(!msgs) continue;
       for(const [msgKey, msg] of Object.entries(msgs)){
         if(!msg || !msg.ts) continue;
-        if(msg.ts < cutoff) await dbSet(`conversations/${convKey}/${msgKey}`, null);
+        // Ne supprime que les fichiers (image/pdf/audio), pas les textes
+        if(!FILE_TYPES.includes(msg.type)) continue;
+        if(msg.ts < cutoff){
+          // Conserve le message mais efface la data binaire + marque comme expiré
+          await dbSet(`conversations/${convKey}/${msgKey}/fileData`,     null);
+          await dbSet(`conversations/${convKey}/${msgKey}/audioWaveform`,null);
+          await dbSet(`conversations/${convKey}/${msgKey}/expired`,       true);
+          await dbSet(`conversations/${convKey}/${msgKey}/text`,
+            msg.type === 'image' ? '🖼️ Image expirée' :
+            msg.type === 'audio' ? '🎤 Audio expiré'  :
+                                   `📄 ${msg.fileName || 'Fichier'} (expiré)`
+          );
+        }
       }
     }
   } catch(e){ console.warn('Cleanup error:', e); }
-}
-
-setTimeout(runCleanup, 5000);
-
-function openFriendProfile(){
-  if(!currentChat) return;
-  let user = null;
-  if(currentChat.type === 'dm') user = usersCache[currentChat.id];
-  if(!user) return;
-
-  const pav = document.getElementById('friend-pav');
-  pav.innerHTML = user.avatar
-    ? `<img src="${user.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
-    : `<span style="font-size:36px;font-weight:700;color:white;">${initials(user.username)}</span>`;
-  pav.style.background = user.avatar ? 'transparent' : getColor(user.username);
-  pav.style.borderColor = getColor(user.username);
-
-  document.getElementById('friend-uname').textContent       = user.username;
-  document.getElementById('friend-code-label').textContent  = user.code;
-  document.getElementById('friend-code-big').textContent    = user.code;
-  document.getElementById('friend-profile-back').onclick = () => show('screen-chat');
-  show('screen-friend-profile');
-}
-
-function goHome(){
-  if(chatListener){ chatListener(); chatListener = null; }
-  if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
-  // Stop audio & cancel recording if needed
-  Object.values(audioPlayers).forEach(p => { if(p.audio) p.audio.pause(); });
-  if(isRecording) cancelRecording();
-  currentChat = null;
-  renderConvList();
-  show('screen-home');
 }
 
 // ===== PROFILE =====
