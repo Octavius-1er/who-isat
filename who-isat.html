@@ -1709,6 +1709,14 @@ function openChatProfile(){
   }
 }
 
+function goHome(){
+  if(chatListener){ chatListener(); chatListener = null; }
+  if(chatChangedListener){ chatChangedListener(); chatChangedListener = null; }
+  Object.values(audioPlayers).forEach(p => { if(p.audio) p.audio.pause(); });
+  currentChat = null;
+  show('screen-home');
+  renderConvList();
+}
 // ── REACTIONS ───────────────────────────────────────────────────────────────
 const REACTION_EMOJIS = ['❤️','😂','😮','😢','👍','🙏'];
 let emojiPickerEl = null;
