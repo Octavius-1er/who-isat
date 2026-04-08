@@ -1679,6 +1679,27 @@ function openGroup(gid){
   )).then(() => { startChatListener(); show('screen-chat'); });
 }
 
+  function openFriendProfile(){
+  if(!currentChat || currentChat.type !== 'dm') return;
+  const fcode  = currentChat.id;
+  const friend = usersCache[fcode];
+  if(!friend) return;
+
+  const pav = document.getElementById('friend-pav');
+  pav.innerHTML = friend.avatar
+    ? `<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+    : `<span style="font-size:36px;font-weight:700;color:#888;">${initials(friend.username)}</span>`;
+  pav.style.background = friend.avatar ? 'transparent' : '#eee';
+
+  document.getElementById('friend-uname').textContent      = friend.username;
+  document.getElementById('friend-code-label').textContent  = friend.code || fcode;
+  document.getElementById('friend-code-big').textContent    = friend.code || fcode;
+
+  document.getElementById('friend-profile-back').onclick = () => show('screen-chat');
+
+  show('screen-friend-profile');
+}
+  
 function openChatProfile(){
   if(!currentChat) return;
   if(currentChat.type === 'group'){
