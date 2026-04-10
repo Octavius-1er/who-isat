@@ -682,7 +682,7 @@
 
 <script type="module">
 import { initializeApp }  from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-import { getDatabase, ref, set, get, push, onValue, onChildAdded, onChildChanged, query, limitToLast }
+import { getDatabase, ref, set, get, push, onValue, onChildAdded, onChildChanged, query, limitToLast, onDisconnect, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 const firebaseConfig = {
@@ -704,7 +704,79 @@ const dbSet    = (path, val) => set(dbRef(path), val);
 const dbPush   = (path, val) => push(dbRef(path), val);
 const dbListen = (path, cb, ...c) => onValue(c.length ? query(dbRef(path), ...c) : dbRef(path), cb);
 
-// ===== UTILS =====
+// ===== PRESENCE =====
+function formatLastSeen(ts){
+  if(!ts) return 'hors ligne';
+  const diff = Date.now() - ts;
+  if(diff < 60000)   return 'vu à l\'instant';
+  if(diff < 3600000) return `vu il y a ${Math.floor(diff/60000)} min`;
+  const d = new Date(ts);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  const hm = d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  if(sameDay) return `vu aujourd'hui à ${hm}`;
+  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
+  if(d.toDateString() === yesterday.toDateString()) return `vu hier à ${hm}`;
+  return `vu le ${d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit'})} à ${hm}`;
+}
+
+async function setupPresence(){
+  if(!meCode) return;
+  const presRef  = dbRef(`presence/${meCode}`);
+  const connRef  = dbRef('.info/connected');
+
+  const markOnline  = () => set(presRef, { online: true,  lastSeen: serverTimestamp() }).catch(()=>{});
+  const markOffline = () => set(presRef, { online: false, lastSeen: serverTimestamp() }).catch(()=>{});
+
+  // Firebase disconnect hook — runs server-side when socket closes
+  onDisconnect(presRef).set({ online: false, lastSeen: serverTimestamp() });
+
+  // React to connection state changes
+  onValue(connRef, snap => {
+    if(snap.val() === true) {
+      markOnline();
+      // Re-arm onDisconnect in case it was cleared
+      onDisconnect(presRef).set({ online: false, lastSeen: serverTimestamp() });
+    }
+  });
+
+  // Handle tab visibility: offline when hidden, online when back
+  document.addEventListener('visibilitychange', () => {
+    if(document.visibilityState === 'hidden') markOffline();
+    else markOnline();
+  });
+
+  // Mark offline on page unload (best-effort)
+  window.addEventListener('beforeunload', markOffline);
+
+  markOnline();
+}
+
+function listenFriendPresence(fcode){
+  // Stop previous listener
+  if(presenceListenerOff){ presenceListenerOff(); presenceListenerOff=null; }
+  if(!fcode) return;
+
+  presenceListenerOff = dbListen(`presence/${fcode}`, snap => {
+    const sub = document.getElementById('chat-hd-sub');
+    if(!sub || !currentChat || currentChat.id !== fcode) return;
+    if(!snap.exists()){
+      sub.textContent = 'hors ligne'; return;
+    }
+    const p = snap.val();
+    if(p.online){
+      sub.textContent = 'en ligne';
+      sub.style.color = '';
+    } else {
+      sub.textContent = formatLastSeen(p.lastSeen);
+      sub.style.color = '';
+    }
+  });
+}
+
+function stopPresenceListener(){
+  if(presenceListenerOff){ presenceListenerOff(); presenceListenerOff=null; }
+}
 const COLORS = ['#2196F3','#E91E63','#9C27B0','#FF5722','#009688','#FF9800','#3F51B5','#795548'];
 function getColor(s){let h=0;for(let c of s||'')h=(h*31+c.charCodeAt(0))%COLORS.length;return COLORS[h];}
 function initials(n){return(n||'?').slice(0,2).toUpperCase();}
@@ -731,6 +803,7 @@ let chatListener        = null;
 let chatChangedListener = null;
 let homeListeners  = {};
 let authAvatarData = null;
+let presenceListenerOff = null; // listener présence ami courant
 
 // ===== NOTIFICATIONS =====
 let unreadCounts = {};
@@ -901,6 +974,7 @@ async function enterHome(){
     document.getElementById('btn-admin-panel').style.display=isAdmin?'inline-flex':'none';
     setupHomeListeners();
     listenForIncomingCalls();
+    setupPresence();
     show('screen-home');
     requestNotifPermission();
   }catch(e){console.error('enterHome error',e);show('screen-auth');}
@@ -1127,15 +1201,17 @@ function openDM(fcode){
   const friend=usersCache[fcode];
   const hav=document.getElementById('chat-hd-av');hav.innerHTML=avatarHTML(friend,38);hav.style.background=friend.avatar?'transparent':getColor(friend.username);
   document.getElementById('chat-hd-name').textContent=friend.username;
-  document.getElementById('chat-hd-sub').textContent='en ligne';
+  document.getElementById('chat-hd-sub').textContent='…';
   document.getElementById('btn-report-chat').style.display='inline-flex';
   document.getElementById('btn-call').style.display='inline-flex';
   document.getElementById('chat-input').value='';document.getElementById('send-btn').style.display='none';document.getElementById('mic-btn').style.display='flex';
+  listenFriendPresence(fcode);
   startChatListener();show('screen-chat');
 }
 
 function openGroup(gid){
   currentChat={type:'group',id:gid};clearUnread(gid);hideBanner();
+  stopPresenceListener();
   const group=groupsCache[gid];
   const hav=document.getElementById('chat-hd-av');
   if(group.avatar){hav.innerHTML=`<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;hav.style.background='transparent';}
@@ -1164,6 +1240,7 @@ function goHome(){
   if(chatChangedListener){chatChangedListener();chatChangedListener=null;}
   Object.values(audioPlayers).forEach(p=>{if(p.audio)p.audio.pause();});
   document.getElementById('btn-call').style.display='none';
+  stopPresenceListener();
   currentChat=null;show('screen-home');renderConvList();
 }
 
