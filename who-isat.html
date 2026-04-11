@@ -959,15 +959,43 @@ async function loginWithCode(){
 }
 
 // ===== ENTER HOME =====
+let _enterHomeRetries = 0;
+
+// Wrapper dbGet with a timeout to avoid infinite hangs
+function dbGetTimeout(path, ms=10000){
+  return Promise.race([
+    dbGet(path),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')), ms))
+  ]);
+}
+
 async function enterHome(){
-  show('screen-loading');cleanHomeListeners();
+  show('screen-loading'); cleanHomeListeners();
   try{
-    const snap=await dbGet(`users/${meCode}`);if(!snap.exists()){meCode=null;localStorage.removeItem('whoisat_me');show('screen-auth');return;}
-    myUser=snap.val();if(!myUser.friends)myUser.friends=[];usersCache[meCode]=myUser;
+    const snap = await dbGetTimeout(`users/${meCode}`, 12000);
+    // User genuinely doesn't exist → logout
+    if(!snap.exists()){
+      meCode=null; localStorage.removeItem('whoisat_me'); show('screen-auth'); _enterHomeRetries=0; return;
+    }
+    myUser=snap.val(); if(!myUser.friends)myUser.friends=[]; usersCache[meCode]=myUser;
+    _enterHomeRetries=0;
+
+    // Load friends in parallel — ignore individual failures (best-effort)
     const friends=toArr(myUser.friends);
-    await Promise.all(friends.map(async fcode=>{if(!usersCache[fcode]){const fs=await dbGet(`users/${fcode}`);if(fs.exists())usersCache[fcode]=fs.val();}}));
-    const gsnap=await dbGet('groups');groupsCache={};
-    if(gsnap.exists()){gsnap.forEach(child=>{const g=child.val();if(g&&g.members&&toArr(g.members).includes(meCode))groupsCache[g.id]=g;});}
+    await Promise.allSettled(friends.map(async fcode=>{
+      if(!usersCache[fcode]){
+        const fs=await dbGetTimeout(`users/${fcode}`, 6000).catch(()=>null);
+        if(fs&&fs.exists()) usersCache[fcode]=fs.val();
+      }
+    }));
+
+    // Load groups — ignore failure
+    try{
+      const gsnap=await dbGetTimeout('groups', 8000);
+      groupsCache={};
+      if(gsnap.exists()){gsnap.forEach(child=>{const g=child.val();if(g&&g.members&&toArr(g.members).includes(meCode))groupsCache[g.id]=g;});}
+    }catch(e){ groupsCache={}; }
+
     document.getElementById('home-sub').textContent=myUser.username+' • '+myUser.code;
     renderHeaderAvatar();
     const isAdmin=myUser?.isAdmin===true||myUser?.['isAdmin ']===true;
@@ -977,7 +1005,21 @@ async function enterHome(){
     setupPresence();
     show('screen-home');
     requestNotifPermission();
-  }catch(e){console.error('enterHome error',e);show('screen-auth');}
+  }catch(e){
+    console.error('enterHome error',e);
+    _enterHomeRetries++;
+    if(_enterHomeRetries <= 3){
+      // Network error or timeout → retry automatically
+      const delay = _enterHomeRetries * 2000;
+      document.querySelector('.loading-text').textContent = `Connexion… (tentative ${_enterHomeRetries}/3)`;
+      setTimeout(()=>enterHome(), delay);
+    } else {
+      // Give up after 3 retries → show auth with message
+      _enterHomeRetries=0;
+      showToast('⚠️ Connexion impossible, réessaie plus tard');
+      show('screen-auth');
+    }
+  }
 }
 
 // ===== HOME LISTENERS =====
@@ -1210,8 +1252,7 @@ function openDM(fcode){
 }
 
 function openGroup(gid){
-  currentChat={type:'group',id:gid};clearUnread(gid);hideBanner();
-  stopPresenceListener();
+  currentChat={type:'group',id:gid}; clearUnread(gid); hideBanner(); stopPresenceListener();
   const group=groupsCache[gid];
   const hav=document.getElementById('chat-hd-av');
   if(group.avatar){hav.innerHTML=`<img src="${group.avatar}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;hav.style.background='transparent';}
@@ -1220,8 +1261,19 @@ function openGroup(gid){
   document.getElementById('chat-hd-sub').textContent=toArr(group.members).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ');
   document.getElementById('btn-report-chat').style.display='none';
   document.getElementById('btn-call').style.display='inline-flex';
-  document.getElementById('chat-input').value='';document.getElementById('send-btn').style.display='none';document.getElementById('mic-btn').style.display='flex';
-  Promise.all(toArr(group.members).filter(m=>!usersCache[m]).map(m=>dbGet(`users/${m}`).then(s=>{if(s.exists())usersCache[m]=s.val();}))).then(()=>{startChatListener();show('screen-chat');});
+  document.getElementById('chat-input').value=''; document.getElementById('send-btn').style.display='none'; document.getElementById('mic-btn').style.display='flex';
+  // Affiche l'écran immédiatement sans attendre le chargement des utilisateurs
+  startChatListener(); show('screen-chat');
+  // Charge les utilisateurs manquants en arrière-plan et met à jour le sous-titre
+  const missing=toArr(group.members).filter(m=>!usersCache[m]);
+  if(missing.length){
+    Promise.allSettled(missing.map(m=>dbGetTimeout(`users/${m}`,6000).then(s=>{if(s.exists())usersCache[m]=s.val();}).catch(()=>{}))).then(()=>{
+      // Met à jour le sous-titre si on est toujours dans ce chat
+      if(currentChat&&currentChat.id===gid){
+        document.getElementById('chat-hd-sub').textContent=toArr(group.members).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ');
+      }
+    });
+  }
 }
 
 function openFriendProfile(){
@@ -1236,12 +1288,13 @@ function openFriendProfile(){
 function openChatProfile(){if(!currentChat)return;if(currentChat.type==='group')openGroupEdit(currentChat.id);else openFriendProfile();}
 
 function goHome(){
-  if(chatListener){chatListener();chatListener=null;}
-  if(chatChangedListener){chatChangedListener();chatChangedListener=null;}
+  if(chatListener){try{chatListener();}catch(e){} chatListener=null;}
+  if(chatChangedListener){try{chatChangedListener();}catch(e){} chatChangedListener=null;}
+  _currentListenerConvKey = null;
   Object.values(audioPlayers).forEach(p=>{if(p.audio)p.audio.pause();});
   document.getElementById('btn-call').style.display='none';
   stopPresenceListener();
-  currentChat=null;show('screen-home');renderConvList();
+  currentChat=null; show('screen-home'); renderConvList();
 }
 
 // ===== REACTIONS =====
@@ -1292,43 +1345,86 @@ async function doDelete(mode){
 }
 
 // ===== CHAT LISTENER =====
-function startChatListener(){
-  if(chatListener){chatListener();chatListener=null;}if(chatChangedListener){chatChangedListener();chatChangedListener=null;}
-  Object.values(audioPlayers).forEach(p=>{if(p.audio)p.audio.pause();});
-  const convKey=getConvKey();if(!convKey)return;
-  const container=document.getElementById('chat-messages');container.innerHTML='<div class="no-msgs">Envoie le premier message !</div>';
-  const convRef=ref(db,`conversations/${convKey}`);
-  dbGet(`conversations/${convKey}`).then(snap=>{if(!snap.exists())return;snap.forEach(child=>{const msg=child.val();if(msg&&msg.from!==meCode&&msg.status!=='read')dbSet(`conversations/${convKey}/${child.key}/status`,'read');});});
+let _currentListenerConvKey = null; // guard against stale listeners
 
-  chatListener=onChildAdded(convRef,snap=>{
-    const key=snap.key,msg=snap.val();if(!msg||msg._deletedForMe?.[meCode])return;
+function startChatListener(){
+  // Détacher les anciens listeners proprement
+  if(chatListener){try{chatListener();}catch(e){} chatListener=null;}
+  if(chatChangedListener){try{chatChangedListener();}catch(e){} chatChangedListener=null;}
+  Object.values(audioPlayers).forEach(p=>{if(p.audio)p.audio.pause();});
+
+  const convKey=getConvKey(); if(!convKey)return;
+  _currentListenerConvKey = convKey;
+
+  const container=document.getElementById('chat-messages');
+  container.innerHTML='<div class="no-msgs">Chargement…</div>';
+  const convRef=ref(db,`conversations/${convKey}`);
+
+  // Marquer les messages non lus comme lus (en arrière-plan, sans bloquer)
+  dbGet(`conversations/${convKey}`).then(snap=>{
+    if(!snap.exists()||_currentListenerConvKey!==convKey)return;
+    // Afficher "Envoie le premier message" si vide
+    if(!snap.hasChildren()){
+      const nm=container.querySelector('.no-msgs');if(nm)nm.textContent='Envoie le premier message !';
+    }
+    snap.forEach(child=>{
+      const msg=child.val();
+      if(msg&&msg.from!==meCode&&msg.status!=='read')
+        dbSet(`conversations/${convKey}/${child.key}/status`,'read').catch(()=>{});
+    });
+  }).catch(()=>{
+    const nm=container.querySelector('.no-msgs');if(nm)nm.textContent='Envoie le premier message !';
+  });
+
+  chatListener=onChildAdded(convRef, snap=>{
+    // Ignorer si le listener appartient à une autre conversation
+    if(_currentListenerConvKey!==convKey)return;
+
+    const key=snap.key, msg=snap.val();
+    if(!msg)return;
+    if(msg._deletedForMe?.[meCode])return;
+    // Éviter les doublons
     if(document.querySelector(`[data-msgkey="${key}"]`))return;
+
     const noMsg=container.querySelector('.no-msgs');if(noMsg)noMsg.remove();
-    const isMe=msg.from===meCode,sender=usersCache[msg.from];
-    const div=document.createElement('div');div.className='msg '+(isMe?'out':'in');div.dataset.msgkey=key;
+
+    const isMe=msg.from===meCode;
+    const sender=usersCache[msg.from];
+    const div=document.createElement('div');
+    div.className='msg '+(isMe?'out':'in');
+    div.dataset.msgkey=key;
     if(msg.audioDuration)div.dataset.audioduration=msg.audioDuration;
     const showSender=!isMe&&currentChat&&currentChat.type==='group';
-    const status=isMe?(msg.status||'sent'):'';let contentHTML='';
+    const status=isMe?(msg.status||'sent'):'';
+    let contentHTML='';
     if(msg.deleted){contentHTML='<em style="color:#aaa">🚫 Ce message a été supprimé</em>';}
     else if(msg.type==='audio'&&msg.fileData){contentHTML=buildAudioBubble(msg,key,convKey);}
     else if(msg.type==='image'&&msg.fileData){contentHTML=`<img class="msg-image" src="${msg.fileData}" onclick="openImagePreview('${key}')" data-src="${msg.fileData}" />`;}
     else if(msg.type==='pdf'&&msg.fileData){const sz=msg.fileSize?formatBytes(msg.fileSize):'PDF';contentHTML=`<a class="msg-pdf" href="${msg.fileData}" download="${msg.fileName||'document.pdf'}" onclick="event.stopPropagation()"><span class="msg-pdf-icon">📄</span><div class="msg-pdf-info"><div class="msg-pdf-name">${msg.fileName||'document.pdf'}</div><div class="msg-pdf-size">${sz}</div></div><span style="font-size:18px;color:#075E54;">⬇️</span></a>`;}
     else{contentHTML=msg.text||'';}
+
     div.innerHTML=(showSender&&sender?`<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>`:'')+`<div class="msg-content">${contentHTML}</div><div class="msg-time" data-time="${msg.time}">${msg.time}${isMe?tickSVG(status):''}</div>`+renderReactions(msg.reactions,key,convKey);
     div.addEventListener('dblclick',()=>askDelete(key,convKey,isMe||isAdminUser()));
-    let pressTimer=null;const startPress=()=>{pressTimer=setTimeout(()=>showEmojiPicker(div,key,convKey),500);};const endPress=()=>clearTimeout(pressTimer);
-    div.addEventListener('mousedown',startPress);div.addEventListener('touchstart',startPress,{passive:true});div.addEventListener('mouseup',endPress);div.addEventListener('mouseleave',endPress);div.addEventListener('touchend',endPress);
-    container.appendChild(div);container.scrollTop=container.scrollHeight;
-    if(!isMe&&msg.status!=='read')dbSet(`conversations/${convKey}/${key}/status`,'read');
+    let pressTimer=null;
+    const startPress=()=>{pressTimer=setTimeout(()=>showEmojiPicker(div,key,convKey),500);};
+    const endPress=()=>clearTimeout(pressTimer);
+    div.addEventListener('mousedown',startPress);div.addEventListener('touchstart',startPress,{passive:true});
+    div.addEventListener('mouseup',endPress);div.addEventListener('mouseleave',endPress);div.addEventListener('touchend',endPress);
+    container.appendChild(div);
+    container.scrollTop=container.scrollHeight;
+    if(!isMe&&msg.status!=='read')dbSet(`conversations/${convKey}/${key}/status`,'read').catch(()=>{});
   });
 
   chatChangedListener=onChildChanged(convRef,snap=>{
+    if(_currentListenerConvKey!==convKey)return;
     const key=snap.key,msg=snap.val();if(!msg)return;
     if(msg._deletedForMe?.[meCode]){const el=document.querySelector(`[data-msgkey="${key}"]`);if(el)el.remove();return;}
     if(msg.from===meCode)updateMsgTick(key,msg.status||'sent');
     const el=document.querySelector(`[data-msgkey="${key}"]`);if(!el)return;
     if(msg.deleted){const cd=el.querySelector('.msg-content');if(cd)cd.innerHTML='<em style="color:#aaa">🚫 Ce message a été supprimé</em>';}
-    const newReactHTML=renderReactions(msg.reactions,key,convKey);let rDiv=el.querySelector('.msg-reactions');if(rDiv)rDiv.remove();if(newReactHTML)el.insertAdjacentHTML('beforeend',newReactHTML);
+    const newReactHTML=renderReactions(msg.reactions,key,convKey);
+    let rDiv=el.querySelector('.msg-reactions');if(rDiv)rDiv.remove();
+    if(newReactHTML)el.insertAdjacentHTML('beforeend',newReactHTML);
   });
 }
 
