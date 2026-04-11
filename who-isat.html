@@ -6,7 +6,7 @@
   <title>Who-isat</title>
   <meta name="theme-color" content="#075E54" />
   <meta name="application-name" content="Who-isat" />
-  <meta name="description" content="Crée de fausses conversations à partager avec tes amis" />
+  <meta name="description" content="Crée de nouvelles conversations à partager avec tes amis" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Who-isat" />
@@ -273,6 +273,53 @@
 
     .unread-badge { min-width: 20px; height: 20px; border-radius: 10px; background: var(--green); color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 5px; flex-shrink: 0; }
     .tab-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; border-radius: 8px; background: #e74c3c; color: white; font-size: 10px; font-weight: 700; padding: 0 4px; margin-left: 4px; vertical-align: middle; }
+
+    /* ===== BLOQUER ===== */
+    .blocked-banner { background: #fff3f3; border-top: 1px solid #ffd5d5; padding: 8px 14px; font-size: 12px; color: #c0392b; font-weight: 600; text-align: center; flex-shrink: 0; display: none; }
+    .blocked-banner.show { display: block; }
+    .blocked-badge { background: #ffeaea; color: #c0392b; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 6px; margin-left: 5px; vertical-align: middle; }
+
+    /* ===== SIGNALEMENT AVEC SÉLECTION MESSAGES ===== */
+    .report-step { display: flex; flex-direction: column; gap: 10px; }
+    .report-step.hidden { display: none; }
+    .report-msg-list { display: flex; flex-direction: column; gap: 4px; max-height: 220px; overflow-y: auto; border: 1.5px solid #e0e0e0; border-radius: 12px; padding: 6px 8px; background: #fafafa; }
+    .report-msg-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 4px; border-radius: 8px; cursor: pointer; transition: background 0.1s; user-select: none; }
+    .report-msg-item:hover { background: #f0f0f0; }
+    .report-msg-item input[type=checkbox] { width: 16px; height: 16px; accent-color: #e74c3c; flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+    .report-msg-item-body { flex: 1; min-width: 0; }
+    .report-msg-item-sender { font-size: 11px; font-weight: 700; margin-bottom: 1px; }
+    .report-msg-item-text { font-size: 12px; color: #333; line-height: 1.35; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .report-msg-item-time { font-size: 10px; color: #aaa; flex-shrink: 0; }
+    .report-filter-row { display: flex; gap: 6px; align-items: center; }
+    .report-filter-row select { flex: 1; padding: 7px 10px; border-radius: 10px; border: 1.5px solid #e0e0e0; font-size: 13px; font-family: inherit; background: #fafafa; cursor: pointer; }
+    .report-filter-row select:focus { border-color: #e74c3c; outline: none; }
+    .report-sel-count { font-size: 12px; color: #e74c3c; font-weight: 600; text-align: right; }
+    .msg-poll { min-width: 200px; max-width: 260px; display: flex; flex-direction: column; gap: 8px; padding: 2px 0 4px; }
+    .poll-question { font-size: 14px; font-weight: 700; color: #111; line-height: 1.35; }
+    .poll-total { font-size: 11px; color: #888; margin-top: -4px; }
+    .poll-options { display: flex; flex-direction: column; gap: 6px; }
+    .poll-option { position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; border: 1.5px solid #e0e0e0; background: #f9f9f9; transition: border-color 0.15s; }
+    .poll-option:hover { border-color: var(--green); }
+    .poll-option.voted { border-color: var(--green); }
+    .poll-option-bar { position: absolute; inset: 0; background: rgba(37,211,102,0.15); transition: width 0.4s cubic-bezier(.4,0,.2,1); border-radius: 8px; }
+    .poll-option-content { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; gap: 6px; }
+    .poll-option-label { font-size: 13px; font-weight: 600; color: #111; flex: 1; }
+    .poll-option-pct { font-size: 12px; font-weight: 700; color: var(--dark); min-width: 30px; text-align: right; }
+    .poll-option-check { font-size: 14px; flex-shrink: 0; }
+    .msg.out .poll-question { color: #111; }
+    .msg.out .poll-option { border-color: rgba(0,0,0,0.15); background: rgba(255,255,255,0.5); }
+    .msg.out .poll-option.voted { border-color: #075E54; }
+    .msg.out .poll-option-bar { background: rgba(7,94,84,0.15); }
+    .msg.out .poll-option-pct { color: #075E54; }
+    .poll-ended-badge { font-size: 11px; color: #e74c3c; font-weight: 700; text-align: right; }
+
+    /* Poll modal options */
+    .poll-opt-row { display: flex; gap: 6px; align-items: center; }
+    .poll-opt-input { flex: 1; padding: 9px 12px; border-radius: 10px; border: 1.5px solid #e0e0e0; font-size: 14px; font-family: inherit; background: #fafafa; color: #111; outline: none; }
+    .poll-opt-input:focus { border-color: var(--green); }
+    .poll-opt-del { width: 32px; height: 32px; border-radius: 50%; background: #ffeaea; color: #e74c3c; border: none; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn-add-option { padding: 9px 14px; background: #f0fdf4; color: var(--dark); border: 1.5px dashed #b2dfdb; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; width: 100%; margin-top: 2px; transition: background 0.15s; }
+    .btn-add-option:hover { background: #e0f7ef; }
     .notif-banner { position: absolute; top: 10px; left: 50%; transform: translateX(-50%) translateY(-80px); background: #1a1a1a; color: white; border-radius: 14px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; z-index: 80; box-shadow: 0 6px 24px rgba(0,0,0,0.35); cursor: pointer; max-width: 340px; width: calc(100% - 28px); transition: transform 0.35s cubic-bezier(.34,1.56,.64,1); pointer-events: none; }
     .notif-banner.show { transform: translateX(-50%) translateY(0); pointer-events: auto; }
     .notif-banner-av { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: white; }
@@ -430,6 +477,7 @@
       <button class="wa-header-btn" id="btn-report-chat" title="Signaler" onclick="showReportModal()" style="font-size:16px;">🚨</button>
     </div>
     <div class="chat-messages" id="chat-messages"></div>
+    <div class="blocked-banner" id="blocked-banner">🚫 Tu as bloqué <span id="blocked-banner-name"></span> — il/elle ne peut plus t'envoyer de messages. <button onclick="toggleBlockFriendFromChat()" style="background:none;border:none;color:#c0392b;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px;">Débloquer</button></div>
     <div class="recording-bar" id="recording-bar">
       <div class="rec-dot"></div>
       <div class="rec-wave"><span></span><span></span><span></span><span></span><span></span></div>
@@ -444,6 +492,7 @@
     <div class="chat-input-bar">
       <button class="attach-btn" onclick="document.getElementById('attach-img-input').click()" title="Image">🖼️</button>
       <button class="attach-btn" onclick="document.getElementById('attach-pdf-input').click()" title="PDF">📄</button>
+      <button class="attach-btn" id="poll-btn" onclick="showPollModal()" title="Sondage" style="display:none;">📊</button>
       <input type="file" id="attach-img-input" accept="image/*" onchange="handleAttach(event,'image')" style="display:none" />
       <input type="file" id="attach-pdf-input" accept=".pdf" onchange="handleAttach(event,'pdf')" style="display:none" />
       <input class="chat-input" id="chat-input" placeholder="Message…" onkeydown="if(event.key==='Enter')sendMsg()" oninput="onChatInput()" />
@@ -486,6 +535,7 @@
       <div class="profile-username" id="friend-uname"></div>
       <div class="profile-code-label" id="friend-code-label"></div>
       <div class="code-box" style="width:100%;max-width:280px">Code<span id="friend-code-big"></span></div>
+      <button class="btn-green" id="btn-block-friend" style="max-width:280px;margin-top:4px;background:#ff9800;" onclick="toggleBlockFriend()">🚫 Bloquer</button>
       <button class="btn-green" id="btn-report-friend" style="max-width:280px;margin-top:4px;background:#e74c3c;" onclick="showReportFromProfile()">🚨 Signaler cet utilisateur</button>
     </div>
   </div>
@@ -611,22 +661,51 @@
   </div>
 
   <div class="modal-overlay" id="modal-report" style="display:none">
-    <div class="modal-box">
+    <div class="modal-box" style="max-height:92%;overflow-y:auto;gap:10px;">
       <div class="modal-title">🚨 Signaler</div>
       <div class="modal-desc" id="report-desc">Signale un comportement inapproprié</div>
-      <select class="modal-input" id="report-reason" style="cursor:pointer;">
-        <option value="">-- Raison du signalement --</option>
-        <option value="harcelement">Harcèlement / insultes</option>
-        <option value="contenu_choquant">Contenu choquant</option>
-        <option value="spam">Spam</option>
-        <option value="usurpation">Usurpation d'identité</option>
-        <option value="autre">Autre</option>
-      </select>
-      <textarea class="modal-input" id="report-detail" placeholder="Détails supplémentaires (optionnel)…" style="resize:none;height:70px;line-height:1.4;" maxlength="200"></textarea>
-      <div class="err" id="err-report"></div>
-      <div class="modal-actions">
-        <button class="btn-cancel" onclick="hideModal('modal-report')">Annuler</button>
-        <button class="btn-ok" style="background:#e74c3c;" onclick="submitReport()">Signaler</button>
+
+      <!-- Étape 1 : raison -->
+      <div class="report-step" id="report-step-1">
+        <select class="modal-input" id="report-reason" style="cursor:pointer;">
+          <option value="">-- Raison du signalement --</option>
+          <option value="harcelement">Harcèlement / insultes</option>
+          <option value="contenu_choquant">Contenu choquant</option>
+          <option value="spam">Spam</option>
+          <option value="usurpation">Usurpation d'identité</option>
+          <option value="autre">Autre</option>
+        </select>
+        <textarea class="modal-input" id="report-detail" placeholder="Détails supplémentaires (optionnel)…" style="resize:none;height:60px;line-height:1.4;" maxlength="200"></textarea>
+        <div class="err" id="err-report"></div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="hideModal('modal-report')">Annuler</button>
+          <button class="btn-ok" style="background:#e67e22;" onclick="goToReportStep2()">Suivant → Messages</button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : sélection messages -->
+      <div class="report-step hidden" id="report-step-2">
+        <div style="font-size:13px;font-weight:700;color:#555;">Sélectionne les messages à joindre :</div>
+        <div class="report-filter-row" id="report-filter-row" style="display:none;">
+          <select id="report-person-filter" onchange="filterReportMessages()">
+            <option value="">Toutes les personnes</option>
+          </select>
+        </div>
+        <div class="report-msg-list" id="report-msg-list">
+          <div style="text-align:center;color:#aaa;font-size:13px;padding:12px;">Chargement…</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="report-sel-count" id="report-sel-count">0 message sélectionné</div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="selectAllReportMsgs()" style="font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;">Tout</button>
+            <button onclick="deselectAllReportMsgs()" style="font-size:12px;color:#555;background:none;border:none;cursor:pointer;font-family:inherit;">Aucun</button>
+          </div>
+        </div>
+        <div class="err" id="err-report-2"></div>
+        <div class="modal-actions">
+          <button class="btn-cancel" onclick="goToReportStep1()">← Retour</button>
+          <button class="btn-ok" style="background:#e74c3c;" onclick="submitReport()">🚨 Envoyer</button>
+        </div>
       </div>
     </div>
   </div>
@@ -653,6 +732,25 @@
         <button class="btn-cancel" onclick="hideTempBanForm()">← Retour</button>
       </div>
       <button class="btn-cancel" onclick="hideModal('modal-ban-options')" style="margin-top:4px;">Annuler</button>
+    </div>
+  </div>
+
+  <!-- ===== MODAL SONDAGE ===== -->
+  <div class="modal-overlay" id="modal-poll" style="display:none">
+    <div class="modal-box" style="max-height:92%;overflow-y:auto;">
+      <div class="modal-title">📊 Créer un sondage</div>
+      <input class="modal-input" id="poll-question" placeholder="Question du sondage…" maxlength="120" />
+      <div id="poll-options-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+      <button class="btn-add-option" onclick="addPollOption()">＋ Ajouter une option</button>
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+        <input type="checkbox" id="poll-multiple" style="width:18px;height:18px;accent-color:var(--green);cursor:pointer;" />
+        <label for="poll-multiple" style="font-size:13px;color:#555;cursor:pointer;">Choix multiple</label>
+      </div>
+      <div class="err" id="err-poll"></div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideModal('modal-poll')">Annuler</button>
+        <button class="btn-ok" onclick="submitPoll()">📤 Envoyer</button>
+      </div>
     </div>
   </div>
 
@@ -1003,6 +1101,7 @@ async function enterHome(){
     setupHomeListeners();
     listenForIncomingCalls();
     setupPresence();
+    await loadBlockedList();
     show('screen-home');
     requestNotifPermission();
   }catch(e){
@@ -1236,7 +1335,132 @@ function toggleAudio(key,convKey){
 function seekAudio(key,e){const player=audioPlayers[key];if(!player||!player.audio||!player.audio.duration)return;const rect=e.currentTarget.getBoundingClientRect();player.audio.currentTime=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width))*player.audio.duration;}
 function updatePlayPauseIcon(key,playing){const container=document.querySelector(`[data-msgkey="${key}"]`);if(!container)return;const pi=container.querySelector('.play-icon'),pai=container.querySelector('.pause-icon');if(pi)pi.style.display=playing?'none':'block';if(pai)pai.style.display=playing?'block':'none';}
 
-// ===== OPEN DM / GROUP =====
+// ===== SONDAGES =====
+function buildPollBubble(msg, key, convKey){
+  const opts = toArr(msg.pollOptions)||[];
+  const votes = msg.votes||{};
+  const multiple = !!msg.pollMultiple;
+  const ended = !!msg.pollEnded;
+  const isCreator = msg.from === meCode || isAdminUser();
+
+  // Compter les votes par option
+  const counts = opts.map((_,i)=>Object.keys(votes[i]||{}).length);
+  const totalVotes = counts.reduce((a,b)=>a+b,0);
+
+  // Quelle option j'ai votée
+  const myVotes = opts.reduce((acc,_,i)=>{ if(votes[i]&&votes[i][meCode]) acc.push(i); return acc; },[]);
+  const iHaveVoted = myVotes.length>0;
+
+  const optsHTML = opts.map((label,i)=>{
+    const cnt=counts[i], pct=totalVotes?Math.round(cnt/totalVotes*100):0;
+    const iVoted=myVotes.includes(i);
+    return `<div class="poll-option${iVoted?' voted':''}" onclick="votePoll('${key}','${convKey}',${i})">
+      <div class="poll-option-bar" style="width:${iHaveVoted?pct:0}%"></div>
+      <div class="poll-option-content">
+        <span class="poll-option-label">${label}</span>
+        ${iHaveVoted?`<span class="poll-option-pct">${pct}%</span>`:''}
+        ${iVoted?`<span class="poll-option-check">✓</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const endBtn = isCreator&&!ended ? `<button onclick="endPoll('${key}','${convKey}')" style="margin-top:4px;font-size:11px;color:#e74c3c;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;">🔒 Clôturer le sondage</button>` : '';
+
+  return `<div class="msg-poll">
+    <div class="poll-question">${msg.question||'Sondage'}</div>
+    <div class="poll-total">${totalVotes} vote${totalVotes>1?'s':''} · ${multiple?'Choix multiple':'Choix unique'}${ended?' · <span class="poll-ended-badge">Clôturé</span>':''}</div>
+    <div class="poll-options">${optsHTML}</div>
+    ${endBtn}
+  </div>`;
+}
+
+function refreshPollBubble(key, convKey){
+  const el = document.querySelector(`[data-msgkey="${key}"]`);
+  if(!el) return;
+  dbGet(`conversations/${convKey}/${key}`).then(snap=>{
+    if(!snap.exists()) return;
+    const msg=snap.val();
+    if(msg.type!=='poll') return;
+    const cd=el.querySelector('.msg-content');
+    if(cd) cd.innerHTML=buildPollBubble(msg,key,convKey);
+  }).catch(()=>{});
+}
+
+async function votePoll(key, convKey, optIndex){
+  const snap=await dbGet(`conversations/${convKey}/${key}`).catch(()=>null);
+  if(!snap||!snap.exists()) return;
+  const msg=snap.val();
+  if(msg.pollEnded){ showToast('🔒 Ce sondage est clôturé'); return; }
+  const multiple=!!msg.pollMultiple;
+  const votes=msg.votes||{};
+  const alreadyVoted=votes[optIndex]&&votes[optIndex][meCode];
+
+  if(alreadyVoted){
+    // Retirer mon vote
+    await dbSet(`conversations/${convKey}/${key}/votes/${optIndex}/${meCode}`,null).catch(()=>{});
+  } else {
+    if(!multiple){
+      // Retirer tous mes anciens votes avant
+      const opts=toArr(msg.pollOptions);
+      await Promise.all(opts.map((_,i)=>{
+        if(votes[i]&&votes[i][meCode]) return dbSet(`conversations/${convKey}/${key}/votes/${i}/${meCode}`,null).catch(()=>{});
+      }));
+    }
+    await dbSet(`conversations/${convKey}/${key}/votes/${optIndex}/${meCode}`,true).catch(()=>{});
+  }
+}
+
+async function endPoll(key, convKey){
+  if(!confirm('Clôturer ce sondage ? Plus personne ne pourra voter.')) return;
+  await dbSet(`conversations/${convKey}/${key}/pollEnded`,true).catch(e=>showToast('❌ Erreur : '+e.message));
+}
+
+// Modal sondage
+let pollOptionCount = 0;
+function showPollModal(){
+  if(!currentChat||currentChat.type!=='group'){ showToast('Les sondages sont réservés aux groupes'); return; }
+  document.getElementById('poll-question').value='';
+  document.getElementById('poll-multiple').checked=false;
+  document.getElementById('err-poll').textContent='';
+  const list=document.getElementById('poll-options-list'); list.innerHTML=''; pollOptionCount=0;
+  addPollOption(); addPollOption(); // 2 options par défaut
+  showModal('modal-poll');
+}
+function addPollOption(){
+  if(pollOptionCount>=10){ showToast('Max 10 options'); return; }
+  pollOptionCount++;
+  const idx=pollOptionCount;
+  const list=document.getElementById('poll-options-list');
+  const row=document.createElement('div'); row.className='poll-opt-row'; row.id=`poll-opt-row-${idx}`;
+  row.innerHTML=`<input class="poll-opt-input" id="poll-opt-${idx}" placeholder="Option ${idx}…" maxlength="80" /><button class="poll-opt-del" onclick="removePollOption(${idx})" title="Supprimer">✕</button>`;
+  list.appendChild(row);
+  document.getElementById(`poll-opt-${idx}`).focus();
+}
+function removePollOption(idx){
+  const row=document.getElementById(`poll-opt-row-${idx}`);
+  const list=document.getElementById('poll-options-list');
+  if(list.children.length<=2){ showToast('Minimum 2 options'); return; }
+  if(row) row.remove();
+}
+async function submitPoll(){
+  const question=document.getElementById('poll-question').value.trim();
+  const err=document.getElementById('err-poll');
+  if(!question){ err.style.color='#e74c3c'; err.textContent='Donne une question !'; return; }
+  const list=document.getElementById('poll-options-list');
+  const opts=[...list.querySelectorAll('.poll-opt-input')].map(i=>i.value.trim()).filter(Boolean);
+  if(opts.length<2){ err.style.color='#e74c3c'; err.textContent='Il faut au moins 2 options non vides !'; return; }
+  const multiple=document.getElementById('poll-multiple').checked;
+  err.style.color='#888'; err.textContent='Envoi…';
+  const convKey=getConvKey();
+  try{
+    await dbPush(`conversations/${convKey}`,{
+      from:meCode, type:'poll', question, pollOptions:opts,
+      pollMultiple:multiple, votes:{}, pollEnded:false,
+      text:`📊 Sondage : ${question}`, time:nowTime(), ts:Date.now(), status:'sent'
+    });
+    hideModal('modal-poll');
+  }catch(e){ err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e); }
+}
 function openDM(fcode){
   currentChat={type:'dm',id:fcode};
   const convKey=[meCode,fcode].sort().join('_');clearUnread(convKey);hideBanner();
@@ -1246,9 +1470,12 @@ function openDM(fcode){
   document.getElementById('chat-hd-sub').textContent='…';
   document.getElementById('btn-report-chat').style.display='inline-flex';
   document.getElementById('btn-call').style.display='inline-flex';
+  document.getElementById('poll-btn').style.display='none';
   document.getElementById('chat-input').value='';document.getElementById('send-btn').style.display='none';document.getElementById('mic-btn').style.display='flex';
   listenFriendPresence(fcode);
-  startChatListener();show('screen-chat');
+  startChatListener(); show('screen-chat');
+  // Blocked banner
+  updateBlockedBannerInChat(fcode);
 }
 
 function openGroup(gid){
@@ -1261,6 +1488,7 @@ function openGroup(gid){
   document.getElementById('chat-hd-sub').textContent=toArr(group.members).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ');
   document.getElementById('btn-report-chat').style.display='none';
   document.getElementById('btn-call').style.display='inline-flex';
+  document.getElementById('poll-btn').style.display='flex';
   document.getElementById('chat-input').value=''; document.getElementById('send-btn').style.display='none'; document.getElementById('mic-btn').style.display='flex';
   // Affiche l'écran immédiatement sans attendre le chargement des utilisateurs
   startChatListener(); show('screen-chat');
@@ -1282,8 +1510,15 @@ function openFriendProfile(){
   const pav=document.getElementById('friend-pav');
   pav.innerHTML=friend.avatar?`<img src="${friend.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:36px;font-weight:700;color:#888;">${initials(friend.username)}</span>`;
   pav.style.background=friend.avatar?'transparent':'#eee';
-  document.getElementById('friend-uname').textContent=friend.username;document.getElementById('friend-code-label').textContent=friend.code||fcode;document.getElementById('friend-code-big').textContent=friend.code||fcode;
-  document.getElementById('friend-profile-back').onclick=()=>show('screen-chat');show('screen-friend-profile');
+  document.getElementById('friend-uname').textContent=friend.username;
+  document.getElementById('friend-code-label').textContent=friend.code||fcode;
+  document.getElementById('friend-code-big').textContent=friend.code||fcode;
+  document.getElementById('friend-profile-back').onclick=()=>show('screen-chat');
+  // Block button state
+  const blockBtn=document.getElementById('btn-block-friend');
+  if(isBlocked(fcode)){blockBtn.textContent='✅ Débloquer';blockBtn.style.background='#27ae60';}
+  else{blockBtn.textContent='🚫 Bloquer';blockBtn.style.background='#ff9800';}
+  show('screen-friend-profile');
 }
 function openChatProfile(){if(!currentChat)return;if(currentChat.type==='group')openGroupEdit(currentChat.id);else openFriendProfile();}
 
@@ -1293,6 +1528,10 @@ function goHome(){
   _currentListenerConvKey = null;
   Object.values(audioPlayers).forEach(p=>{if(p.audio)p.audio.pause();});
   document.getElementById('btn-call').style.display='none';
+  document.getElementById('poll-btn').style.display='none';
+  document.getElementById('blocked-banner').classList.remove('show');
+  const inputBar=document.querySelector('.chat-input-bar');
+  if(inputBar){inputBar.style.pointerEvents='';inputBar.style.opacity='';}
   stopPresenceListener();
   currentChat=null; show('screen-home'); renderConvList();
 }
@@ -1401,6 +1640,7 @@ function startChatListener(){
     else if(msg.type==='audio'&&msg.fileData){contentHTML=buildAudioBubble(msg,key,convKey);}
     else if(msg.type==='image'&&msg.fileData){contentHTML=`<img class="msg-image" src="${msg.fileData}" onclick="openImagePreview('${key}')" data-src="${msg.fileData}" />`;}
     else if(msg.type==='pdf'&&msg.fileData){const sz=msg.fileSize?formatBytes(msg.fileSize):'PDF';contentHTML=`<a class="msg-pdf" href="${msg.fileData}" download="${msg.fileName||'document.pdf'}" onclick="event.stopPropagation()"><span class="msg-pdf-icon">📄</span><div class="msg-pdf-info"><div class="msg-pdf-name">${msg.fileName||'document.pdf'}</div><div class="msg-pdf-size">${sz}</div></div><span style="font-size:18px;color:#075E54;">⬇️</span></a>`;}
+    else if(msg.type==='poll'){contentHTML=buildPollBubble(msg,key,convKey);}
     else{contentHTML=msg.text||'';}
 
     div.innerHTML=(showSender&&sender?`<div class="msg-sender" style="color:${getColor(sender.username)}">${sender.username}</div>`:'')+`<div class="msg-content">${contentHTML}</div><div class="msg-time" data-time="${msg.time}">${msg.time}${isMe?tickSVG(status):''}</div>`+renderReactions(msg.reactions,key,convKey);
@@ -1421,6 +1661,12 @@ function startChatListener(){
     if(msg._deletedForMe?.[meCode]){const el=document.querySelector(`[data-msgkey="${key}"]`);if(el)el.remove();return;}
     if(msg.from===meCode)updateMsgTick(key,msg.status||'sent');
     const el=document.querySelector(`[data-msgkey="${key}"]`);if(!el)return;
+    if(msg.type==='poll'){
+      // Rafraîchir tout le bubble sondage pour refléter les votes
+      const cd=el.querySelector('.msg-content');
+      if(cd) cd.innerHTML=buildPollBubble(msg,key,convKey);
+      return;
+    }
     if(msg.deleted){const cd=el.querySelector('.msg-content');if(cd)cd.innerHTML='<em style="color:#aaa">🚫 Ce message a été supprimé</em>';}
     const newReactHTML=renderReactions(msg.reactions,key,convKey);
     let rDiv=el.querySelector('.msg-reactions');if(rDiv)rDiv.remove();
@@ -1565,11 +1811,28 @@ function renderGroupMembers(){
     list.appendChild(div);
   });
 }
-function renderAddMemberSelect(){
+async function renderAddMemberSelect(){
   const group=groupsCache[editingGroupId],members=toArr(group.members);
-  const sel=document.getElementById('gedit-add-select');sel.innerHTML='<option value="">-- Choisir un contact --</option>';
-  if(isAdminUser()){Object.entries(usersCache).forEach(([code,u])=>{if(!u||members.includes(code))return;const opt=document.createElement('option');opt.value=code;opt.textContent=u.username+' ('+code+')';sel.appendChild(opt);});}
-  else{toArr(myUser.friends).filter(f=>!members.includes(f)).forEach(fcode=>{const u=usersCache[fcode];if(!u)return;const opt=document.createElement('option');opt.value=fcode;opt.textContent=u.username;sel.appendChild(opt);});}
+  const sel=document.getElementById('gedit-add-select');
+  sel.innerHTML='<option value="">Chargement…</option>';
+  if(isAdminUser()){
+    // Charger TOUS les utilisateurs depuis Firebase (pas seulement le cache)
+    try{
+      const snap=await dbGetTimeout('users',10000);
+      if(snap.exists()){snap.forEach(child=>{const u=child.val();if(u)usersCache[child.key]=u;});}
+    }catch(e){console.warn('renderAddMemberSelect: could not load all users',e);}
+    sel.innerHTML='<option value="">-- Choisir un utilisateur --</option>';
+    const all=Object.entries(usersCache).filter(([code,u])=>u&&!members.includes(code)&&code!==meCode);
+    all.sort((a,b)=>(a[1].username||'').localeCompare(b[1].username||''));
+    all.forEach(([code,u])=>{const opt=document.createElement('option');opt.value=code;opt.textContent=u.username+' ('+code+')';sel.appendChild(opt);});
+    if(all.length===0)sel.innerHTML='<option value="">Tous les utilisateurs sont déjà membres</option>';
+  }else{
+    sel.innerHTML='<option value="">-- Choisir un contact --</option>';
+    toArr(myUser.friends).filter(f=>!members.includes(f)).forEach(fcode=>{
+      const u=usersCache[fcode];if(!u)return;
+      const opt=document.createElement('option');opt.value=fcode;opt.textContent=u.username;sel.appendChild(opt);
+    });
+  }
 }
 async function adminJoinGroup(gid){
   if(!isAdminUser())return;
@@ -1611,28 +1874,233 @@ async function leaveGroup(){
   }catch(e){showToast('❌ Erreur');console.error(e);}
 }
 
-// ===== MODERATION =====
-let reportTargetCode=null,reportConvKey=null;
+// ===== BLOQUER =====
+let blockedUsers = {}; // code -> true
+
+async function loadBlockedList(){
+  try{
+    const snap=await dbGetTimeout(`users/${meCode}/blocked`,6000);
+    blockedUsers={};
+    if(snap.exists()&&snap.val()){Object.keys(snap.val()).forEach(c=>{if(snap.val()[c])blockedUsers[c]=true;});}
+  }catch(e){ blockedUsers={}; }
+}
+
+function isBlocked(code){ return !!blockedUsers[code]; }
+
+async function toggleBlockFriend(){
+  const friendCode=document.getElementById('friend-code-big').textContent;
+  if(!friendCode) return;
+  const u=usersCache[friendCode];
+  const name=u?u.username:friendCode;
+  if(isBlocked(friendCode)){
+    // Débloquer
+    await dbSet(`users/${meCode}/blocked/${friendCode}`,null).catch(()=>{});
+    delete blockedUsers[friendCode];
+    document.getElementById('btn-block-friend').textContent='🚫 Bloquer';
+    document.getElementById('btn-block-friend').style.background='#ff9800';
+    showToast(`✅ ${name} débloqué`);
+    updateBlockedBannerInChat(friendCode);
+  } else {
+    if(!confirm(`Bloquer @${name} ? Il/elle ne pourra plus t'envoyer de messages.`)) return;
+    await dbSet(`users/${meCode}/blocked/${friendCode}`,true).catch(()=>{});
+    blockedUsers[friendCode]=true;
+    document.getElementById('btn-block-friend').textContent='✅ Débloquer';
+    document.getElementById('btn-block-friend').style.background='#27ae60';
+    showToast(`🚫 ${name} bloqué`);
+    updateBlockedBannerInChat(friendCode);
+  }
+}
+
+async function toggleBlockFriendFromChat(){
+  if(!currentChat||currentChat.type!=='dm') return;
+  const friendCode=currentChat.id;
+  const u=usersCache[friendCode];
+  const name=u?u.username:friendCode;
+  if(isBlocked(friendCode)){
+    await dbSet(`users/${meCode}/blocked/${friendCode}`,null).catch(()=>{});
+    delete blockedUsers[friendCode];
+    showToast(`✅ ${name} débloqué`);
+  } else {
+    await dbSet(`users/${meCode}/blocked/${friendCode}`,true).catch(()=>{});
+    blockedUsers[friendCode]=true;
+    showToast(`🚫 ${name} bloqué`);
+  }
+  updateBlockedBannerInChat(friendCode);
+}
+
+function updateBlockedBannerInChat(friendCode){
+  const banner=document.getElementById('blocked-banner');
+  const inputBar=document.querySelector('.chat-input-bar');
+  if(!banner||!currentChat||currentChat.id!==friendCode) return;
+  if(isBlocked(friendCode)){
+    document.getElementById('blocked-banner-name').textContent=usersCache[friendCode]?.username||friendCode;
+    banner.classList.add('show');
+    if(inputBar) inputBar.style.pointerEvents='none', inputBar.style.opacity='0.45';
+  } else {
+    banner.classList.remove('show');
+    if(inputBar) inputBar.style.pointerEvents='', inputBar.style.opacity='';
+  }
+}
+
+// ===== MODERATION — SIGNALEMENT =====
+let reportTargetCode=null, reportConvKey=null;
+let _reportAllMessages=[]; // cache de tous les messages chargés
+
+function _resetReportModal(){
+  document.getElementById('report-reason').value='';
+  document.getElementById('report-detail').value='';
+  document.getElementById('err-report').textContent='';
+  document.getElementById('err-report-2').textContent='';
+  document.getElementById('report-msg-list').innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:12px;">Chargement…</div>';
+  document.getElementById('report-sel-count').textContent='0 message sélectionné';
+  document.getElementById('report-step-1').classList.remove('hidden');
+  document.getElementById('report-step-2').classList.add('hidden');
+  _reportAllMessages=[];
+}
+
 function showReportModal(){
-  if(!currentChat)return;const isGroup=currentChat.type==='group';reportTargetCode=isGroup?null:currentChat.id;reportConvKey=getConvKey();
+  if(!currentChat) return;
+  const isGroup=currentChat.type==='group';
+  reportTargetCode=isGroup?null:currentChat.id;
+  reportConvKey=getConvKey();
   const desc=document.getElementById('report-desc');
-  if(isGroup)desc.textContent='Signaler ce groupe';else{const friend=usersCache[currentChat.id];desc.textContent=friend?`Signaler @${friend.username}`:'Signaler cet utilisateur';}
-  document.getElementById('report-reason').value='';document.getElementById('report-detail').value='';document.getElementById('err-report').textContent='';showModal('modal-report');
+  if(isGroup){const group=groupsCache[currentChat.id];desc.textContent=`Signaler le groupe "${group?group.name:'?'}"`;}
+  else{const friend=usersCache[currentChat.id];desc.textContent=friend?`Signaler @${friend.username}`:'Signaler cet utilisateur';}
+  _resetReportModal();
+  showModal('modal-report');
 }
+
 function showReportFromProfile(){
-  const friendCode=document.getElementById('friend-code-big').textContent;reportTargetCode=friendCode;reportConvKey=[meCode,friendCode].sort().join('_');
+  const friendCode=document.getElementById('friend-code-big').textContent;
+  reportTargetCode=friendCode;
+  reportConvKey=[meCode,friendCode].sort().join('_');
   document.getElementById('report-desc').textContent=`Signaler @${document.getElementById('friend-uname').textContent}`;
-  document.getElementById('report-reason').value='';document.getElementById('report-detail').value='';document.getElementById('err-report').textContent='';showModal('modal-report');
+  _resetReportModal();
+  showModal('modal-report');
 }
-async function submitReport(){
-  const reason=document.getElementById('report-reason').value,detail=document.getElementById('report-detail').value.trim(),err=document.getElementById('err-report');
+
+function goToReportStep1(){
+  document.getElementById('report-step-1').classList.remove('hidden');
+  document.getElementById('report-step-2').classList.add('hidden');
+}
+
+async function goToReportStep2(){
+  const reason=document.getElementById('report-reason').value;
+  const err=document.getElementById('err-report');
   if(!reason){err.style.color='#e74c3c';err.textContent='Choisis une raison !';return;}
-  err.style.color='#888';err.textContent='Envoi…';
-  let messages=[];
-  try{const msnap=await dbGet(`conversations/${reportConvKey}`);if(msnap.exists()){msnap.forEach(child=>{const m=child.val();if(m&&!m.deleted&&!m._deletedForMe)messages.push({from:m.from,text:m.text,time:m.time});});messages=messages.slice(-10);}}catch(e){}
-  const report={reportedBy:meCode,reportedUser:reportTargetCode||'group',convKey:reportConvKey,reason,detail:detail||'',timestamp:Date.now(),messages,status:'pending'};
-  try{await dbPush('reports',report);hideModal('modal-report');showToast('✅ Signalement envoyé aux admins');}
-  catch(e){err.style.color='#e74c3c';err.textContent='Erreur réseau';console.error(e);}
+  err.textContent='';
+  document.getElementById('report-step-1').classList.add('hidden');
+  document.getElementById('report-step-2').classList.remove('hidden');
+  await loadReportMessages();
+}
+
+async function loadReportMessages(){
+  const list=document.getElementById('report-msg-list');
+  const filterRow=document.getElementById('report-filter-row');
+  const personFilter=document.getElementById('report-person-filter');
+  list.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:12px;">Chargement…</div>';
+  _reportAllMessages=[];
+
+  try{
+    const snap=await dbGetTimeout(`conversations/${reportConvKey}`,8000);
+    if(!snap.exists()){list.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:12px;">Aucun message.</div>';return;}
+    snap.forEach(child=>{
+      const m=child.val();
+      if(!m||m.deleted||m._deletedForMe) return;
+      _reportAllMessages.push({key:child.key,...m});
+    });
+
+    // Filter pour le signalement d'un utilisateur précis dans un groupe → on montre tous, mais on filtre
+    const isGroup=currentChat&&currentChat.type==='group';
+    if(isGroup){
+      // Build person filter
+      const senders=[...new Set(_reportAllMessages.map(m=>m.from))];
+      personFilter.innerHTML='<option value="">Toutes les personnes</option>';
+      senders.forEach(code=>{
+        const u=usersCache[code];
+        const opt=document.createElement('option');
+        opt.value=code;
+        opt.textContent=(code===meCode?'Moi':u?u.username:code);
+        personFilter.appendChild(opt);
+      });
+      // Pré-sélectionner la personne ciblée si non-null
+      if(reportTargetCode) personFilter.value=reportTargetCode;
+      filterRow.style.display='flex';
+    } else {
+      filterRow.style.display='none';
+      personFilter.innerHTML='<option value="">Toutes les personnes</option>';
+    }
+
+    filterReportMessages();
+  }catch(e){
+    list.innerHTML='<div style="text-align:center;color:#e74c3c;font-size:13px;padding:12px;">Erreur de chargement.</div>';
+    console.error(e);
+  }
+}
+
+function filterReportMessages(){
+  const list=document.getElementById('report-msg-list');
+  const filterVal=document.getElementById('report-person-filter').value;
+  const msgs=filterVal?_reportAllMessages.filter(m=>m.from===filterVal):_reportAllMessages;
+  list.innerHTML='';
+  if(!msgs.length){list.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:12px;">Aucun message.</div>';return;}
+  msgs.forEach(msg=>{
+    const u=usersCache[msg.from];
+    const senderName=msg.from===meCode?'Moi':u?u.username:msg.from;
+    const senderColor=getColor(senderName);
+    let textPreview=msg.text||'';
+    if(msg.type==='audio') textPreview='🎤 Message vocal';
+    else if(msg.type==='image') textPreview='📷 Image';
+    else if(msg.type==='pdf') textPreview=`📄 ${msg.fileName||'Document'}`;
+    else if(msg.type==='poll') textPreview=`📊 ${msg.question||'Sondage'}`;
+
+    const item=document.createElement('label');
+    item.className='report-msg-item';
+    item.innerHTML=`<input type="checkbox" value="${msg.key}" onchange="updateReportSelCount()" />
+      <div class="report-msg-item-body">
+        <div class="report-msg-item-sender" style="color:${senderColor}">${senderName}</div>
+        <div class="report-msg-item-text">${textPreview}</div>
+      </div>
+      <div class="report-msg-item-time">${msg.time||''}</div>`;
+    list.appendChild(item);
+  });
+  updateReportSelCount();
+}
+
+function updateReportSelCount(){
+  const checked=document.querySelectorAll('#report-msg-list input[type=checkbox]:checked').length;
+  document.getElementById('report-sel-count').textContent=`${checked} message${checked>1?'s':''} sélectionné${checked>1?'s':''}`;
+}
+function selectAllReportMsgs(){ document.querySelectorAll('#report-msg-list input[type=checkbox]').forEach(cb=>cb.checked=true); updateReportSelCount(); }
+function deselectAllReportMsgs(){ document.querySelectorAll('#report-msg-list input[type=checkbox]').forEach(cb=>cb.checked=false); updateReportSelCount(); }
+
+async function submitReport(){
+  const reason=document.getElementById('report-reason').value;
+  const detail=document.getElementById('report-detail').value.trim();
+  const err=document.getElementById('err-report-2');
+
+  // Récupérer les messages sélectionnés
+  const selectedKeys=[...document.querySelectorAll('#report-msg-list input[type=checkbox]:checked')].map(cb=>cb.value);
+  const messages=_reportAllMessages.filter(m=>selectedKeys.includes(m.key)).map(m=>({
+    from:m.from, sender:usersCache[m.from]?.username||m.from,
+    text:m.text||'', type:m.type||'text', time:m.time||''
+  }));
+
+  err.style.color='#888'; err.textContent='Envoi…';
+  const report={
+    reportedBy:meCode, reportedUser:reportTargetCode||'group',
+    convKey:reportConvKey, reason, detail:detail||'',
+    timestamp:Date.now(), messages, status:'pending',
+    isGroup:!!(currentChat&&currentChat.type==='group'),
+    groupId:currentChat&&currentChat.type==='group'?currentChat.id:null,
+  };
+  try{
+    await dbPush('reports',report);
+    hideModal('modal-report');
+    showToast('✅ Signalement envoyé aux admins');
+  }catch(e){
+    err.style.color='#e74c3c'; err.textContent='Erreur réseau'; console.error(e);
+  }
 }
 
 // ===== ADMIN =====
@@ -2156,7 +2624,10 @@ Object.assign(window,{
   copyGroupInviteLink,revokeGroupInviteLink,joinGroupFromLink,
   cancelRecording,toggleAudio,seekAudio,onChatInput,
   hideBanner,
-  startCall,acceptCall,rejectCall,hangUp,toggleCallMute,
+  showPollModal,addPollOption,removePollOption,submitPoll,votePoll,endPoll,
+  toggleBlockFriend,toggleBlockFriendFromChat,
+  showReportModal,showReportFromProfile,goToReportStep1,goToReportStep2,
+  filterReportMessages,selectAllReportMsgs,deselectAllReportMsgs,submitReport,
 });
 
 // ===== INIT =====
