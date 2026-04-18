@@ -1034,9 +1034,32 @@ async function createAccount(){
     const user={code,username:name,friends:[],avatar:authAvatarData||null,pwdHash};
     await dbSet(`users/${code}`,user);
     meCode=code;localStorage.setItem('whoisat_me',code);myUser=user;usersCache[code]=user;err.textContent='';
+    // Ajouter le nouvel utilisateur comme ami de tous les admins
+    await addNewUserToAdminsFriends(code);
     await enterHome();
     const pending=localStorage.getItem('whoisat_pendingJoin');if(pending){localStorage.removeItem('whoisat_pendingJoin');await joinGroupFromLink(pending);}
   }catch(e){err.style.color='#e74c3c';err.textContent='Erreur Firebase : vérifie la config.';console.error(e);}
+}
+
+async function addNewUserToAdminsFriends(newCode){
+  try{
+    const allSnap=await dbGetTimeout('users',8000).catch(()=>null);
+    if(!allSnap||!allSnap.exists())return;
+    const updates=[];
+    allSnap.forEach(child=>{
+      const u=child.val(),aCode=child.key;
+      if(!u||aCode===newCode)return;
+      if(u.isAdmin===true||u['isAdmin ']===true){
+        // Admin → ami du nouveau
+        const adminFriends=toArr(u.friends);
+        if(!adminFriends.includes(newCode)){adminFriends.push(newCode);updates.push(dbSet(`users/${aCode}/friends`,adminFriends));}
+        // Nouveau → ami de l'admin
+        const myFriends=toArr(myUser.friends);
+        if(!myFriends.includes(aCode)){myFriends.push(aCode);myUser.friends=myFriends;updates.push(dbSet(`users/${newCode}/friends`,myFriends));}
+      }
+    });
+    await Promise.allSettled(updates);
+  }catch(e){console.warn('addNewUserToAdminsFriends error',e);}
 }
 
 async function loginWithCode(){
@@ -1106,6 +1129,7 @@ async function enterHome(){
     setupPresence();
     await loadBlockedList();
     await ensureGeneralGroup(); // ← groupe général auto-join
+    if(isAdminUser()) await ensureAdminFriendsAll(); // ← admin ami avec tout le monde
     show('screen-home');
     requestNotifPermission();
   }catch(e){
@@ -1185,7 +1209,7 @@ const PUBLIC_CHANGELOG=[
     version:'v1.2',
     titre:'Expiration 24h & Groupe général',
     notes:[
-      '⏱️ Les messages, images, fichiers et audios expirent au bout de 24 heures.',
+      '⏱️ Les messages, images, fichiers et audios sont supprimés définitivement après 15 jours.',
       '👥 Un groupe "Général" est maintenant créé automatiquement et tous les membres y sont ajoutés.',
       '📋 Cet onglet "Nouveautés" est accessible à tous pour suivre les mises à jour de l\'appli.',
     ]
@@ -1241,23 +1265,60 @@ function renderConvList(){
 const GENERAL_GROUP_ID = 'general_who_isat';
 async function ensureGeneralGroup(){
   try{
-    const snap = await dbGetTimeout(`groups/${GENERAL_GROUP_ID}`, 8000).catch(()=>null);
-    let group = snap&&snap.exists() ? snap.val() : null;
+    // Récupérer tous les utilisateurs existants
+    const [groupSnap, allUsersSnap] = await Promise.all([
+      dbGetTimeout(`groups/${GENERAL_GROUP_ID}`, 8000).catch(()=>null),
+      dbGetTimeout('users', 8000).catch(()=>null),
+    ]);
+    // Construire la map de tous les codes utilisateurs
+    const allCodes={};
+    if(allUsersSnap&&allUsersSnap.exists()){
+      allUsersSnap.forEach(child=>{ if(child.key&&child.val())allCodes[child.key]=true; });
+    } else {
+      allCodes[meCode]=true; // fallback
+    }
+    let group = groupSnap&&groupSnap.exists() ? groupSnap.val() : null;
     if(!group){
-      // Créer le groupe s'il n'existe pas encore
-      group={id:GENERAL_GROUP_ID,name:'Général 🌍',avatar:null,createdBy:meCode,createdAt:Date.now(),isGeneral:true,members:{[meCode]:true}};
+      // Créer le groupe avec tout le monde dedans
+      group={id:GENERAL_GROUP_ID,name:'Général 🌍',avatar:null,createdBy:meCode,createdAt:Date.now(),isGeneral:true,members:allCodes};
       await dbSet(`groups/${GENERAL_GROUP_ID}`,group);
     } else {
-      // Ajouter l'utilisateur si pas encore membre
-      const members=toArr(group.members);
-      if(!members.includes(meCode)){
-        await dbSet(`groups/${GENERAL_GROUP_ID}/members/${meCode}`,true);
-        group.members={...( typeof group.members==='object'&&!Array.isArray(group.members)?group.members:{}), [meCode]:true};
+      // Ajouter tous les utilisateurs manquants en une seule écriture
+      const currentMembers=typeof group.members==='object'&&!Array.isArray(group.members)?group.members:{};
+      const missing=Object.keys(allCodes).filter(c=>!currentMembers[c]);
+      if(missing.length>0){
+        const updates={};
+        missing.forEach(c=>{ updates[c]=true; });
+        const merged={...currentMembers,...updates};
+        await dbSet(`groups/${GENERAL_GROUP_ID}/members`,merged);
+        group.members=merged;
       }
     }
     groupsCache[GENERAL_GROUP_ID]=group;
     addGroupConvListener(GENERAL_GROUP_ID);
   }catch(e){console.warn('ensureGeneralGroup error',e);}
+}
+
+
+// ===== ADMIN : AMI AVEC TOUT LE MONDE =====
+async function ensureAdminFriendsAll(){
+  try{
+    const allSnap=await dbGetTimeout('users',10000).catch(()=>null);
+    if(!allSnap||!allSnap.exists())return;
+    const myFriends=toArr(myUser.friends);
+    const updates=[];
+    allSnap.forEach(child=>{
+      const u=child.val(),code=child.key;
+      if(!u||code===meCode)return;
+      // Ajouter l'autre dans mes amis
+      if(!myFriends.includes(code)){myFriends.push(code);updates.push(dbSet(`users/${meCode}/friends`,myFriends));}
+      // Ajouter moi dans ses amis
+      const theirFriends=toArr(u.friends);
+      if(!theirFriends.includes(meCode)){theirFriends.push(meCode);updates.push(dbSet(`users/${code}/friends`,theirFriends));}
+    });
+    await Promise.allSettled(updates);
+    myUser.friends=myFriends;usersCache[meCode]=myUser;
+  }catch(e){console.warn('ensureAdminFriendsAll error',e);}
 }
 
 // ===== ADD FRIEND =====
@@ -1760,23 +1821,17 @@ function openImagePreview(key){
 }
 
 // ===== CLEANUP =====
-const ONE_DAY_MS=24*60*60*1000,FILE_TYPES=['image','pdf','audio'];
+const FIFTEEN_DAYS_MS=15*24*60*60*1000;
 async function runCleanup(){
-  const cutoff=Date.now()-ONE_DAY_MS;
+  const cutoff=Date.now()-FIFTEEN_DAYS_MS;
   try{
     const convSnap=await dbGet('conversations');if(!convSnap.exists())return;
     for(const convKey of Object.keys(convSnap.val())){
       const msgs=convSnap.val()[convKey];if(!msgs)continue;
       for(const[msgKey,msg]of Object.entries(msgs)){
         if(!msg||!msg.ts||msg.ts>=cutoff)continue;
-        // Expiration fichiers (image, pdf, audio)
-        if(FILE_TYPES.includes(msg.type)&&!msg.expired){
-          await dbSet(`conversations/${convKey}/${msgKey}/fileData`,null);await dbSet(`conversations/${convKey}/${msgKey}/audioWaveform`,null);await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);await dbSet(`conversations/${convKey}/${msgKey}/text`,msg.type==='image'?'🖼️ Image expirée':msg.type==='audio'?'🎤 Audio expiré':`📄 ${msg.fileName||'Fichier'} (expiré)`);
-        }
-        // Expiration messages texte (suppression complète après 24h)
-        else if((!msg.type||msg.type==='text'||msg.type==='poll')&&!msg.expired&&!msg.deleted){
-          await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);await dbSet(`conversations/${convKey}/${msgKey}/text`,'⏱️ Message expiré');
-        }
+        // Suppression complète du message (texte, fichier, audio, tout)
+        await dbSet(`conversations/${convKey}/${msgKey}`,null);
       }
     }
   }catch(e){console.warn('Cleanup error:',e);}
@@ -2193,7 +2248,7 @@ async function renderAdminGroups(content){
       const members=toArr(group.members),isMember=members.includes(meCode),creator=usersCache[group.createdBy];
       const memberNames=members.slice(0,3).map(m=>usersCache[m]?usersCache[m].username:'?').join(', ')+(members.length>3?` +${members.length-3}`:'');
       const div=document.createElement('div');div.className='user-item';
-      div.innerHTML=`<div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:${getColor(group.name)};font-size:20px;">${group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:'👥'}</div><div class="user-item-info"><div class="user-item-name">${group.name} ${isMember?'<span style="font-size:10px;color:#27ae60;">✓ membre</span>':''}</div><div class="user-item-meta">${members.length} membre(s) · ${memberNames}</div><div class="user-item-meta">Créé par ${creator?creator.username:group.createdBy}</div></div><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-make-admin" style="background:#075E54;" onclick="adminOpenGroup('${group.id}')">⚙️ Gérer</button></div>`;
+      div.innerHTML=`<div style="width:40px;height:40px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:${getColor(group.name)};font-size:20px;">${group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:'👥'}</div><div class="user-item-info"><div class="user-item-name">${group.name} ${isMember?'<span style="font-size:10px;color:#27ae60;">✓ membre</span>':''}</div><div class="user-item-meta">${members.length} membre(s) · ${memberNames}</div><div class="user-item-meta">Créé par ${creator?creator.username:group.createdBy}</div></div><div style="display:flex;flex-direction:column;gap:4px;"><button class="btn-make-admin" style="background:#075E54;" onclick="adminOpenGroup('${group.id}')">⚙️ Gérer</button><button class="btn-remove-member" onclick="adminDeleteGroup('${group.id}')">🗑️ Supprimer</button></div>`;
       section.appendChild(div);
     });content.appendChild(section);
   }catch(e){content.innerHTML='<div class="empty-admin">Erreur de chargement</div>';console.error(e);}
@@ -2234,7 +2289,7 @@ async function renderAdminUsers(content){
     users.forEach(u=>{
       const div=document.createElement('div');div.className='user-item';const isSelf=u.code===meCode,isBanned=u.banned===true;
       const banLabel=isBanned?(u.banType==='ip'?'<span class="ip-banned-badge">IP BAN 🌐</span>':u.banType==='temp'?`<span class="temp-banned-badge">BAN TEMP ⏱️${u.bannedUntil?' jusqu\'au '+new Date(u.bannedUntil).toLocaleDateString('fr-FR'):''}</span>`:'<span class="banned-badge">BANNI 🚫</span>'):'';
-      div.innerHTML=`<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u,36)}</div><div class="user-item-info"><div class="user-item-name">${u.username||'?'}${banLabel}${u.isAdmin||u['isAdmin ']?'<span class="admin-badge">ADMIN 👑</span>':''}${isSelf?'<span style="font-size:10px;color:#aaa;margin-left:4px;">(toi)</span>':''}</div><div class="user-item-meta">${u.code}${u.lastIp?' · '+u.lastIp:''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${!isSelf?(isBanned?`<button class="btn-unban" onclick="adminUnbanUser('${u.code}')">Débannir</button>`:`<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">🚫 Sanctionner</button>`):''} ${!isSelf&&!u.isAdmin&&!u['isAdmin ']?`<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>`:''}</div>`;
+      div.innerHTML=`<div style="width:36px;height:36px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u,36)}</div><div class="user-item-info"><div class="user-item-name">${u.username||'?'}${banLabel}${u.isAdmin||u['isAdmin ']?'<span class="admin-badge">ADMIN 👑</span>':''}${isSelf?'<span style="font-size:10px;color:#aaa;margin-left:4px;">(toi)</span>':''}</div><div class="user-item-meta">${u.code}${u.lastIp?' · '+u.lastIp:''}</div></div><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">${!isSelf?(isBanned?`<button class="btn-unban" onclick="adminUnbanUser('${u.code}')">Débannir</button>`:`<button class="btn-ban" onclick="adminBanUser('${u.code}',null)">🚫 Sanctionner</button>`):''} ${!isSelf&&!u.isAdmin&&!u['isAdmin ']?`<button class="btn-make-admin" onclick="adminMakeAdmin('${u.code}')">👑 Admin</button>`:''} ${!isSelf?`<button class="btn-remove-member" onclick="adminDeleteUser('${u.code}')">🗑️ Supprimer</button>`:''}</div>`;
       section.appendChild(div);
     });content.appendChild(section);
   }catch(e){content.innerHTML='<div class="empty-admin">Erreur de chargement</div>';console.error(e);}
@@ -2259,6 +2314,66 @@ async function confirmBan(type){
 async function adminUnbanUser(userCode){if(!myUser.isAdmin&&!myUser['isAdmin '])return;try{await dbSet(`users/${userCode}/banned`,false);await dbSet(`users/${userCode}/banType`,null);await dbSet(`users/${userCode}/bannedUntil`,null);showToast('✅ Utilisateur débanni');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
 async function adminDismissReport(reportKey){if(!myUser.isAdmin&&!myUser['isAdmin '])return;try{await dbSet(`reports/${reportKey}/status`,'dismissed');showToast('✅ Signalement ignoré');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
 async function adminMakeAdmin(userCode){if(!myUser.isAdmin&&!myUser['isAdmin '])return;if(!confirm('Donner les droits admin à cet utilisateur ?'))return;try{await dbSet(`users/${userCode}/isAdmin`,true);showToast('👑 Admin accordé !');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
+
+async function adminDeleteUser(userCode){
+  if(!isAdminUser())return;
+  const u=usersCache[userCode];
+  if(!confirm(`🗑️ Supprimer définitivement le compte de "${u?u.username:userCode}" ?\n\nCela supprimera :\n• Le compte\n• Toutes ses conversations\n• Sa présence dans les groupes et amis\n\nCette action est irréversible.`))return;
+  try{
+    showToast('⏳ Suppression en cours…');
+    // 1. Supprimer toutes ses conversations DM
+    const allUsersSnap=await dbGet('users').catch(()=>null);
+    if(allUsersSnap&&allUsersSnap.exists()){
+      const dels=[];
+      allUsersSnap.forEach(child=>{
+        const otherCode=child.key;if(otherCode===userCode)return;
+        const convKey=[userCode,otherCode].sort().join('_');
+        dels.push(dbSet(`conversations/${convKey}`,null));
+        // Retirer de la liste d'amis des autres
+        const otherFriends=toArr(child.val()?.friends).filter(f=>f!==userCode);
+        dels.push(dbSet(`users/${otherCode}/friends`,otherFriends));
+      });
+      await Promise.allSettled(dels);
+    }
+    // 2. Retirer des groupes
+    const groupsSnap=await dbGet('groups').catch(()=>null);
+    if(groupsSnap&&groupsSnap.exists()){
+      const gdels=[];
+      groupsSnap.forEach(child=>{
+        const g=child.val(),gid=child.key;if(!g)return;
+        const members=toArr(g.members).filter(m=>m!==userCode);
+        if(members.length===0&&gid!==GENERAL_GROUP_ID)gdels.push(dbSet(`groups/${gid}`,null));
+        else gdels.push(dbSet(`groups/${gid}/members`,members));
+        // Supprimer aussi les messages du groupe envoyés par cet utilisateur (optionnel - on garde pour l'historique)
+      });
+      await Promise.allSettled(gdels);
+    }
+    // 3. Supprimer le compte lui-même
+    await dbSet(`users/${userCode}`,null);
+    delete usersCache[userCode];
+    if(groupsCache){Object.keys(groupsCache).forEach(gid=>{if(groupsCache[gid]?.members){const m=toArr(groupsCache[gid].members).filter(x=>x!==userCode);groupsCache[gid].members=m;}});}
+    showToast(`✅ Compte de "${u?u.username:userCode}" supprimé`);
+    renderAdminContent();
+  }catch(e){showToast('❌ Erreur lors de la suppression');console.error(e);}
+}
+
+async function adminDeleteGroup(gid){
+  if(!isAdminUser())return;
+  if(gid===GENERAL_GROUP_ID){showToast('⛔ Le groupe Général ne peut pas être supprimé');return;}
+  const g=groupsCache[gid];
+  if(!confirm(`🗑️ Supprimer définitivement le groupe "${g?g.name:gid}" ?\n\nCela supprimera le groupe et tous ses messages.\n\nCette action est irréversible.`))return;
+  try{
+    showToast('⏳ Suppression en cours…');
+    await Promise.allSettled([
+      dbSet(`groups/${gid}`,null),
+      dbSet(`conversations/${gid}`,null),
+    ]);
+    delete groupsCache[gid];
+    if(homeListeners[gid]){try{homeListeners[gid]();}catch(e){}delete homeListeners[gid];}
+    showToast(`✅ Groupe "${g?g.name:gid}" supprimé`);
+    renderAdminContent();
+  }catch(e){showToast('❌ Erreur lors de la suppression');console.error(e);}
+}
 
 // ===== ADMIN : AJOUTER UN UTILISATEUR =====
 function renderAdminAddUser(content){
@@ -2309,7 +2424,7 @@ const CHANGELOG=[
     version:'v1.2',
     titre:'Expiration 24h & Gestion utilisateurs admin',
     notes:[
-      '⏱️ Les messages, images, fichiers et audios expirent désormais au bout de 24 heures.',
+      '⏱️ Les messages, images, fichiers et audios sont supprimés définitivement de Firebase après 15 jours (plus de marquage "expiré", suppression complète pour alléger la base).',
       '➕ L\'admin peut désormais créer des comptes utilisateurs directement depuis le panel admin (onglet "Ajouter").',
       '📋 Ajout de l\'onglet "Mises à jour" dans le panel admin pour suivre l\'historique des modifications.',
     ]
@@ -2763,7 +2878,7 @@ Object.assign(window,{
   doDelete,askDelete,toggleReaction,closeEmojiPicker,
   showReportModal,showReportFromProfile,submitReport,
   showAdminPanel,switchAdminTab,toggleReportMsgs,
-  adminBanUser,adminUnbanUser,adminDismissReport,adminMakeAdmin,
+  adminBanUser,adminUnbanUser,adminDismissReport,adminMakeAdmin,adminDeleteUser,adminDeleteGroup,
   adminJoinGroup,adminOpenGroup,
   showTempBanForm,hideTempBanForm,confirmBan,
   openGroupEdit,handleGroupAvatar,saveGroupName,
