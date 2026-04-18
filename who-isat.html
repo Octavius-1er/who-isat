@@ -461,6 +461,7 @@
     <div class="home-tabs">
       <button class="home-tab active" id="htab-chats" onclick="switchHomeTab('chats')">Discussions</button>
       <button class="home-tab" id="htab-groups" onclick="switchHomeTab('groups')">Groupes</button>
+      <button class="home-tab" id="htab-changelog" onclick="switchHomeTab('changelog')">📋 Nouveautés</button>
     </div>
     <div class="conv-list" id="conv-list"></div>
   </div>
@@ -592,6 +593,8 @@
         <button class="admin-tab active" id="atab-reports" onclick="switchAdminTab('reports')">🚨 Signalements</button>
         <button class="admin-tab" id="atab-users" onclick="switchAdminTab('users')">👥 Utilisateurs</button>
         <button class="admin-tab" id="atab-groups" onclick="switchAdminTab('groups')">💬 Groupes</button>
+        <button class="admin-tab" id="atab-adduser" onclick="switchAdminTab('adduser')">➕ Ajouter</button>
+        <button class="admin-tab" id="atab-changelog" onclick="switchAdminTab('changelog')">📋 Mises à jour</button>
       </div>
       <div id="admin-content"></div>
     </div>
@@ -1102,6 +1105,7 @@ async function enterHome(){
     listenForIncomingCalls();
     setupPresence();
     await loadBlockedList();
+    await ensureGeneralGroup(); // ← groupe général auto-join
     show('screen-home');
     requestNotifPermission();
   }catch(e){
@@ -1170,7 +1174,32 @@ function switchHomeTab(tab){
   currentHomeTab=tab;
   document.getElementById('htab-chats').classList.toggle('active',tab==='chats');
   document.getElementById('htab-groups').classList.toggle('active',tab==='groups');
-  renderConvList();
+  document.getElementById('htab-changelog').classList.toggle('active',tab==='changelog');
+  if(tab==='changelog')renderChangelogTab();else renderConvList();
+}
+
+// ===== CHANGELOG (onglet public) =====
+const PUBLIC_CHANGELOG=[
+  {
+    date:'18/04/2026',
+    version:'v1.2',
+    titre:'Expiration 24h & Groupe général',
+    notes:[
+      '⏱️ Les messages, images, fichiers et audios expirent au bout de 24 heures.',
+      '👥 Un groupe "Général" est maintenant créé automatiquement et tous les membres y sont ajoutés.',
+      '📋 Cet onglet "Nouveautés" est accessible à tous pour suivre les mises à jour de l\'appli.',
+    ]
+  },
+];
+function renderChangelogTab(){
+  const list=document.getElementById('conv-list');list.innerHTML='';
+  const wrap=document.createElement('div');wrap.style.cssText='padding:16px;display:flex;flex-direction:column;gap:14px;';
+  PUBLIC_CHANGELOG.forEach(entry=>{
+    const card=document.createElement('div');card.style.cssText='background:#fff;border-radius:14px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,0.07);';
+    card.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="background:#075E54;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">${entry.version}</span><span style="font-size:12px;color:#aaa;">${entry.date}</span></div><div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">${entry.titre}</div><div style="display:flex;flex-direction:column;gap:6px;">${entry.notes.map(n=>`<div style="font-size:13px;color:#444;line-height:1.5;padding:6px 10px;background:#f7f7f7;border-radius:8px;">${n}</div>`).join('')}</div>`;
+    wrap.appendChild(card);
+  });
+  list.appendChild(wrap);
 }
 
 async function loadMissingUsers(codes){
@@ -1206,6 +1235,29 @@ function renderConvList(){
       list.appendChild(div);
     });
   }
+}
+
+// ===== GROUPE GÉNÉRAL (auto-join) =====
+const GENERAL_GROUP_ID = 'general_who_isat';
+async function ensureGeneralGroup(){
+  try{
+    const snap = await dbGetTimeout(`groups/${GENERAL_GROUP_ID}`, 8000).catch(()=>null);
+    let group = snap&&snap.exists() ? snap.val() : null;
+    if(!group){
+      // Créer le groupe s'il n'existe pas encore
+      group={id:GENERAL_GROUP_ID,name:'Général 🌍',avatar:null,createdBy:meCode,createdAt:Date.now(),isGeneral:true,members:{[meCode]:true}};
+      await dbSet(`groups/${GENERAL_GROUP_ID}`,group);
+    } else {
+      // Ajouter l'utilisateur si pas encore membre
+      const members=toArr(group.members);
+      if(!members.includes(meCode)){
+        await dbSet(`groups/${GENERAL_GROUP_ID}/members/${meCode}`,true);
+        group.members={...( typeof group.members==='object'&&!Array.isArray(group.members)?group.members:{}), [meCode]:true};
+      }
+    }
+    groupsCache[GENERAL_GROUP_ID]=group;
+    addGroupConvListener(GENERAL_GROUP_ID);
+  }catch(e){console.warn('ensureGeneralGroup error',e);}
 }
 
 // ===== ADD FRIEND =====
@@ -1708,16 +1760,23 @@ function openImagePreview(key){
 }
 
 // ===== CLEANUP =====
-const ONE_WEEK_MS=7*24*60*60*1000,FILE_TYPES=['image','pdf','audio'];
+const ONE_DAY_MS=24*60*60*1000,FILE_TYPES=['image','pdf','audio'];
 async function runCleanup(){
-  const cutoff=Date.now()-ONE_WEEK_MS;
+  const cutoff=Date.now()-ONE_DAY_MS;
   try{
     const convSnap=await dbGet('conversations');if(!convSnap.exists())return;
     for(const convKey of Object.keys(convSnap.val())){
       const msgs=convSnap.val()[convKey];if(!msgs)continue;
       for(const[msgKey,msg]of Object.entries(msgs)){
-        if(!msg||!msg.ts||!FILE_TYPES.includes(msg.type)||msg.ts>=cutoff)continue;
-        await dbSet(`conversations/${convKey}/${msgKey}/fileData`,null);await dbSet(`conversations/${convKey}/${msgKey}/audioWaveform`,null);await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);await dbSet(`conversations/${convKey}/${msgKey}/text`,msg.type==='image'?'🖼️ Image expirée':msg.type==='audio'?'🎤 Audio expiré':`📄 ${msg.fileName||'Fichier'} (expiré)`);
+        if(!msg||!msg.ts||msg.ts>=cutoff)continue;
+        // Expiration fichiers (image, pdf, audio)
+        if(FILE_TYPES.includes(msg.type)&&!msg.expired){
+          await dbSet(`conversations/${convKey}/${msgKey}/fileData`,null);await dbSet(`conversations/${convKey}/${msgKey}/audioWaveform`,null);await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);await dbSet(`conversations/${convKey}/${msgKey}/text`,msg.type==='image'?'🖼️ Image expirée':msg.type==='audio'?'🎤 Audio expiré':`📄 ${msg.fileName||'Fichier'} (expiré)`);
+        }
+        // Expiration messages texte (suppression complète après 24h)
+        else if((!msg.type||msg.type==='text'||msg.type==='poll')&&!msg.expired&&!msg.deleted){
+          await dbSet(`conversations/${convKey}/${msgKey}/expired`,true);await dbSet(`conversations/${convKey}/${msgKey}/text`,'⏱️ Message expiré');
+        }
       }
     }
   }catch(e){console.warn('Cleanup error:',e);}
@@ -1752,16 +1811,26 @@ async function doChangePassword(){
 let editingGroupId=null;
 function openGroupEdit(gid){
   editingGroupId=gid;const group=groupsCache[gid];if(!group)return;
-  const avEl=document.getElementById('gedit-av');avEl.innerHTML=group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:32px;">👥</span>`;
-  document.getElementById('gedit-name').value=group.name;document.getElementById('err-gedit').textContent='';
+  const isGeneral=gid===GENERAL_GROUP_ID;
+  const canEditGeneral=isGeneral&&isAdminUser();
+  // Avatar: cliquable uniquement si pas groupe général OU si admin
+  const avEl=document.getElementById('gedit-av');avEl.innerHTML=group.avatar?`<img src="${group.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`:`<span style="font-size:32px;">${isGeneral?'🌍':'👥'}</span>`;
+  const avWrap=avEl.closest('.group-av-wrap')||avEl.parentElement;
+  if(avWrap){avWrap.onclick=(!isGeneral||canEditGeneral)?()=>document.getElementById('group-av-input').click():null;avWrap.style.cursor=(!isGeneral||canEditGeneral)?'pointer':'default';}
+  const nameInput=document.getElementById('gedit-name');nameInput.value=group.name;nameInput.disabled=isGeneral&&!canEditGeneral;nameInput.style.opacity=isGeneral&&!canEditGeneral?'0.5':'1';
+  document.getElementById('err-gedit').textContent=isGeneral&&!canEditGeneral?'🔒 Groupe officiel — modification réservée aux admins':'';
   document.getElementById('group-edit-back').onclick=()=>show('screen-chat');
   const members=toArr(group.members),leaveBtn=document.querySelector('.btn-leave-group');
   if(leaveBtn){
-    const isMember=members.includes(meCode);
-    if(!isMember&&isAdminUser()){leaveBtn.textContent='🛡️ Rejoindre ce groupe (admin)';leaveBtn.style.background='#e8f5e9';leaveBtn.style.color='#27ae60';leaveBtn.onclick=()=>adminJoinGroup(gid);}
-    else{leaveBtn.textContent='🚪 Quitter le groupe';leaveBtn.style.background='';leaveBtn.style.color='';leaveBtn.onclick=leaveGroup;}
+    if(isGeneral){leaveBtn.style.display='none';} // pas de départ du groupe général
+    else{
+      leaveBtn.style.display='';
+      const isMember=members.includes(meCode);
+      if(!isMember&&isAdminUser()){leaveBtn.textContent='🛡️ Rejoindre ce groupe (admin)';leaveBtn.style.background='#e8f5e9';leaveBtn.style.color='#27ae60';leaveBtn.onclick=()=>adminJoinGroup(gid);}
+      else{leaveBtn.textContent='🚪 Quitter le groupe';leaveBtn.style.background='';leaveBtn.style.color='';leaveBtn.onclick=leaveGroup;}
+    }
   }
-  const isCreator=group.createdBy===meCode,canInvite=isCreator||isAdminUser();
+  const isCreator=group.createdBy===meCode,canInvite=(isCreator||isAdminUser())&&!isGeneral;
   const inviteSection=document.getElementById('gedit-invite-section');inviteSection.style.display=canInvite?'flex':'none';
   if(canInvite)refreshInviteLinkDisplay(group);
   renderGroupMembers();renderAddMemberSelect();show('screen-group-edit');
@@ -1840,10 +1909,12 @@ async function adminJoinGroup(gid){
   catch(e){showToast('❌ Erreur');console.error(e);}
 }
 function handleGroupAvatar(e){
+  if(editingGroupId===GENERAL_GROUP_ID&&!isAdminUser()){showToast('🔒 Seuls les admins peuvent modifier le groupe Général');return;}
   const file=e.target.files[0];if(!file)return;
   const r=new FileReader();r.onload=async ev=>{const avatarData=ev.target.result;const avEl=document.getElementById('gedit-av');avEl.innerHTML=`<img src="${avatarData}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;try{await dbSet(`groups/${editingGroupId}/avatar`,avatarData);groupsCache[editingGroupId].avatar=avatarData;if(currentChat&&currentChat.type==='group'&&currentChat.id===editingGroupId){const hav=document.getElementById('chat-hd-av');hav.innerHTML=`<img src="${avatarData}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;display:block;">`;}showToast('✅ Photo de groupe mise à jour !');}catch(err){showToast('❌ Erreur');console.error(err);}};r.readAsDataURL(file);
 }
 async function saveGroupName(){
+  if(editingGroupId===GENERAL_GROUP_ID&&!isAdminUser()){showToast('🔒 Seuls les admins peuvent modifier le groupe Général');return;}
   const name=document.getElementById('gedit-name').value.trim(),err=document.getElementById('err-gedit');
   if(!name){err.style.color='#e74c3c';err.textContent='Le nom ne peut pas être vide !';return;}
   if(name.length>30){err.style.color='#e74c3c';err.textContent='Nom trop long (max 30 car.)';return;}
@@ -1851,6 +1922,7 @@ async function saveGroupName(){
   catch(e){err.style.color='#e74c3c';err.textContent='Erreur réseau';console.error(e);}
 }
 async function addMemberToGroup(){
+  if(editingGroupId===GENERAL_GROUP_ID&&!isAdminUser()){showToast('🔒 Les membres du groupe Général sont gérés automatiquement');return;}
   const sel=document.getElementById('gedit-add-select'),code=sel.value,err=document.getElementById('err-gedit');
   if(!code){err.style.color='#e74c3c';err.textContent='Sélectionne un contact !';return;}
   const group=groupsCache[editingGroupId],members=toArr(group.members);
@@ -1859,6 +1931,7 @@ async function addMemberToGroup(){
   catch(e){err.style.color='#e74c3c';err.textContent='Erreur réseau';console.error(e);}
 }
 async function removeMemberFromGroup(mcode){
+  if(editingGroupId===GENERAL_GROUP_ID&&!isAdminUser()){showToast('🔒 Impossible de retirer quelqu\'un du groupe Général');return;}
   const group=groupsCache[editingGroupId];if(group.createdBy!==meCode&&!isAdminUser()){showToast('⛔ Seul le créateur peut retirer des membres');return;}
   const u=usersCache[mcode];if(!confirm(`Retirer ${u?u.username:mcode} du groupe ?`))return;
   try{const newMembers=toArr(group.members).filter(m=>m!==mcode);await dbSet(`groups/${editingGroupId}/members`,newMembers);groupsCache[editingGroupId].members=newMembers;showToast(`✅ ${u?u.username:mcode} retiré`);renderGroupMembers();renderAddMemberSelect();}
@@ -2105,9 +2178,9 @@ async function submitReport(){
 
 // ===== ADMIN =====
 let currentAdminTab='reports';
-function showAdminPanel(){if(!myUser.isAdmin&&!myUser['isAdmin ']){showToast('⛔ Accès refusé');return;}currentAdminTab='reports';document.getElementById('atab-reports').classList.add('active');document.getElementById('atab-users').classList.remove('active');renderAdminContent();show('screen-admin');}
-function switchAdminTab(tab){currentAdminTab=tab;document.getElementById('atab-reports').classList.toggle('active',tab==='reports');document.getElementById('atab-users').classList.toggle('active',tab==='users');document.getElementById('atab-groups').classList.toggle('active',tab==='groups');renderAdminContent();}
-async function renderAdminContent(){const content=document.getElementById('admin-content');content.innerHTML='<div class="empty-admin">Chargement…</div>';if(currentAdminTab==='reports')await renderAdminReports(content);else if(currentAdminTab==='users')await renderAdminUsers(content);else await renderAdminGroups(content);}
+function showAdminPanel(){if(!myUser.isAdmin&&!myUser['isAdmin ']){showToast('⛔ Accès refusé');return;}currentAdminTab='reports';['reports','users','groups','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t==='reports'));renderAdminContent();show('screen-admin');}
+function switchAdminTab(tab){currentAdminTab=tab;['reports','users','groups','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t===tab));renderAdminContent();}
+async function renderAdminContent(){const content=document.getElementById('admin-content');content.innerHTML='<div class="empty-admin">Chargement…</div>';if(currentAdminTab==='reports')await renderAdminReports(content);else if(currentAdminTab==='users')await renderAdminUsers(content);else if(currentAdminTab==='groups')await renderAdminGroups(content);else if(currentAdminTab==='adduser')renderAdminAddUser(content);else renderAdminChangelog(content);}
 async function renderAdminGroups(content){
   try{
     const snap=await dbGet('groups');if(!snap.exists()){content.innerHTML='<div class="empty-admin">Aucun groupe</div>';return;}
@@ -2186,6 +2259,81 @@ async function confirmBan(type){
 async function adminUnbanUser(userCode){if(!myUser.isAdmin&&!myUser['isAdmin '])return;try{await dbSet(`users/${userCode}/banned`,false);await dbSet(`users/${userCode}/banType`,null);await dbSet(`users/${userCode}/bannedUntil`,null);showToast('✅ Utilisateur débanni');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
 async function adminDismissReport(reportKey){if(!myUser.isAdmin&&!myUser['isAdmin '])return;try{await dbSet(`reports/${reportKey}/status`,'dismissed');showToast('✅ Signalement ignoré');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
 async function adminMakeAdmin(userCode){if(!myUser.isAdmin&&!myUser['isAdmin '])return;if(!confirm('Donner les droits admin à cet utilisateur ?'))return;try{await dbSet(`users/${userCode}/isAdmin`,true);showToast('👑 Admin accordé !');renderAdminContent();}catch(e){showToast('❌ Erreur');console.error(e);}}
+
+// ===== ADMIN : AJOUTER UN UTILISATEUR =====
+function renderAdminAddUser(content){
+  content.innerHTML='';
+  const section=document.createElement('div');section.className='admin-section';
+  section.innerHTML=`
+    <div class="admin-section-title">➕ Créer un compte utilisateur</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+      <div style="font-size:13px;color:#888;margin-bottom:4px;">L'admin crée directement un compte. Le code généré sera à communiquer à l'utilisateur.</div>
+      <input class="modal-input" id="admin-new-username" placeholder="Pseudo (2-20 car.)" maxlength="20" />
+      <input class="modal-input" type="password" id="admin-new-pwd" placeholder="Mot de passe (min 4 car.)" maxlength="50" />
+      <div class="err" id="err-admin-adduser" style="min-height:18px;font-size:13px;color:#e74c3c;"></div>
+      <button class="btn-green" onclick="adminCreateUser()">✅ Créer le compte</button>
+    </div>
+    <div id="admin-adduser-result" style="display:none;margin-top:12px;background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px 14px;">
+      <div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:6px;">✅ Compte créé !</div>
+      <div style="font-size:13px;color:#166534;">Pseudo : <strong id="result-username"></strong></div>
+      <div style="font-size:13px;color:#166534;margin-top:4px;">Code : <strong id="result-code" style="font-family:monospace;letter-spacing:2px;font-size:16px;"></strong></div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">Communique ce code + mot de passe à l'utilisateur pour qu'il se connecte.</div>
+      <button class="btn-green" style="margin-top:8px;padding:9px;" onclick="copyAdminCode()">📋 Copier le code</button>
+    </div>`;
+  content.appendChild(section);
+}
+async function adminCreateUser(){
+  const name=document.getElementById('admin-new-username').value.trim(),pwd=document.getElementById('admin-new-pwd').value,err=document.getElementById('err-admin-adduser');
+  const nameErr=validateUsername(name);if(nameErr){err.textContent=nameErr;return;}
+  if(!pwd||pwd.length<4){err.textContent='Mot de passe trop court (min 4 car.)';return;}
+  err.textContent='Création…';
+  try{
+    const code=genCode(),pwdHash=await hashPassword(pwd);
+    const user={code,username:name,friends:[],avatar:null,pwdHash,createdByAdmin:meCode,createdAt:Date.now()};
+    await dbSet(`users/${code}`,user);
+    err.textContent='';
+    document.getElementById('result-username').textContent=name;
+    document.getElementById('result-code').textContent=code;
+    document.getElementById('admin-adduser-result').style.display='block';
+    document.getElementById('admin-new-username').value='';
+    document.getElementById('admin-new-pwd').value='';
+    showToast('✅ Compte créé : '+code);
+  }catch(e){err.textContent='Erreur Firebase.';console.error(e);}
+}
+function copyAdminCode(){const code=document.getElementById('result-code').textContent;navigator.clipboard.writeText(code).then(()=>showToast('📋 Code copié !')).catch(()=>showToast('Code : '+code));}
+
+// ===== ADMIN : CHANGELOG / MISES À JOUR =====
+const CHANGELOG=[
+  {
+    date:'18/04/2026',
+    version:'v1.2',
+    titre:'Expiration 24h & Gestion utilisateurs admin',
+    notes:[
+      '⏱️ Les messages, images, fichiers et audios expirent désormais au bout de 24 heures.',
+      '➕ L\'admin peut désormais créer des comptes utilisateurs directement depuis le panel admin (onglet "Ajouter").',
+      '📋 Ajout de l\'onglet "Mises à jour" dans le panel admin pour suivre l\'historique des modifications.',
+    ]
+  },
+];
+function renderAdminChangelog(content){
+  content.innerHTML='';
+  const section=document.createElement('div');section.className='admin-section';
+  let html=`<div class="admin-section-title">📋 Historique des mises à jour</div>`;
+  CHANGELOG.forEach(entry=>{
+    html+=`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f0f0f0;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="background:#c0392b;color:white;font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px;">${entry.version}</span>
+        <span style="font-size:12px;color:#aaa;">${entry.date}</span>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:#111;margin-bottom:8px;">${entry.titre}</div>
+      <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px;">
+        ${entry.notes.map(n=>`<li style="font-size:13px;color:#444;line-height:1.45;padding-left:4px;">${n}</li>`).join('')}
+      </ul>
+    </div>`;
+  });
+  section.innerHTML=html;
+  content.appendChild(section);
+}
 function toggleReportMsgs(id){const body=document.getElementById('report-msgs-body-'+id),icon=document.getElementById('report-msgs-icon-'+id);if(!body)return;const open=body.style.display!=='none'&&body.style.display!=='';body.style.display=open?'none':'flex';if(icon)icon.textContent=open?'▼':'▲';}
 
 // =====================================================
