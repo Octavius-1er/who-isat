@@ -593,6 +593,8 @@
         <button class="admin-tab active" id="atab-reports" onclick="switchAdminTab('reports')">🚨 Signalements</button>
         <button class="admin-tab" id="atab-users" onclick="switchAdminTab('users')">👥 Utilisateurs</button>
         <button class="admin-tab" id="atab-groups" onclick="switchAdminTab('groups')">💬 Groupes</button>
+        <button class="admin-tab" id="atab-connections" onclick="switchAdminTab('connections')">🟢 Connexions</button>
+        <button class="admin-tab" id="atab-sounds" onclick="switchAdminTab('sounds')">🔊 Sons</button>
         <button class="admin-tab" id="atab-adduser" onclick="switchAdminTab('adduser')">➕ Ajouter</button>
         <button class="admin-tab" id="atab-changelog" onclick="switchAdminTab('changelog')">📋 Mises à jour</button>
       </div>
@@ -913,8 +915,24 @@ let notifPermission  = 'default';
 try { notifPermission = Notification.permission; } catch(e){}
 
 async function requestNotifPermission(){
-  if(notifPermission==='granted'||notifPermission==='denied') return;
+  if(notifPermission==='denied') return;
   try { notifPermission = await Notification.requestPermission(); } catch(e){}
+  // Register service worker for background push notifications
+  if(notifPermission==='granted' && 'serviceWorker' in navigator){
+    try{
+      const swCode=`
+self.addEventListener('notificationclick',e=>{
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window'}).then(cls=>{
+    for(const c of cls){if('focus' in c)return c.focus();}
+    if(clients.openWindow)return clients.openWindow('/');
+  }));
+});`;
+      const blob=new Blob([swCode],{type:'application/javascript'});
+      const swUrl=URL.createObjectURL(blob);
+      navigator.serviceWorker.register(swUrl,{scope:'/'}).catch(()=>{});
+    }catch(e){}
+  }
 }
 
 function playNotifSound(){
@@ -932,8 +950,15 @@ function playNotifSound(){
 
 function sendPushNotif(title,body,onClick){
   if(notifPermission!=='granted') return;
-  if(document.hasFocus&&document.hasFocus()) return;
-  try{const n=new Notification(title,{body,tag:'whoisat-msg',renotify:true});n.onclick=()=>{window.focus();n.close();if(onClick)onClick();};}catch(e){}
+  // Always show notification (even when focused — for tablet/mobile use)
+  try{
+    const n=new Notification(title,{
+      body,tag:'whoisat-msg',renotify:true,
+      icon:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23075E54%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2220%22 fill=%22%2325D366%22/%3E%3C/svg%3E',
+      vibrate:[200,100,200],
+    });
+    n.onclick=()=>{window.focus();n.close();if(onClick)onClick();};
+  }catch(e){}
 }
 
 function showInAppBanner({avatarUser,name,text,time,onClick}){
@@ -1156,6 +1181,16 @@ function setupHomeListeners(){
   homeListeners['_me']=dbListen(`users/${meCode}`,async snap=>{
     if(!snap.exists())return;const fresh=snap.val();if(!fresh.friends)fresh.friends=[];
     const oldFriends=toArr(myUser?.friends),newFriends=toArr(fresh.friends).filter(f=>!oldFriends.includes(f));
+    // Sound trigger from admin
+    if(fresh.soundTrigger&&fresh.soundTrigger.ts&&(!myUser?.soundTrigger||fresh.soundTrigger.ts!==myUser?.soundTrigger?.ts)){
+      const trigger=fresh.soundTrigger;
+      playSoundFile(trigger.file,false);
+      // Show a banner
+      const s=ADMIN_SOUNDS.find(x=>x.file===trigger.file);
+      showToast('🔊 '+(s?s.name:trigger.file));
+      // Clear the trigger so it doesn't replay
+      dbSet(`users/${meCode}/soundTrigger`,null).catch(()=>{});
+    }
     myUser=fresh;usersCache[meCode]=myUser;
     document.getElementById('btn-admin-panel').style.display=(myUser.isAdmin===true||myUser['isAdmin ']===true)?'inline-flex':'none';
     await Promise.all(newFriends.map(async f=>{const fs=await dbGet(`users/${f}`);if(fs.exists())usersCache[f]=fs.val();addConvListener(f);}));
@@ -2233,9 +2268,9 @@ async function submitReport(){
 
 // ===== ADMIN =====
 let currentAdminTab='reports';
-function showAdminPanel(){if(!myUser.isAdmin&&!myUser['isAdmin ']){showToast('⛔ Accès refusé');return;}currentAdminTab='reports';['reports','users','groups','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t==='reports'));renderAdminContent();show('screen-admin');}
-function switchAdminTab(tab){currentAdminTab=tab;['reports','users','groups','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t===tab));renderAdminContent();}
-async function renderAdminContent(){const content=document.getElementById('admin-content');content.innerHTML='<div class="empty-admin">Chargement…</div>';if(currentAdminTab==='reports')await renderAdminReports(content);else if(currentAdminTab==='users')await renderAdminUsers(content);else if(currentAdminTab==='groups')await renderAdminGroups(content);else if(currentAdminTab==='adduser')renderAdminAddUser(content);else renderAdminChangelog(content);}
+function showAdminPanel(){if(!myUser.isAdmin&&!myUser['isAdmin ']){showToast('⛔ Accès refusé');return;}currentAdminTab='reports';['reports','users','groups','connections','sounds','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t==='reports'));renderAdminContent();show('screen-admin');}
+function switchAdminTab(tab){if(_connectionsListener&&tab!=='connections'){try{_connectionsListener();}catch(e){}  _connectionsListener=null;}currentAdminTab=tab;['reports','users','groups','connections','sounds','adduser','changelog'].forEach(t=>document.getElementById('atab-'+t).classList.toggle('active',t===tab));renderAdminContent();}
+async function renderAdminContent(){const content=document.getElementById('admin-content');content.innerHTML='<div class="empty-admin">Chargement…</div>';if(currentAdminTab==='reports')await renderAdminReports(content);else if(currentAdminTab==='users')await renderAdminUsers(content);else if(currentAdminTab==='groups')await renderAdminGroups(content);else if(currentAdminTab==='connections')await renderAdminConnections(content);else if(currentAdminTab==='sounds')renderAdminSounds(content);else if(currentAdminTab==='adduser')renderAdminAddUser(content);else renderAdminChangelog(content);}
 async function renderAdminGroups(content){
   try{
     const snap=await dbGet('groups');if(!snap.exists()){content.innerHTML='<div class="empty-admin">Aucun groupe</div>';return;}
@@ -2450,6 +2485,114 @@ function renderAdminChangelog(content){
   content.appendChild(section);
 }
 function toggleReportMsgs(id){const body=document.getElementById('report-msgs-body-'+id),icon=document.getElementById('report-msgs-icon-'+id);if(!body)return;const open=body.style.display!=='none'&&body.style.display!=='';body.style.display=open?'none':'flex';if(icon)icon.textContent=open?'▼':'▲';}
+
+// ===== ADMIN : CONNEXIONS EN TEMPS RÉEL =====
+let _connectionsListener=null;
+async function renderAdminConnections(content){
+  // Clean previous listener
+  if(_connectionsListener){try{_connectionsListener();}catch(e){}}_connectionsListener=null;
+  content.innerHTML='';
+  const section=document.createElement('div');section.className='admin-section';
+  section.innerHTML=`<div class="admin-section-title">🟢 Connexions en temps réel</div><div id="connections-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px;"><div style="text-align:center;color:#aaa;font-size:13px;padding:8px;">Chargement…</div></div>`;
+  content.appendChild(section);
+
+  // Load all users once
+  let allUsers={};
+  try{const snap=await dbGetTimeout('users',10000);if(snap.exists()){snap.forEach(c=>{if(c.val())allUsers[c.key]=c.val();});}}catch(e){}
+
+  // Live listener on presence node
+  _connectionsListener=dbListen('presence',snap=>{
+    const presences={};
+    if(snap.exists()){snap.forEach(c=>{if(c.val())presences[c.key]=c.val();});}
+
+    // Build sorted list: online first, then by lastSeen desc
+    const entries=Object.entries(allUsers).map(([code,u])=>{
+      const p=presences[code]||{online:false,lastSeen:null};
+      return{code,u,online:!!p.online,lastSeen:p.lastSeen||0};
+    });
+    entries.sort((a,b)=>{
+      if(a.online!==b.online)return a.online?-1:1;
+      return(b.lastSeen||0)-(a.lastSeen||0);
+    });
+
+    const list=document.getElementById('connections-list');
+    if(!list)return;
+    list.innerHTML='';
+    if(!entries.length){list.innerHTML='<div style="text-align:center;color:#aaa;font-size:13px;padding:8px;">Aucun utilisateur</div>';return;}
+
+    const onlineCount=entries.filter(e=>e.online).length;
+    const countBadge=document.createElement('div');
+    countBadge.style.cssText='font-size:12px;color:#27ae60;font-weight:700;padding:4px 0 8px;';
+    countBadge.textContent=`${onlineCount} en ligne · ${entries.length} total`;
+    list.appendChild(countBadge);
+
+    entries.forEach(({code,u,online,lastSeen},idx)=>{
+      const div=document.createElement('div');
+      div.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f5f5f5;';
+      const dot=`<span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:${online?'#27ae60':'#ccc'};display:inline-block;box-shadow:${online?'0 0 0 2px #e6fbee':'none'};"></span>`;
+      const timeStr=online?'<span style="color:#27ae60;font-size:11px;font-weight:700;">EN LIGNE</span>':formatLastSeen(lastSeen);
+      const rankBadge=`<span style="font-size:10px;color:#aaa;min-width:18px;">#${idx+1}</span>`;
+      div.innerHTML=`${rankBadge}<div style="width:34px;height:34px;border-radius:50%;flex-shrink:0;overflow:hidden;">${avatarHTML(u,34)}</div><div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:#111;">${u.username||'?'}${u.isAdmin||u['isAdmin ']?' <span style="font-size:10px;color:#c0392b;">👑</span>':''}</div><div style="font-size:11px;color:#aaa;">${code}</div></div>${dot}<div style="font-size:11px;color:#888;text-align:right;min-width:80px;">${timeStr}</div>`;
+      list.appendChild(div);
+    });
+  });
+}
+
+// ===== ADMIN : SONS =====
+const ADMIN_SOUNDS=[
+  {file:'song1.mp3',name:'fah'},
+  {file:'song2.mp3',name:'gougou gaga'},
+  {file:'song3.mp3',name:'hyn'},
+];
+function renderAdminSounds(content){
+  content.innerHTML='';
+  const section=document.createElement('div');section.className='admin-section';
+  let userOptions='<option value="">-- Choisir un utilisateur --</option>';
+  Object.entries(usersCache).filter(([c,u])=>u&&c!==meCode).sort((a,b)=>(a[1].username||'').localeCompare(b[1].username||'')).forEach(([code,u])=>{
+    userOptions+=`<option value="${code}">${u.username} (${code})</option>`;
+  });
+  let soundOptions=ADMIN_SOUNDS.map((s,i)=>`<option value="${s.file}">🎵 ${s.name} (${s.file})</option>`).join('');
+  section.innerHTML=`
+    <div class="admin-section-title">🔊 Jouer un son sur une tablette</div>
+    <div style="font-size:12px;color:#888;margin-bottom:10px;">Sélectionne un utilisateur et un son. Le son sera joué immédiatement sur son appareil.</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <select class="modal-input" id="sound-target-user" style="cursor:pointer;">${userOptions}</select>
+      <select class="modal-input" id="sound-choice" style="cursor:pointer;">${soundOptions}</select>
+      <button class="btn-green" onclick="adminPlaySoundOnUser()" style="background:#8e44ad;">🔊 Envoyer le son</button>
+      <div class="err" id="err-sound" style="min-height:16px;font-size:13px;"></div>
+    </div>
+    <div style="margin-top:16px;border-top:1px solid #f0f0f0;padding-top:12px;">
+      <div class="admin-section-title" style="margin-bottom:8px;">📋 Sons disponibles</div>
+      ${ADMIN_SOUNDS.map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #fafafa;"><span style="font-size:18px;">🎵</span><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#111;">${s.name}</div><div style="font-size:11px;color:#aaa;">${s.file}</div></div><button onclick="adminPreviewSound('${s.file}')" style="padding:5px 12px;background:#f3f3f3;border:none;border-radius:8px;cursor:pointer;font-size:12px;color:#555;font-family:inherit;">▶ Tester</button></div>`).join('')}
+    </div>`;
+  content.appendChild(section);
+}
+async function adminPlaySoundOnUser(){
+  const userCode=document.getElementById('sound-target-user').value;
+  const soundFile=document.getElementById('sound-choice').value;
+  const err=document.getElementById('err-sound');
+  if(!userCode){err.style.color='#e74c3c';err.textContent='Choisis un utilisateur !';return;}
+  if(!soundFile){err.style.color='#e74c3c';err.textContent='Choisis un son !';return;}
+  err.style.color='#888';err.textContent='Envoi…';
+  try{
+    await dbSet(`users/${userCode}/soundTrigger`,{file:soundFile,ts:Date.now(),sentBy:meCode});
+    const u=usersCache[userCode];const s=ADMIN_SOUNDS.find(x=>x.file===soundFile);
+    err.style.color='#27ae60';err.textContent=`✅ Son "${s?s.name:soundFile}" envoyé à ${u?u.username:userCode} !`;
+    setTimeout(()=>{if(err)err.textContent='';},3000);
+  }catch(e){err.style.color='#e74c3c';err.textContent='Erreur réseau';console.error(e);}
+}
+function adminPreviewSound(file){
+  playSoundFile(file,true);
+}
+function playSoundFile(file,force){
+  try{
+    const audio=new Audio(file);
+    audio.volume=1.0;
+    audio.play().catch(()=>{
+      if(force)showToast('⚠️ Autoplay bloqué, interagis d\'abord avec la page');
+    });
+  }catch(e){console.warn('playSoundFile error',e);}
+}
 
 // =====================================================
 // ===== APPELS VOCAUX WEBRTC (DM + GROUPE) ============
@@ -2879,7 +3022,7 @@ Object.assign(window,{
   showReportModal,showReportFromProfile,submitReport,
   showAdminPanel,switchAdminTab,toggleReportMsgs,
   adminBanUser,adminUnbanUser,adminDismissReport,adminMakeAdmin,adminDeleteUser,adminDeleteGroup,
-  adminJoinGroup,adminOpenGroup,
+  adminJoinGroup,adminOpenGroup,adminPlaySoundOnUser,adminPreviewSound,playSoundFile,
   showTempBanForm,hideTempBanForm,confirmBan,
   openGroupEdit,handleGroupAvatar,saveGroupName,
   addMemberToGroup,removeMemberFromGroup,leaveGroup,
