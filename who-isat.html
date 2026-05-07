@@ -2584,14 +2584,36 @@ async function adminPlaySoundOnUser(){
 function adminPreviewSound(file){
   playSoundFile(file,true);
 }
-function playSoundFile(file,force){
+// Unlock AudioContext on first user gesture
+let _audioCtx=null;
+function _getAudioCtx(){
+  if(!_audioCtx){_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}
+  if(_audioCtx.state==='suspended')_audioCtx.resume();
+  return _audioCtx;
+}
+document.addEventListener('touchstart',_getAudioCtx,{once:true,passive:true});
+document.addEventListener('click',_getAudioCtx,{once:true,passive:true});
+
+async function playSoundFile(file,force){
   try{
-    const audio=new Audio(file);
-    audio.volume=1.0;
-    audio.play().catch(()=>{
-      if(force)showToast('⚠️ Autoplay bloqué, interagis d\'abord avec la page');
-    });
-  }catch(e){console.warn('playSoundFile error',e);}
+    const ctx=_getAudioCtx();
+    const resp=await fetch(file);
+    if(!resp.ok)throw new Error('fetch failed');
+    const arrayBuf=await resp.arrayBuffer();
+    const audioBuf=await ctx.decodeAudioData(arrayBuf);
+    const source=ctx.createBufferSource();
+    source.buffer=audioBuf;
+    source.connect(ctx.destination);
+    source.start(0);
+  }catch(e){
+    // Fallback to basic Audio()
+    try{
+      const audio=new Audio(file);
+      audio.volume=1.0;
+      const p=audio.play();
+      if(p&&p.catch)p.catch(()=>{if(force)showToast('⚠️ Touche d\'abord l\'écran pour activer le son');});
+    }catch(e2){console.warn('playSoundFile error',e2);}
+  }
 }
 
 // =====================================================
