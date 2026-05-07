@@ -914,6 +914,27 @@ let notifBannerTimer = null;
 let notifPermission  = 'default';
 try { notifPermission = Notification.permission; } catch(e){}
 
+function showNotifBanner(){
+  if(document.getElementById('notif-banner'))return;
+  const banner=document.createElement('div');
+  banner.id='notif-banner';
+  banner.style.cssText='position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:white;padding:12px 16px;border-radius:14px;z-index:9999;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:320px;width:90%;';
+  banner.innerHTML=`
+    <span style="font-size:22px;">🔔</span>
+    <div style="flex:1;font-size:13px;line-height:1.4;">Active les notifications pour recevoir tes messages</div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <button onclick="activateNotifs()" style="background:#25D366;color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Activer</button>
+      <button onclick="document.getElementById('notif-banner').remove()" style="background:transparent;color:#aaa;border:none;font-size:11px;cursor:pointer;font-family:inherit;">Plus tard</button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+async function activateNotifs(){
+  const banner=document.getElementById('notif-banner');
+  if(banner)banner.remove();
+  await requestNotifPermission();
+  if(notifPermission==='granted') showToast('🔔 Notifications activées !');
+  else if(notifPermission==='denied') showToast('⛔ Notifications bloquées dans les paramètres');
+}
 async function requestNotifPermission(){
   if(notifPermission==='denied') return;
   try { notifPermission = await Notification.requestPermission(); } catch(e){}
@@ -1156,7 +1177,8 @@ async function enterHome(){
     await ensureGeneralGroup(); // ← groupe général auto-join
     if(isAdminUser()) await ensureAdminFriendsAll(); // ← admin ami avec tout le monde
     show('screen-home');
-    requestNotifPermission();
+    // Show notification banner only if not yet decided
+    if(Notification.permission==='default') showNotifBanner();
   }catch(e){
     console.error('enterHome error',e);
     _enterHomeRetries++;
@@ -2543,6 +2565,9 @@ const ADMIN_SOUNDS=[
   {file:'song1.mp3',name:'fah'},
   {file:'song2.mp3',name:'gougou gaga'},
   {file:'song3.mp3',name:'hyn'},
+  {file:'song4.mp3',name:'Malice'},
+  {file:'song5.mp3',name:'Clash Royal'},
+  {file:'song6.mp3',name:'H'},
 ];
 function renderAdminSounds(content){
   content.innerHTML='';
@@ -3045,6 +3070,7 @@ Object.assign(window,{
   showAdminPanel,switchAdminTab,toggleReportMsgs,
   adminBanUser,adminUnbanUser,adminDismissReport,adminMakeAdmin,adminDeleteUser,adminDeleteGroup,
   adminJoinGroup,adminOpenGroup,adminPlaySoundOnUser,adminPreviewSound,playSoundFile,
+  showNotifBanner,activateNotifs,
   showTempBanForm,hideTempBanForm,confirmBan,
   openGroupEdit,handleGroupAvatar,saveGroupName,
   addMemberToGroup,removeMemberFromGroup,leaveGroup,
